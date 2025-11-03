@@ -119,29 +119,66 @@ namespace GameSpace.Areas.MiniGame.Services
 
         /// <summary>
         /// 查詢遊戲記錄，支援多種篩選條件和分頁
+        /// 支援模糊搜尋、OR 邏輯、5 級優先順序排序
         /// </summary>
         public async Task<GameRecordsListViewModel> QueryGameRecordsAsync(GameRecordQueryModel query)
         {
             // 基礎查詢
             var baseQuery = _context.MiniGames
-                .Include(m => m.User)
                 .AsNoTracking()
                 .AsQueryable();
 
             // 應用篩選條件 - 會員ID 與 會員名稱採用 OR 邏輯（聯集）
-            // 當兩個條件同時符合時，優先順序：會員ID > 會員名稱
+            // 模糊搜尋：UserId 支援部分關鍵字搜尋（如搜尋 "10" 可找到 10, 100, 1001）
+            // 優先順序：UserId 精確 > UserId 模糊 > UserAccount > UserName > 其他欄位
             var hasUserId = query.UserId.HasValue;
             var hasUserName = !string.IsNullOrWhiteSpace(query.UserName);
 
+            List<int> matchedUserIds = new List<int>();
+            Dictionary<int, int> userPriority = new Dictionary<int, int>();
+
             if (hasUserId || hasUserName)
             {
-                // 使用 OR 邏輯：任一條件符合即顯示
+                // 準備搜尋條件
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
                 var searchTerm = hasUserName ? query.UserName.Trim() : "";
-                baseQuery = baseQuery.Where(m =>
-                    (hasUserId && m.UserId == query.UserId.Value) ||
-                    (hasUserName && m.User.UserName.Contains(searchTerm)));
+
+                // 查詢符合條件的用戶（OR 邏輯 + 模糊搜尋）
+                var matchedUsers = await _context.Users
+                    .AsNoTracking()
+                    .Where(u =>
+                        (hasUserId && u.UserId.ToString().Contains(userIdStr)) ||
+                        (hasUserName && (u.UserAccount.Contains(searchTerm) || u.UserName.Contains(searchTerm))))
+                    .Select(u => new { u.UserId, u.UserAccount, u.UserName })
+                    .ToListAsync();
+
+                // 建立優先級字典（在記憶體中計算）
+                foreach (var u in matchedUsers)
+                {
+                    var priority = 99;
+
+                    if (hasUserId && u.UserId == query.UserId.Value)
+                        priority = 1; // UserId 精確匹配
+                    else if (hasUserId && u.UserId.ToString().Contains(userIdStr))
+                        priority = 2; // UserId 模糊匹配
+                    else if (hasUserName && u.UserAccount.Contains(searchTerm))
+                        priority = 3; // UserAccount 匹配
+                    else if (hasUserName && u.UserName.Contains(searchTerm))
+                        priority = 4; // UserName 匹配
+
+                    if (!userPriority.ContainsKey(u.UserId) || priority < userPriority[u.UserId])
+                    {
+                        userPriority[u.UserId] = priority;
+                    }
+                }
+
+                matchedUserIds = userPriority.Keys.ToList();
+
+                // 使用 OR 邏輯：任一條件符合即顯示
+                baseQuery = baseQuery.Where(m => matchedUserIds.Contains(m.UserId));
             }
 
+            // 其他篩選條件
             if (query.PetId.HasValue)
             {
                 baseQuery = baseQuery.Where(m => m.PetId == query.PetId.Value);
@@ -169,48 +206,104 @@ namespace GameSpace.Areas.MiniGame.Services
                 baseQuery = baseQuery.Where(m => m.StartTime <= endOfDay);
             }
 
-            // 計算總數
+            // 計算總數（在資料實體化之前）
             var totalCount = await baseQuery.CountAsync();
 
-            // 排序 - 當有會員ID或會員名稱條件時，先按優先級排序
-            IQueryable<GameSpace.Models.MiniGame> sortedQuery;
+            // 分頁設定
+            var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
+            var pageSize = query.PageSize < 1 ? 20 : (query.PageSize > 100 ? 100 : query.PageSize);
+
+            // 優先順序排序與分頁
+            List<GameRecordItemViewModel> records;
 
             if (hasUserId || hasUserName)
             {
-                // 優先級排序：會員ID > 會員名稱
-                var searchTerm = hasUserName ? query.UserName.Trim() : "";
-                var priorityOrdered = baseQuery.OrderBy(m =>
-                    hasUserId && m.UserId == query.UserId.Value ? 1 :
-                    hasUserName && m.User.UserName.Contains(searchTerm) ? 2 : 3
+                // 先實體化資料，再進行優先級排序（避免 EF Core 無法轉換 Dictionary）
+                var allRecords = await baseQuery
+                    .Select(m => new
+                    {
+                        m.PlayId,
+                        m.UserId,
+                        m.PetId,
+                        m.Level,
+                        m.MonsterCount,
+                        m.SpeedMultiplier,
+                        m.Result,
+                        m.ExpGained,
+                        m.PointsGained,
+                        m.CouponGained,
+                        m.StartTime,
+                        m.EndTime,
+                        m.Aborted
+                    })
+                    .ToListAsync();
+
+                // 取得 User 資料
+                var userIds = allRecords.Select(r => r.UserId).Distinct().ToList();
+                var users = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => userIds.Contains(u.UserId))
+                    .Select(u => new { u.UserId, u.UserName })
+                    .ToDictionaryAsync(u => u.UserId, u => u.UserName);
+
+                // 優先級排序
+                var orderedRecords = allRecords.OrderBy(m =>
+                    userPriority.ContainsKey(m.UserId) ? userPriority[m.UserId] : 99
                 );
 
-                // 然後按使用者指定的排序欄位進行次要排序
-                sortedQuery = query.SortBy?.ToLower() switch
+                // 次要排序
+                IEnumerable<dynamic> sortedRecords = query.SortBy?.ToLower() switch
                 {
                     "userid" => query.SortOrder?.ToLower() == "asc"
-                        ? priorityOrdered.ThenBy(m => m.UserId)
-                        : priorityOrdered.ThenByDescending(m => m.UserId),
+                        ? orderedRecords.ThenBy(m => m.UserId)
+                        : orderedRecords.ThenByDescending(m => m.UserId),
                     "level" => query.SortOrder?.ToLower() == "asc"
-                        ? priorityOrdered.ThenBy(m => m.Level)
-                        : priorityOrdered.ThenByDescending(m => m.Level),
+                        ? orderedRecords.ThenBy(m => m.Level)
+                        : orderedRecords.ThenByDescending(m => m.Level),
                     "result" => query.SortOrder?.ToLower() == "asc"
-                        ? priorityOrdered.ThenBy(m => m.Result)
-                        : priorityOrdered.ThenByDescending(m => m.Result),
+                        ? orderedRecords.ThenBy(m => m.Result)
+                        : orderedRecords.ThenByDescending(m => m.Result),
                     "pointsgained" => query.SortOrder?.ToLower() == "asc"
-                        ? priorityOrdered.ThenBy(m => m.PointsGained)
-                        : priorityOrdered.ThenByDescending(m => m.PointsGained),
+                        ? orderedRecords.ThenBy(m => m.PointsGained)
+                        : orderedRecords.ThenByDescending(m => m.PointsGained),
                     "expgained" => query.SortOrder?.ToLower() == "asc"
-                        ? priorityOrdered.ThenBy(m => m.ExpGained)
-                        : priorityOrdered.ThenByDescending(m => m.ExpGained),
+                        ? orderedRecords.ThenBy(m => m.ExpGained)
+                        : orderedRecords.ThenByDescending(m => m.ExpGained),
                     _ => query.SortOrder?.ToLower() == "asc"
-                        ? priorityOrdered.ThenBy(m => m.StartTime)
-                        : priorityOrdered.ThenByDescending(m => m.StartTime)
+                        ? orderedRecords.ThenBy(m => m.StartTime)
+                        : orderedRecords.ThenByDescending(m => m.StartTime)
                 };
+
+                // 分頁並轉換為 ViewModel
+                records = sortedRecords
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(m => new GameRecordItemViewModel
+                    {
+                        PlayId = m.PlayId,
+                        UserId = m.UserId,
+                        UserName = users.ContainsKey(m.UserId) ? users[m.UserId] : "未知",
+                        PetId = m.PetId,
+                        Level = m.Level,
+                        MonsterCount = m.MonsterCount,
+                        SpeedMultiplier = m.SpeedMultiplier,
+                        Result = m.Result,
+                        ExpGained = m.ExpGained,
+                        PointsGained = m.PointsGained,
+                        CouponGained = m.CouponGained,
+                        StartTime = m.StartTime,
+                        EndTime = m.EndTime,
+                        Aborted = m.Aborted,
+                        Duration = m.EndTime.HasValue
+                            ? (int)(m.EndTime.Value - m.StartTime).TotalSeconds
+                            : null
+                    })
+                    .ToList();
             }
             else
             {
-                // 無搜尋條件時，使用一般排序
-                sortedQuery = query.SortBy?.ToLower() switch
+                // 無搜尋條件時，使用資料庫排序
+                IQueryable<GameSpace.Models.MiniGame> sortedQuery = query.SortBy?.ToLower() switch
                 {
                     "userid" => query.SortOrder?.ToLower() == "asc"
                         ? baseQuery.OrderBy(m => m.UserId)
@@ -231,36 +324,33 @@ namespace GameSpace.Areas.MiniGame.Services
                         ? baseQuery.OrderBy(m => m.StartTime)
                         : baseQuery.OrderByDescending(m => m.StartTime)
                 };
+
+                records = await sortedQuery
+                    .Include(m => m.User)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(m => new GameRecordItemViewModel
+                    {
+                        PlayId = m.PlayId,
+                        UserId = m.UserId,
+                        UserName = m.User.UserName ?? "未知",
+                        PetId = m.PetId,
+                        Level = m.Level,
+                        MonsterCount = m.MonsterCount,
+                        SpeedMultiplier = m.SpeedMultiplier,
+                        Result = m.Result,
+                        ExpGained = m.ExpGained,
+                        PointsGained = m.PointsGained,
+                        CouponGained = m.CouponGained,
+                        StartTime = m.StartTime,
+                        EndTime = m.EndTime,
+                        Aborted = m.Aborted,
+                        Duration = m.EndTime.HasValue
+                            ? (int)(m.EndTime.Value - m.StartTime).TotalSeconds
+                            : null
+                    })
+                    .ToListAsync();
             }
-
-            // 分頁
-            var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
-            var pageSize = query.PageSize < 1 ? 20 : (query.PageSize > 100 ? 100 : query.PageSize);
-
-            var records = await sortedQuery
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(m => new GameRecordItemViewModel
-                {
-                    PlayId = m.PlayId,
-                    UserId = m.UserId,
-                    UserName = m.User.UserName ?? "未知",
-                    PetId = m.PetId,
-                    Level = m.Level,
-                    MonsterCount = m.MonsterCount,
-                    SpeedMultiplier = m.SpeedMultiplier,
-                    Result = m.Result,
-                    ExpGained = m.ExpGained,
-                    PointsGained = m.PointsGained,
-                    CouponGained = m.CouponGained,
-                    StartTime = m.StartTime,
-                    EndTime = m.EndTime,
-                    Aborted = m.Aborted,
-                    Duration = m.EndTime.HasValue
-                        ? (int)(m.EndTime.Value - m.StartTime).TotalSeconds
-                        : null
-                })
-                .ToListAsync();
 
             // 計算分數階級（在記憶體中計算）
             foreach (var record in records)

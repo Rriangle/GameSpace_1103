@@ -594,6 +594,227 @@ namespace GameSpace.Areas.MiniGame.Controllers
         }
 
         /// <summary>
+        /// POST: AdminMiniGame/SearchGameRecords
+        /// AJAX endpoint for searching game records with filters
+        /// Returns JSON response with records and statistics
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> SearchGameRecords([FromForm] GameRecordQueryModel query)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.View"))
+                {
+                    return Json(new { success = false, message = "您沒有權限查看遊戲紀錄" });
+                }
+
+                // Validate date range
+                if (query.StartDate.HasValue && query.EndDate.HasValue)
+                {
+                    if (query.StartDate.Value > query.EndDate.Value)
+                    {
+                        return Json(new { success = false, message = "開始日期不能晚於結束日期" });
+                    }
+                }
+
+                // Set default values if not provided
+                if (query.PageNumber < 1) query.PageNumber = 1;
+                if (query.PageSize < 1) query.PageSize = 100; // Return all results for AJAX
+                if (query.PageSize > 1000) query.PageSize = 1000;
+
+                // Query game records - will return ALL results if no filters provided
+                var result = await _gameQueryService.QueryGameRecordsAsync(query);
+
+                // Get statistics for the filtered results
+                var stats = await _gameQueryService.GetGameStatisticsAsync(query.StartDate, query.EndDate);
+
+                // Transform records to match frontend expectations
+                var data = result.Records.Select(r => new
+                {
+                    recordId = r.PlayId,
+                    userId = r.UserId,
+                    userName = r.UserName,
+                    score = r.PointsGained,
+                    status = MapResultToStatus(r.Result, r.Aborted),
+                    difficulty = $"Level {r.Level}",
+                    gameTime = r.StartTime.ToString("yyyy-MM-dd HH:mm:ss")
+                }).ToList();
+
+                // Return statistics
+                var statistics = new
+                {
+                    totalGames = result.TotalCount,
+                    completedGames = stats.WinGames,
+                    avgScore = stats.AveragePointsPerGame,
+                    maxScore = result.Records.Any() ? result.Records.Max(r => r.PointsGained) : 0
+                };
+
+                return Json(new
+                {
+                    success = true,
+                    data = data,
+                    statistics = statistics,
+                    totalCount = result.TotalCount
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"查詢遊戲紀錄時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Helper method to map Result and Aborted status to frontend status display
+        /// </summary>
+        private string MapResultToStatus(string result, bool aborted)
+        {
+            if (aborted) return "放棄";
+            return result switch
+            {
+                "Win" => "已完成",
+                "Lose" => "失敗",
+                "Abort" => "放棄",
+                _ => "進行中"
+            };
+        }
+
+        /// <summary>
+        /// GET: AdminMiniGame/GetGameRecordDetail
+        /// Get detailed information for a specific game record
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetGameRecordDetail(int recordId)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.View"))
+                {
+                    return Json(new { success = false, message = "您沒有權限查看遊戲紀錄" });
+                }
+
+                var detail = await _gameQueryService.GetGameRecordDetailAsync(recordId);
+
+                if (detail == null)
+                {
+                    return Json(new { success = false, message = "找不到該遊戲記錄" });
+                }
+
+                var data = new
+                {
+                    userId = detail.UserId,
+                    userName = detail.UserName,
+                    difficulty = $"Level {detail.Level}",
+                    score = detail.PointsGained,
+                    status = MapResultToStatus(detail.Result, detail.Aborted),
+                    gameTime = detail.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    rewardPoints = detail.PointsGained,
+                    rewardItems = !string.IsNullOrEmpty(detail.CouponGained) ? detail.CouponGained : "無",
+                    startTime = detail.StartTime.ToString("yyyy-MM-dd HH:mm:ss"),
+                    endTime = detail.EndTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "未結束",
+                    duration = detail.Duration.HasValue ? $"{detail.Duration.Value} 秒" : "N/A",
+                    ipAddress = "未記錄",
+                    deviceType = "未記錄",
+                    browser = "未記錄"
+                };
+
+                return Json(new { success = true, data = data });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"獲取詳細資訊時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// POST: AdminMiniGame/AdjustScore
+        /// Adjust score for a game record (admin correction)
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> AdjustScore(int recordId, int newScore)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.Edit"))
+                {
+                    return Json(new { success = false, message = "您沒有權限調整分數" });
+                }
+
+                // Validate score
+                if (newScore < 0)
+                {
+                    return Json(new { success = false, message = "分數不能為負數" });
+                }
+
+                // Find the game record
+                var miniGame = await _context.MiniGames.FindAsync(recordId);
+                if (miniGame == null)
+                {
+                    return Json(new { success = false, message = "找不到該遊戲記錄" });
+                }
+
+                // Update points gained
+                var oldScore = miniGame.PointsGained;
+                miniGame.PointsGained = newScore;
+                miniGame.PointsGainedTime = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                // Log the operation
+                await LogOperationAsync("AdjustScore", $"調整遊戲記錄 {recordId} 分數從 {oldScore} 到 {newScore}");
+
+                return Json(new { success = true, message = "分數調整成功" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"調整分數時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// POST: AdminMiniGame/DeleteGameRecord
+        /// Soft delete a game record
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> DeleteGameRecord(int recordId)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.Delete"))
+                {
+                    return Json(new { success = false, message = "您沒有權限刪除遊戲記錄" });
+                }
+
+                // Find the game record
+                var miniGame = await _context.MiniGames.FindAsync(recordId);
+                if (miniGame == null)
+                {
+                    return Json(new { success = false, message = "找不到該遊戲記錄" });
+                }
+
+                // Soft delete
+                miniGame.IsDeleted = true;
+                miniGame.DeletedAt = DateTime.UtcNow;
+                miniGame.DeletedBy = GetCurrentManagerId();
+                miniGame.DeleteReason = "管理員刪除";
+
+                await _context.SaveChangesAsync();
+
+                // Log the operation
+                await LogOperationAsync("DeleteGameRecord", $"刪除遊戲記錄 {recordId}");
+
+                return Json(new { success = true, message = "遊戲記錄刪除成功" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"刪除遊戲記錄時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
         /// GET: AdminMiniGame/ViewGameRecords
         /// Query and display game records with filters
         /// </summary>

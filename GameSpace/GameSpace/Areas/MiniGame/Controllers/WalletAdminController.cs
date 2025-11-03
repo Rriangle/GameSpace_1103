@@ -69,12 +69,18 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 source = source.Where(w => w.UserPoint <= query.MaxAmount.Value);
             }
 
-            // 優先順序排序：UserId精確 > UserId模糊 > UserAccount > UserName
-            IOrderedQueryable<UserWallet> orderedSource;
+            // 計算總數（在資料實體化之前）
+            var totalCount = await source.CountAsync();
+
+            // 優先順序排序：先取資料再排序（避免 EF 無法轉換 Dictionary）
+            List<UserWallet> items;
             if (hasUserId || hasSearchTerm)
             {
                 var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
                 var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                // 先將篩選後的資料載入記憶體
+                var filteredWallets = await source.ToListAsync();
 
                 var userPriority = await _context.Users
                     .AsNoTracking()
@@ -89,35 +95,35 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     })
                     .ToDictionaryAsync(x => x.UserId, x => x.Priority);
 
-                orderedSource = source.OrderBy(w => userPriority.ContainsKey(w.UserId) ? userPriority[w.UserId] : 99);
+                // 在記憶體中進行優先順序排序
+                var ordered = filteredWallets.OrderBy(w => userPriority.ContainsKey(w.UserId) ? userPriority[w.UserId] : 99);
 
                 // 次要排序
-                source = query.SortBy?.ToLowerInvariant() switch
+                var sorted = query.SortBy?.ToLowerInvariant() switch
                 {
-                    "points_asc" => orderedSource.ThenBy(w => w.UserPoint),
-                    "points_desc" => orderedSource.ThenByDescending(w => w.UserPoint),
-                    "userid_desc" => orderedSource.ThenByDescending(w => w.UserId),
-                    "userid_asc" => orderedSource.ThenBy(w => w.UserId),
-                    _ => orderedSource.ThenByDescending(w => w.UserPoint)
+                    "points_asc" => ordered.ThenBy(w => w.UserPoint),
+                    "points_desc" => ordered.ThenByDescending(w => w.UserPoint),
+                    "userid_desc" => ordered.ThenByDescending(w => w.UserId),
+                    "userid_asc" => ordered.ThenBy(w => w.UserId),
+                    _ => ordered.ThenByDescending(w => w.UserPoint)
                 };
+
+                // 分頁
+                items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             }
             else
             {
-                // 沒有搜尋條件時的正常排序
-                source = query.SortBy?.ToLowerInvariant() switch
+                // 沒有搜尋條件時使用資料庫排序
+                var sorted = query.SortBy?.ToLowerInvariant() switch
                 {
                     "points_asc" => source.OrderBy(w => w.UserPoint),
                     "userid_desc" => source.OrderByDescending(w => w.UserId),
                     "userid_asc" => source.OrderBy(w => w.UserId),
                     _ => source.OrderByDescending(w => w.UserPoint)
                 };
-            }
 
-            var totalCount = await source.CountAsync();
-            var items = await source
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                items = await sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            }
 
             var userIds = items.Select(i => i.UserId).Distinct().ToList();
             var userLookup = await _context.Users

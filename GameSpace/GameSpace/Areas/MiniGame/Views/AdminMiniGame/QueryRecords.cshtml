@@ -266,14 +266,14 @@
                 "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Chinese-traditional.json"
             },
             "pageLength": 25,
-            "order": [[ 7, "desc" ]],
+            "order": [[ 5, "desc" ]],  // Fixed: column index for game time
             "columnDefs": [
-                { "orderable": false, "targets": 8 }
+                { "orderable": false, "targets": 6 }  // Fixed: last column index for actions
             ]
         });
 
         // 搜尋功能
-        $("#searchBtn").click(function() {
+        function performSearch() {
             var formData = $("#searchForm").serialize();
             $.ajax({
                 url: "@Url.Action("SearchGameRecords", "AdminMiniGame")",
@@ -291,6 +291,11 @@
                     alert("搜尋請求失敗，請稍後再試");
                 }
             });
+        }
+
+        // 搜尋按鈕點擊事件
+        $("#searchBtn").click(function() {
+            performSearch();
         });
 
         // 重置功能
@@ -434,7 +439,7 @@
                         if (response.success) {
                             alert("遊戲記錄刪除成功");
                             $("#detailModal").modal("hide");
-                            $("#searchBtn").click(); // 重新搜尋
+                            performSearch(); // 重新搜尋
                         } else {
                             alert("遊戲記錄刪除失敗: " + response.message);
                         }
@@ -445,6 +450,9 @@
                 });
             }
         });
+
+        // 頁面載入時自動執行搜尋，顯示所有記錄
+        performSearch();
     });
 </script>
 
