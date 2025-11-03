@@ -1,0 +1,325 @@
+﻿using System;
+using System.Data;
+using System.Linq;
+using GamiPort.Models;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using GamiPort.Areas.OnlineStore.Services;
+using GamiPort.Areas.OnlineStore.Utils;
+using Microsoft.AspNetCore.Http;
+using GamiPort.Infrastructure.Security;
+using GamiPort.Areas.OnlineStore.Infrastructure; // CartCookie
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+
+
+
+namespace GamiPort.Areas.OnlineStore.Controllers
+{
+	[Area("OnlineStore")]
+	[Route("OnlineStore/[controller]")]
+	public sealed class CartController : Controller
+	{
+		private readonly ICartService _cart;
+		private readonly IAppCurrentUser _me;
+		private readonly GameSpacedatabaseContext _db;
+
+		public CartController(ICartService cart, IAppCurrentUser me, GameSpacedatabaseContext db)
+		{
+			_cart = cart;
+			_me = me;
+			_db = db;
+		}
+
+		// 取得目前登入者的 userId（若你的 Claim 名稱不同，這裡改一下）
+		private int? GetUserIdOrNull()
+		{
+			if (User?.Identity?.IsAuthenticated == true)
+			{
+				// 常見幾種寫法：NameIdentifier / "UserId" / 自訂 Claim
+				var val = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("UserId");
+				if (int.TryParse(val, out var uid)) return uid;
+			}
+			return null;
+		}
+
+		// 內部共用：確保 cartId（若沒有匿名 cookie 就會寫入）
+		private async Task<Guid> EnsureCartAsync()
+		{
+			var userId = GetUserIdOrNull();
+			var anon = AnonCookie.GetOrSet(HttpContext);
+			var cartId = await _cart.EnsureCartIdAsync(userId, anon);
+
+			// ★ 關鍵：回寫 Session，統一各頁能讀到同一個 cart
+			HttpContext.Session.SetString("CartId", cartId.ToString());
+			return cartId;
+		}
+		// GET: /OnlineStore/Cart/CountJson  → Navbar 會打這支來更新徽章
+		[HttpGet("CountJson")]
+		public async Task<IActionResult> CountJson()
+		{
+			var cartId = await EnsureCartAsync();
+			var count = await _cart.GetItemCountAsync(cartId);
+			return Json(new { count });
+		}
+
+		// GET: /OnlineStore/Cart/Index
+		// 只回 Razor 骨架；初始參數用 ViewData 給前端
+		[HttpGet("")]
+		public async Task<IActionResult> Index(int shipMethodId = 1, string destZip = "320", string? couponCode = null)
+		{
+			// 1) 匿名也要有 cart_id（cookie: cart_id）
+			var cartId = CartCookie.GetOrCreate(HttpContext);
+
+			// 2) 如果已登入：回車時自動合併「匿名購物車 → 會員購物車」
+			var userId = await _me.GetUserIdAsync();
+			if (userId > 0 && cartId != Guid.Empty)
+			{
+				await using var conn = _db.Database.GetDbConnection();
+				if (conn.State != System.Data.ConnectionState.Open) await conn.OpenAsync();
+				await using var cmd = conn.CreateCommand();
+				cmd.CommandText = "dbo.usp_Cart_AttachToUser";             // ★ 對應下面提供的 SP 名稱
+				cmd.CommandType = System.Data.CommandType.StoredProcedure;
+				cmd.Parameters.Add(new SqlParameter("@CartId", cartId));    // UNIQUEIDENTIFIER
+				cmd.Parameters.Add(new SqlParameter("@UserId", userId));    // INT
+				await cmd.ExecuteNonQueryAsync();
+				// 合併後 cookie 可留著（或你想 Drop 也行）
+			}
+
+			ViewData["shipMethodId"] = shipMethodId;
+			ViewData["destZip"] = destZip;
+			ViewData["couponCode"] = couponCode ?? "";
+			return View();
+		}
+
+
+		// GET: /OnlineStore/Cart/Full?shipMethodId=&destZip=&couponCode=
+		[HttpGet("Full")]
+		public async Task<IActionResult> Full(int shipMethodId, string destZip, string? couponCode)
+		{
+			var cartId = await EnsureCartAsync();
+			var vm = await _cart.GetFullAsync(cartId, shipMethodId, destZip ?? "", couponCode);
+
+			// 1) 明細：vm.Lines（不是 Items）
+			var items = vm.Lines.Select(x => new {
+				productId = x.Product_Id,
+				productName = x.Product_Name,
+				imageThumb = x.Image_Thumb,
+				unitPrice = x.Unit_Price,
+				quantity = x.Quantity,
+				lineSubtotal = x.Line_Subtotal
+			}).ToList();
+
+			// 2) 總計映射：把你的底線命名 → 前端慣用駝峰命名
+			var payload = new
+			{
+				ok = true,
+				items,
+				summary = new
+				{
+					totalQty = vm.Summary.Item_Count_Total, // ← 由你定義的總件數
+					subtotal = vm.Summary.Subtotal,
+					discount = vm.Summary.Discount,
+					shipping = vm.Summary.Shipping_Fee,
+					grandTotal = vm.Summary.Grand_Total,
+					shipMethodId = shipMethodId,
+					destZip = destZip,
+					couponCode = couponCode,
+					couponMessage = (string?)null // 目前你的 DTO 沒有此欄，先給 null；之後若有就改這裡
+				}
+			};
+			return Json(payload);
+		}
+
+
+		// POST: /OnlineStore/Cart/UpdateQty
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateQty(int productId, int qty, int shipMethodId, string destZip, string? couponCode)
+		{
+			try
+			{
+				var cartId = await EnsureCartAsync();
+				await _cart.UpdateQtyAsync(cartId, productId, qty);
+				return await Full(shipMethodId, destZip, couponCode);
+			}
+			catch (Exception ex)
+			{
+				// 這裡簡化示範；實務上請分辨錯誤碼（例如 INVALID_QTY、PRODUCT_NOT_FOUND…）
+				return Json(new { ok = false, code = "UPDATE_FAILED", message = ex.Message });
+			}
+		}
+
+		// POST: /OnlineStore/Cart/Remove
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Remove(int productId, int shipMethodId, string destZip, string? couponCode)
+		{
+			try
+			{
+				var cartId = await EnsureCartAsync();
+				await _cart.RemoveAsync(cartId, productId);
+				return await Full(shipMethodId, destZip, couponCode);
+			}
+			catch (Exception ex)
+			{
+				return Json(new { ok = false, code = "REMOVE_FAILED", message = ex.Message });
+			}
+		}
+
+		// POST: /OnlineStore/Cart/Clear
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Clear(int shipMethodId, string destZip, string? couponCode)
+		{
+			try
+			{
+				var cartId = await EnsureCartAsync();
+				await _cart.ClearAsync(cartId);
+				return await Full(shipMethodId, destZip, couponCode);
+			}
+			catch (Exception ex)
+			{
+				return Json(new { ok = false, code = "CLEAR_FAILED", message = ex.Message });
+			}
+		}
+		// ★ 共用：挑一個可用商品（若傳入的 productId 不存在，就撈一個庫內的商品）
+		private async Task<(int pid, string name, decimal price, string? img)> PickProductAsync(int productId)
+		{
+			// 先找指定的
+			var p = await _db.SProductInfos
+				.AsNoTracking()
+				.Where(x => x.ProductId == productId && (x.IsDeleted == null || x.IsDeleted == false))
+				.Select(x => new { x.ProductId, x.ProductName, x.Price })
+				.FirstOrDefaultAsync();
+
+			// 指定的沒有就挑一個可用商品
+			if (p is null)
+			{
+				p = await _db.SProductInfos
+					.AsNoTracking()
+					.Where(x => (x.IsDeleted == null || x.IsDeleted == false))
+					.OrderBy(x => x.ProductId)
+					.Select(x => new { x.ProductId, x.ProductName, x.Price })
+					.FirstOrDefaultAsync();
+			}
+
+			if (p is null) return (0, "", 0m, null);
+
+			// price 為非 Null decimal，不可用 ??
+			return (p.ProductId, p.ProductName ?? $"PID-{p.ProductId}", p.Price, null);
+		}
+
+
+
+		// ★ 共用：把商品寫進 SO_CartItems（存在就加數量，不存在就 INSERT）
+		private async Task AddItemToCartAsync(
+			Guid cartId, int productId, int qty,
+			string productName, decimal unitPrice, string? imageThumb)
+		{
+			var exist = await _db.SoCartItems
+				.FirstOrDefaultAsync(x => x.CartId == cartId
+									   && x.ProductId == productId
+									   && (x.IsDeleted == null || x.IsDeleted == false)
+									   && (x.VariantSku == null || x.VariantSku == "")); // 無規格就這樣比
+
+			var now = DateTime.UtcNow;
+
+			if (exist != null)
+			{
+				// Qty 是非 Null int
+				exist.Qty += Math.Max(1, qty);
+				exist.UnitPrice = unitPrice;
+				exist.UpdatedAt = now;
+				await _db.SaveChangesAsync();
+				return;
+			}
+
+			// 新增一筆（依你的表欄位對齊）
+			_db.SoCartItems.Add(new SoCartItem
+			{
+				CartId = cartId,
+				ProductId = productId,
+				ProductName = productName,
+				UnitPrice = unitPrice,
+				Qty = Math.Max(1, qty),   // ← 這裡用 Math.Max（不是 Math.max）
+				ImageThumb = imageThumb,
+				IsSelected = true,
+				ItemStatus = "Active",
+				IsDeleted = false,
+				CreatedAt = now,
+				UpdatedAt = now
+			});
+			await _db.SaveChangesAsync();
+		}
+
+#if DEBUG
+		// GET: /OnlineStore/Cart/DevAdd?productId=101&qty=2...
+		[HttpGet("DevAdd")]
+		public async Task<IActionResult> DevAdd(int productId = 101, int qty = 2,
+			int shipMethodId = 1, string destZip = "320", string? couponCode = null)
+		{
+			try
+			{
+				var cartId = await EnsureCartAsync();
+				var picked = await PickProductAsync(productId);
+				if (picked.pid == 0)
+					return StatusCode(500, new { ok = false, code = "NO_PRODUCT", message = "無可用商品可加入（請先建立商品資料）" });
+
+				await AddItemToCartAsync(cartId, picked.pid, Math.Max(1, qty), picked.name, picked.price, picked.img);
+				// 回傳整包資料給前端渲染
+				return await Full(shipMethodId, destZip, couponCode);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { ok = false, code = "DEVADD_FAILED", message = ex.Message, detail = ex.InnerException?.Message });
+			}
+		}
+#endif
+		// 使用者在購物車按「前往結帳」
+		[HttpPost("GoCheckout")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> GoCheckout()
+		{
+			var userId = await _me.GetUserIdAsync();
+			if (userId <= 0)
+			{
+				TempData["Toast"] = "請先登入會員再結帳"; // 你前端可接這個顯示提示
+				var back = Url.Action("Index", "Cart", new { area = "OnlineStore" }) ?? "/OnlineStore/Cart";
+				// 這裡的登入 URL 視你們 Services 專案路由調整（常見：/Login 或 /Account/Login）
+				var loginUrl = $"/Login?returnUrl={Uri.EscapeDataString(back)}";
+				return Redirect(loginUrl);
+			}
+
+			// 已登入 → 進入結帳流程
+			return RedirectToAction("Step1", "Checkout", new { area = "OnlineStore" });
+		}
+
+		// POST: /OnlineStore/Cart/InsertTestItem
+		[HttpPost("InsertTestItem")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> InsertTestItem()
+		{
+			try
+			{
+				var cartId = await EnsureCartAsync();
+				var picked = await PickProductAsync(101);
+				if (picked.pid == 0)
+				{
+					TempData["Toast"] = "無可用商品可加入，請先建立商品。";
+					return RedirectToAction("Index");
+				}
+
+				await AddItemToCartAsync(cartId, picked.pid, 1, picked.name, picked.price, picked.img);
+				return RedirectToAction("Index");
+			}
+			catch (Exception ex)
+			{
+				TempData["Toast"] = "插入失敗：" + ex.Message;
+				return RedirectToAction("Index");
+			}
+		}
+	}
+}
