@@ -788,6 +788,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     .ToListAsync();
                 ViewBag.SkinColors = skinColors;
 
+                // 從資料庫讀取所有背景選項（直接從 SQL Server 讀取，不可硬編碼）
+                var backgroundColors = await _context.PetBackgroundCostSettings
+                    .Where(b => !b.IsDeleted)
+                    .OrderBy(b => b.BackgroundName)
+                    .Select(b => new { Code = b.BackgroundCode, Name = b.BackgroundName })
+                    .ToListAsync();
+                ViewBag.BackgroundColors = backgroundColors;
+
                 // 計算統計資訊
                 if (result.Items.Any())
                 {

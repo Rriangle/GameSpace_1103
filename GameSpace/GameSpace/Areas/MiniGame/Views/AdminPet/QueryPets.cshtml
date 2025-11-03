@@ -137,6 +137,33 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
+                            <select class="form-control rounded" id="BackgroundColor" name="BackgroundColor">
+                                <option value="">全部背景</option>
+                                @{
+                                    var backgroundColors = ViewBag.BackgroundColors as List<dynamic>;
+                                    if (backgroundColors != null)
+                                    {
+                                        foreach (var bg in backgroundColors)
+                                        {
+                                            if (ViewBag.BackgroundColor == bg.Code)
+                                            {
+                                                <option value="@bg.Code" selected>@bg.Code(@bg.Name)</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@bg.Code">@bg.Code(@bg.Name)</option>
+                                            }
+                                        }
+                                    }
+                                }
+                            </select>
+                            <label for="BackgroundColor"><i class="fas fa-image me-1"></i>背景</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="form-floating">
                             <select class="form-control rounded" id="SortBy" name="SortBy">
                                 <option value="level_desc" selected>等級（高 → 低）</option>
                                 <option value="level_asc">等級（低 → 高）</option>
