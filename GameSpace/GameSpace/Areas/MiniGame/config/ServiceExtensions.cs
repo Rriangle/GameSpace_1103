@@ -13,6 +13,11 @@ namespace GameSpace.Areas.MiniGame.config
             // MiniGame Area 使用共享的 GameSpacedatabaseContext (已在 Program.cs 註冊)
             // 不需要在此註冊 DbContext
 
+            // ==================== 2025-11-03: SystemSettings 統一讀取服務 ====================
+            // 註冊 SystemSettings 讀取服務（Singleton，帶快取）
+            services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
+            // =========================================================================
+
             // 註冊核心管理服務
             services.AddScoped<IMiniGameAdminService, MiniGameAdminService>();
             services.AddScoped<IMiniGameAdminAuthService, MiniGameAdminAuthService>();
@@ -152,6 +157,11 @@ namespace GameSpace.Areas.MiniGame.config
 
             // 註冊寵物每日衰減服務（排程任務使用）
             services.AddScoped<IPetDailyDecayService, PetDailyDecayService>();
+            // =========================================================================
+
+            // ==================== 2025-11-03: 寵物每日屬性衰減背景服務 ====================
+            // 註冊寵物每日屬性衰減背景服務（HostedService，每日 UTC 00:00 自動執行）
+            services.AddHostedService<PetDailyDecayBackgroundService>();
             // =========================================================================
 
             return services;

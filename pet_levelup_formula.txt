@@ -1,0 +1,11 @@
+{
+  "description": "Pet level-up experience formula (2025-10-20 updated)",
+  "tiers": [
+    {
+      "minLevel": 1,
+      "maxLevel": 10,
+      "type": "linear",
+      "formula": "40 * level + 60",
+      "description": "Level 1-10: EXP = 40 × level 
+
+(1 個受影響的資料列)

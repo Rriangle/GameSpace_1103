@@ -1,5 +1,45 @@
 # MiniGame Area Database Schema - Complete Reference
-*Generated: 2025-11-03 | Focus: 20 Core Tables | SQL Server 2022*
+*Generated: 2025-11-03 (Updated) | Focus: 20 Core Tables | SQL Server 2022*
+
+## 🔧 配置系統架構 (2025-11-03 更新)
+
+### SystemSettings 配置中心
+
+**重要：** MiniGame Area 現採用 SystemSettings 表作為核心配置中心。
+
+**配置統計：**
+- **總配置項：** 56 個
+- **業務規則：** 36 個（簽到 9 + 寵物 13 + 遊戲 14）
+- **管理方式：** 後台 UI 動態修改
+- **服務：** SystemSettingsService（Singleton、快取 30 分鐘）
+
+**四大子系統配置：**
+
+| 子系統 | 配置表 | SystemSettings Keys | 說明 |
+|--------|-------|---------------------|------|
+| 簽到系統 | SignInRule (10 行) | 9 個 | 平日/假日/連續/全勤獎勵 |
+| 寵物系統 | PetLevel/Skin/Background (47 行) | 13 個 | 互動效果、每日衰減、升級公式 |
+| 遊戲系統 | - | 14 個 | 關卡設定、結果影響 |
+| 錢包系統 | - | 4 個 | 初始點數、上限、優惠券/禮券有效期 |
+
+**架構圖：**
+```
+                    SystemSettings (配置中心)
+                            │
+        ┌───────────────────┼───────────────────┐
+        │                   │                   │
+  SignInService      GamePlayService    PetInteractionService
+        │                   │                   │
+  SignInRule          MiniGame               Pet
+  (結構化配置)         (運行數據)            (運行數據)
+```
+
+**配置優先級：**
+1. SystemSettings 表（動態配置，後台可調）
+2. 配置表（SignInRule 等，靜態結構化配置）
+3. 代碼默認值（Fallback，僅在讀取失敗時使用）
+
+---
 
 ## Overview
 The MiniGame Area comprises 4 subsystems spanning 20 database tables:

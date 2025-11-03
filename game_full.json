@@ -1,0 +1,1 @@
+﻿{"levels":[{"level":1,"monsterCount":6,"speedMultiplier":1.0,"experienceReward":100,"pointsReward":10,"hasCoupon":false},{"level":2,"monsterCount":8,"speedMultiplier":1.5,"experienceReward":200,"pointsReward":20,"hasCoupon":false},{"level":3,"monsterCount":10,"speedMultiplier":2.0,"experienceReward":300,"pointsReward":30,"hasCoupon":true,"couponType":"LEVEL_3_COMPLETION"}]}
