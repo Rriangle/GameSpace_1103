@@ -780,6 +780,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 ViewBag.PageNumber = query.PageNumber;
                 ViewBag.PageSize = query.PageSize;
 
+                // 從資料庫讀取所有膚色選項（直接從 SQL Server 讀取，不可硬編碼）
+                var skinColors = await _context.PetSkinColorCostSettings
+                    .Where(s => !s.IsDeleted)
+                    .OrderBy(s => s.ColorName)
+                    .Select(s => new { Code = s.ColorCode, Name = s.ColorName })
+                    .ToListAsync();
+                ViewBag.SkinColors = skinColors;
+
                 // 計算統計資訊
                 if (result.Items.Any())
                 {

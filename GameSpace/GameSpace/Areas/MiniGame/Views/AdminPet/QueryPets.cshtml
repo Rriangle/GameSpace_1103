@@ -114,11 +114,23 @@
                         <div class="form-floating">
                             <select class="form-control rounded" id="SkinColor" name="SkinColor">
                                 <option value="">全部膚色</option>
-                                <option value="red">紅色</option>
-                                <option value="blue">藍色</option>
-                                <option value="green">綠色</option>
-                                <option value="yellow">黃色</option>
-                                <option value="purple">紫色</option>
+                                @{
+                                    var skinColors = ViewBag.SkinColors as List<dynamic>;
+                                    if (skinColors != null)
+                                    {
+                                        foreach (var color in skinColors)
+                                        {
+                                            if (ViewBag.SkinColor == color.Code)
+                                            {
+                                                <option value="@color.Code" selected>@color.Code(@color.Name)</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@color.Code">@color.Code(@color.Name)</option>
+                                            }
+                                        }
+                                    }
+                                }
                             </select>
                             <label for="SkinColor"><i class="fas fa-palette me-1"></i>膚色</label>
                         </div>
