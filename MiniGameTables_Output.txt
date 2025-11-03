@@ -1,0 +1,1013 @@
+﻿====================================================================================================
+SQL Server MiniGame Area Tables - Structure and Seed Data
+Connected Server: DESKTOP-8HQIS1S\SQLEXPRESS
+Database: GameSpacedatabase
+Query Time: 2025-11-03 14:50:29
+====================================================================================================
+
+
+====================================================================================================
+TABLE: dbo.Coupon
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name   Data Type Length Nullable Default            Primary Key
+-----------   --------- ------ -------- -------            -----------
+CouponID      int              NO                          YES        
+CouponCode    nvarchar  50     NO                          NO         
+CouponTypeID  int              NO                          NO         
+UserID        int              NO                          NO         
+IsUsed        bit              NO                          NO         
+AcquiredTime  datetime2        NO       (sysutcdatetime()) NO         
+UsedTime      datetime2        YES      (sysutcdatetime()) NO         
+UsedInOrderID int              YES                         NO         
+IsDeleted     bit              NO       ((0))              NO         
+DeletedAt     datetime2        YES                         NO         
+DeletedBy     int              YES                         NO         
+DeleteReason  nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+CouponID CouponCode      CouponTypeID   UserID IsUsed AcquiredTime           UsedTime UsedInOrderID IsDeleted DeletedAt
+-------- ----------      ------------   ------ ------ ------------           -------- ------------- --------- ---------
+       1 CPN-2310-NCW491            1 10000148  False 2023/10/6 下午 06:52:28                             False          
+       5 CPN-2302-MRH896            1 10000013  False 2023/2/4 上午 07:25:30                              False          
+      18 CPN-2410-YYW366            3 10000178  False 2024/10/22 上午 11:32:12                            False          
+      20 CPN-2501-MTQ878            3 10000079  False 2025/1/25 上午 05:16:18                             False          
+      39 CPN-2410-AUK161            2 10000001  False 2024/10/19 下午 11:07:46                            False          
+      42 CPN-2404-CTG814            3 10000069  False 2024/4/3 下午 10:43:30                              False          
+      43 CPN-2306-NSZ620            3 10000155  False 2023/6/3 下午 10:49:16                              False          
+      52 CPN-2309-RDZ380            3 10000136  False 2023/9/27 下午 12:45:36                             False          
+     114 CPN-2505-OAL135            1 10000147  False 2025/5/9 下午 01:24:58                              False          
+     116 CPN-2412-VXW126            1 10000195  False 2024/12/22 下午 08:08:51                            False          
+     123 CPN-2407-YAX243            2 10000108  False 2024/7/16 上午 12:02:01                             False          
+     133 CPN-2508-XMN627            1 10000092  False 2025/8/2 下午 05:56:06                              False          
+     139 CPN-2308-UXB959            3 10000123  False 2023/8/28 上午 06:29:05                             False          
+     142 CPN-2310-KUP011            2 10000108  False 2023/10/16 下午 06:24:59                            False          
+     145 CPN-2311-TMA431            2 10000132  False 2023/11/21 下午 12:58:18                            False          
+     146 CPN-2304-XLN906            2 10000063  False 2023/4/25 上午 06:06:40                             False          
+     213 CPN-2411-BUD871            3 10000116  False 2024/11/24 下午 07:05:59                            False          
+     223 CPN-2410-LYF222            1 10000064  False 2024/10/7 上午 07:26:53                             False          
+     235 CPN-2312-TNH535            1 10000009  False 2023/12/21 下午 03:39:50                            False          
+     241 CPN-2407-DHG874            2 10000092  False 2024/7/21 上午 09:09:49                             False          
+
+
+
+
+====================================================================================================
+TABLE: dbo.CouponType
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name   Data Type Length Nullable Default Primary Key
+-----------   --------- ------ -------- ------- -----------
+CouponTypeID  int              NO               YES        
+Name          nvarchar  50     NO               NO         
+DiscountType  nvarchar  20     NO               NO         
+DiscountValue decimal          YES              NO         
+MinSpend      decimal          YES              NO         
+ValidFrom     datetime2        NO               NO         
+ValidTo       datetime2        NO               NO         
+PointsCost    int              NO               NO         
+Description   nvarchar  600    YES              NO         
+IsDeleted     bit              NO       ((0))   NO         
+DeletedAt     datetime2        YES              NO         
+DeletedBy     int              YES              NO         
+DeleteReason  nvarchar  500    YES              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 3
+
+
+CouponTypeID Name      DiscountType DiscountValue MinSpend ValidFrom              ValidTo               PointsCost Desc
+                                                                                                                   ript
+                                                                                                                   ion 
+------------ ----      ------------ ------------- -------- ---------              -------               ---------- ----
+           1 免運券       Amount                              2023/10/26 上午 02:09:44 2026/6/30 下午 11:59:59      10000 官...
+           2 全站85折     Percent      0.15          1500.00  2023/1/25 下午 02:06:52  2026/6/30 下午 11:59:59       1000 官...
+           3 滿$500折$50 Amount       50.00         500.00   2024/11/13 上午 10:37:53 2026/6/30 下午 11:59:59       5000 官...
+
+
+
+
+====================================================================================================
+TABLE: dbo.EVoucher
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name    Data Type Length Nullable Default            Primary Key
+-----------    --------- ------ -------- -------            -----------
+EVoucherID     int              NO                          YES        
+EVoucherCode   nvarchar  50     NO                          NO         
+EVoucherTypeID int              NO                          NO         
+UserID         int              NO                          NO         
+IsUsed         bit              NO                          NO         
+AcquiredTime   datetime2        NO       (sysutcdatetime()) NO         
+UsedTime       datetime2        YES      (sysutcdatetime()) NO         
+IsDeleted      bit              NO       ((0))              NO         
+DeletedAt      datetime2        YES                         NO         
+DeletedBy      int              YES                         NO         
+DeleteReason   nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+EVoucherID EVoucherCode          EVoucherTypeID   UserID IsUsed AcquiredTime           UsedTime               IsDeleted
+---------- ------------          --------------   ------ ------ ------------           --------               ---------
+         1 EV-MOVIE-8JDW-064877               3 10000001   True 2024/10/29 下午 03:17:44 2025/5/30 下午 11:53:14      False
+         2 EV-CASH-VR2G-969669               12 10000001  False 2025/1/14 上午 07:58:55                             False
+         3 EV-STORE-BNXR-252844               4 10000001  False 2024/11/18 上午 08:13:38                            False
+         4 EV-CASH-G7HA-253496               15 10000002   True 2023/8/7 下午 04:08:59   2023/11/24 上午 09:25:43     False
+         5 EV-CASH-JE6Z-035950                5 10000003  False 2024/5/20 下午 05:31:58                             False
+         6 EV-FOOD-O3L7-092171                3 10000003   True 2025/5/18 上午 01:10:33  2025/5/21 下午 03:41:50      False
+         7 EV-FOOD-EAY3-272176                2 10000004   True 2023/6/14 下午 11:06:57  2025/3/9 上午 01:15:03       False
+         8 EV-MOVIE-J7T8-240145              12 10000004   True 2024/7/16 下午 02:22:36  2024/8/10 上午 04:24:01      False
+         9 EV-FOOD-8B94-915783               18 10000004  False 2023/8/1 下午 09:58:15                              False
+        10 EV-STORE-XZZ6-641378               6 10000004   True 2023/3/1 上午 01:54:08   2025/8/18 上午 12:19:53      False
+        11 EV-CASH-6XQC-971536                1 10000005  False 2023/1/20 上午 08:53:49                             False
+        12 EV-FOOD-L2K4-818995               19 10000005  False 2024/12/27 下午 03:38:58                            False
+        13 EV-STORE-4ERH-008893               1 10000005   True 2024/2/17 下午 01:00:25  2024/5/29 上午 06:47:07      False
+        14 EV-MOVIE-RCOU-560467               6 10000006  False 2025/1/25 上午 10:59:41                             False
+        15 EV-FOOD-RHGB-989839               11 10000006  False 2023/11/16 上午 03:28:56                            False
+        16 EV-FOOD-HKI0-491663                2 10000006  False 2023/9/16 下午 06:36:16                             False
+        17 EV-MOVIE-HRAB-372056              17 10000006   True 2025/7/31 上午 08:47:53  2025/8/24 上午 11:28:25      False
+        18 EV-STORE-0YBC-532852              16 10000007  False 2025/1/1 下午 05:46:29                              False
+        19 EV-STORE-BIK8-086324              10 10000007   True 2025/6/3 下午 07:29:21   2025/6/29 下午 10:57:14      False
+        20 EV-COFFEE-T6VI-295597              3 10000008   True 2025/5/29 下午 12:44:06  2025/6/17 上午 08:22:48      False
+
+
+
+
+====================================================================================================
+TABLE: dbo.EVoucherRedeemLog
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name  Data Type Length Nullable Default            Primary Key
+-----------  --------- ------ -------- -------            -----------
+RedeemID     int              NO                          YES        
+EVoucherID   int              NO                          NO         
+TokenID      int              YES                         NO         
+UserID       int              NO                          NO         
+ScannedAt    datetime2        NO       (sysutcdatetime()) NO         
+Status       nvarchar  20     NO                          NO         
+IsDeleted    bit              NO       ((0))              NO         
+DeletedAt    datetime2        YES                         NO         
+DeletedBy    int              YES                         NO         
+DeleteReason nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+RedeemID EVoucherID TokenID   UserID ScannedAt              Status      IsDeleted DeletedAt DeletedBy DeleteReason
+-------- ---------- -------   ------ ---------              ------      --------- --------- --------- ------------
+       1          1       1 10000042 2025/5/30 下午 11:53:14  Approved        False                                 
+       2          1       1 10000030 2025/1/28 下午 04:20:55  AlreadyUsed     False                                 
+       3          2       2 10000185 2024/6/7 上午 03:53:06   Revoked         False                                 
+       4          4       4 10000073 2024/8/13 下午 02:38:26  Approved        False                                 
+       5          5       5 10000056 2024/5/23 上午 11:32:50  Rejected        False                                 
+       6          6       6 10000043 2023/6/18 下午 08:21:50  Approved        False                                 
+       7          6       6 10000084 2025/6/26 上午 03:48:51  AlreadyUsed     False                                 
+       8          7       7 10000022 2025/3/9 上午 01:15:03   Approved        False                                 
+       9          7       7 10000083 2025/6/13 上午 12:29:04  Approved        False                                 
+      10          8       8 10000193 2024/1/21 上午 07:17:42  Approved        False                                 
+      11          8       8 10000186 2023/10/19 上午 07:10:49 Revoked         False                                 
+      12          8       8 10000096 2023/7/16 下午 02:23:00  Expired         False                                 
+      13         10      10 10000066 2024/3/13 下午 11:58:50  Approved        False                                 
+      14         10      10 10000186 2023/11/13 上午 12:23:44 Approved        False                                 
+      15         12      12 10000167 2025/7/21 下午 12:33:27  Expired         False                                 
+      16         13      13 10000134 2025/6/13 上午 06:31:27  Approved        False                                 
+      17         13      13 10000005 2023/6/17 下午 02:07:13  Rejected        False                                 
+      18         13      13 10000139 2024/5/2 下午 11:09:31   Approved        False                                 
+      19         14      14 10000011 2024/7/21 下午 07:45:34  Rejected        False                                 
+      20         15      15 10000040 2024/7/30 下午 03:00:28  AlreadyUsed     False                                 
+
+
+
+
+====================================================================================================
+TABLE: dbo.EVoucherToken
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name  Data Type Length Nullable Default Primary Key
+-----------  --------- ------ -------- ------- -----------
+TokenID      int              NO               YES        
+EVoucherID   int              NO               NO         
+Token        varchar   64     NO               NO         
+ExpiresAt    datetime2        NO               NO         
+IsRevoked    bit              NO               NO         
+IsDeleted    bit              NO       ((0))   NO         
+DeletedAt    datetime2        YES              NO         
+DeletedBy    int              YES              NO         
+DeleteReason nvarchar  500    YES              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+TokenID EVoucherID Token             ExpiresAt              IsRevoked IsDeleted DeletedAt DeletedBy DeleteReason
+------- ---------- -----             ---------              --------- --------- --------- --------- ------------
+      1          1 TKN-GFWZIUGU-7603 2024/12/9 下午 03:17:44      False     False                                 
+      2          2 TKN-0AFNJ3IW-7410 2025/4/8 上午 07:58:55       False     False                                 
+      3          3 TKN-QBHYOJ30-9972 2025/8/5 上午 09:01:17       False     False                                 
+      4          4 TKN-L62G3NV4-9235 2025/5/21 下午 03:30:47       True     False                                 
+      5          5 TKN-86JLK23E-7006 2024/8/3 下午 05:31:58       False     False                                 
+      6          6 TKN-UXBAILCG-3777 2025/7/21 上午 01:10:33       True     False                                 
+      7          7 TKN-2G3OKRDQ-1928 2025/5/14 下午 01:33:11      False     False                                 
+      8          8 TKN-1Q0VPU1W-7590 2025/6/24 下午 04:10:50      False     False                                 
+      9          9 TKN-E6FJ4KMD-8306 2023/12/29 上午 08:33:45     False     False                                 
+     10         10 TKN-2N1LHXPM-0627 2023/9/24 上午 04:18:47      False     False                                 
+     11         11 TKN-C1XLDJM7-3501 2023/5/20 上午 07:23:04      False     False                                 
+     12         12 TKN-OD8KH417-9326 2025/2/4 下午 03:38:58       False     False                                 
+     13         13 TKN-HTH2QTHG-5718 2024/3/25 下午 01:00:25      False     False                                 
+     14         14 TKN-2WTSP78S-7304 2025/4/5 下午 08:16:57       False     False                                 
+     15         15 TKN-E0JVYXO9-0774 2025/8/15 上午 06:00:27      False     False                                 
+     16         16 TKN-M1C2EWOE-2066 2023/10/19 下午 06:36:16     False     False                                 
+     17         17 TKN-MJS6KK45-9277 2025/10/11 上午 08:47:53      True     False                                 
+     18         18 TKN-8O8ABUX4-6565 2025/2/19 下午 05:46:29      False     False                                 
+     19         19 TKN-W92NVQGA-0009 2025/7/12 下午 07:29:21       True     False                                 
+     20         20 TKN-3PZ4X6LP-5903 2025/7/20 下午 12:44:06       True     False                                 
+
+
+
+
+====================================================================================================
+TABLE: dbo.EVoucherType
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name    Data Type Length Nullable Default Primary Key
+-----------    --------- ------ -------- ------- -----------
+EVoucherTypeID int              NO               YES        
+Name           nvarchar  50     NO               NO         
+ValueAmount    decimal          NO               NO         
+ValidFrom      datetime2        NO               NO         
+ValidTo        datetime2        NO               NO         
+PointsCost     int              NO               NO         
+TotalAvailable int              NO               NO         
+Description    nvarchar  600    YES              NO         
+IsDeleted      bit              NO       ((0))   NO         
+DeletedAt      datetime2        YES              NO         
+DeletedBy      int              YES              NO         
+DeleteReason   nvarchar  500    YES              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+EVoucherTypeID Name                   ValueAmount ValidFrom             ValidTo                PointsCost TotalAvailabl
+                                                                                                                      e
+-------------- ----                   ----------- ---------             -------                ---------- -------------
+             1 7-11禮券$100                  100.00 2024/7/24 上午 08:01:15 9999/12/31 上午 06:10:00      10000           468
+             2 7-11禮券$200                  200.00 2025/1/8 下午 08:24:24  9999/12/31 上午 06:10:00      20000           437
+             3 全家禮券$100                    100.00 2024/3/5 上午 01:55:47  9999/12/31 上午 06:10:00      10000           194
+             4 全家禮券$200                    200.00 2024/3/30 下午 04:44:49 9999/12/31 上午 06:10:00      20000           438
+             5 7-11特選美式咖啡商品卡                65.00 2024/5/6 上午 09:52:59  9999/12/31 上午 06:10:00       6500           433
+             6 7-11特選拿鐵咖啡商品卡                80.00 2024/3/20 下午 05:44:03 9999/12/31 上午 06:10:00       8000           268
+             7 威秀影城電影票                     360.00 2023/6/14 上午 09:27:37 9999/12/31 上午 06:10:00      36000           356
+             8 王牌映畫影城電影票                   200.00 2024/6/30 下午 04:01:28 9999/12/31 上午 06:10:00      20000           253
+             9 SOGO百貨禮券$200                200.00 2023/12/8 下午 06:22:33 9999/12/31 上午 06:10:00      20000           419
+            10 麥當勞大麥克即享券                    78.00 2024/1/14 上午 12:08:47 9999/12/31 上午 06:10:00       7800           296
+            11 肯德基咔啦雞腿堡＋原味蛋撻即享券            151.00 2024/4/14 下午 01:37:46 9999/12/31 上午 06:10:00      15100           234
+            12 必勝客六吋個人鬆厚比薩即享券               82.00 2024/9/12 下午 05:42:59 9999/12/31 上午 06:10:00       8200           452
+            13 星巴克大杯那堤即享券                  140.00 2024/6/6 下午 06:58:04  9999/12/31 上午 06:10:00      14000           175
+            14 摩斯漢堡蜜汁烤雞堡＋冰紅茶(L)即享券         130.00 2025/7/5 上午 10:21:00  9999/12/31 上午 06:10:00      13000           176
+            15 哈根達斯單球冰淇淋喜客券                145.00 2025/7/24 上午 05:42:09 9999/12/31 上午 06:10:00      14500           438
+            16 Mister Donut甜甜圈(一入)即享券       42.00 2023/4/8 下午 08:36:12  9999/12/31 上午 06:10:00       4200           361
+            17 COLD STONE冰淇淋雙球好禮即享券        120.00 2023/5/12 下午 07:35:25 9999/12/31 上午 06:10:00      12000           153
+            18 誠品生活禮券$200                  200.00 2023/2/18 下午 03:06:24 9999/12/31 上午 06:10:00      20000           321
+            19 家樂福禮券$100                   100.00 2024/3/26 上午 10:04:43 9999/12/31 上午 06:10:00      10000           316
+            20 屈臣氏禮券$200                   200.00 2025/6/11 下午 12:47:47 9999/12/31 上午 06:10:00      20000           317
+
+
+
+
+====================================================================================================
+TABLE: dbo.MiniGame
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name      Data Type Length Nullable Default            Primary Key
+-----------      --------- ------ -------- -------            -----------
+PlayID           int              NO                          YES        
+UserID           int              NO                          NO         
+PetID            int              NO                          NO         
+Level            int              NO                          NO         
+MonsterCount     int              NO                          NO         
+SpeedMultiplier  decimal          NO                          NO         
+Result           nvarchar  20     NO                          NO         
+ExpGained        int              NO                          NO         
+ExpGainedTime    datetime2        NO       (sysutcdatetime()) NO         
+PointsGained     int              NO                          NO         
+PointsGainedTime datetime2        NO       (sysutcdatetime()) NO         
+CouponGained     nvarchar  50     NO                          NO         
+CouponGainedTime datetime2        NO       (sysutcdatetime()) NO         
+HungerDelta      int              NO                          NO         
+MoodDelta        int              NO                          NO         
+StaminaDelta     int              NO                          NO         
+CleanlinessDelta int              NO                          NO         
+StartTime        datetime2        NO       (sysutcdatetime()) NO         
+EndTime          datetime2        YES      (sysutcdatetime()) NO         
+Aborted          bit              NO                          NO         
+IsDeleted        bit              NO       ((0))              NO         
+DeletedAt        datetime2        YES                         NO         
+DeletedBy        int              YES                         NO         
+DeleteReason     nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+PlayID   UserID PetID Level MonsterCount SpeedMultiplier Result ExpGained ExpGainedTime         PointsGained
+------   ------ ----- ----- ------------ --------------- ------ --------- -------------         ------------
+     1 10000001     1     3           10            2.00 Lose           0 2024/3/3 上午 03:59:29             0
+     2 10000001     1     2            8            1.50 Win          200 2024/6/20 下午 03:45:47           20
+     3 10000001     1     3           10            2.00 Win          300 2023/12/8 上午 01:49:50           30
+     4 10000001     1     3           10            2.00 Lose           0 2024/6/3 下午 10:28:40             0
+     5 10000001     1     2            8            1.50 Lose           0 2023/8/9 下午 09:58:22             0
+     6 10000001     1     3           10            2.00 Win          300 2024/4/18 上午 10:10:08           30
+     7 10000001     1     1            6            1.00 Abort          0 2025/6/16 上午 12:23:59            0
+     8 10000001     1     3           10            2.00 Lose           0 2023/5/19 上午 12:12:34            0
+     9 10000001     1     2            8            1.50 Win          200 2025/6/21 下午 03:31:00           20
+    10 10000001     1     2            8            1.50 Lose           0 2025/5/18 上午 06:05:26            0
+    11 10000001     1     1            6            1.00 Win          100 2023/12/4 下午 09:04:36           10
+    12 10000002     2     2            8            1.50 Win          200 2024/5/4 下午 12:19:40            20
+    13 10000002     2     1            6            1.00 Lose           0 2023/11/2 上午 10:55:32            0
+    14 10000002     2     3           10            2.00 Win          300 2023/11/1 上午 07:31:48           30
+    15 10000002     2     3           10            2.00 Win          300 2024/9/5 上午 08:03:08            30
+    16 10000002     2     3           10            2.00 Win          300 2024/4/27 上午 09:15:15           30
+    17 10000002     2     2            8            1.50 Lose           0 2024/9/7 下午 07:14:19             0
+    18 10000002     2     2            8            1.50 Lose           0 2023/12/5 下午 09:26:22            0
+    19 10000002     2     2            8            1.50 Lose           0 2023/5/7 下午 02:22:27             0
+    20 10000002     2     3           10            2.00 Lose           0 2023/3/11 下午 09:10:54            0
+
+
+
+
+====================================================================================================
+TABLE: dbo.Pet
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name                   Data Type Length Nullable Default            Primary Key
+-----------                   --------- ------ -------- -------            -----------
+PetID                         int              NO                          YES        
+UserID                        int              NO                          NO         
+PetName                       nvarchar  50     NO                          NO         
+Level                         int              NO                          NO         
+LevelUpTime                   datetime2        NO       (sysutcdatetime()) NO         
+Experience                    int              NO                          NO         
+Hunger                        int              NO                          NO         
+Mood                          int              NO                          NO         
+Stamina                       int              NO                          NO         
+Cleanliness                   int              NO                          NO         
+Health                        int              NO                          NO         
+SkinColor                     varchar   10     NO                          NO         
+SkinColorChangedTime          datetime2        NO                          NO         
+BackgroundColor               nvarchar  20     NO                          NO         
+BackgroundColorChangedTime    datetime2        NO                          NO         
+PointsChanged_SkinColor       int              NO                          NO         
+PointsChanged_BackgroundColor int              NO                          NO         
+PointsGained_LevelUp          int              NO                          NO         
+PointsGainedTime_LevelUp      datetime2        NO       (sysutcdatetime()) NO         
+IsDeleted                     bit              NO       ((0))              NO         
+DeletedAt                     datetime2        YES                         NO         
+DeletedBy                     int              YES                         NO         
+DeleteReason                  nvarchar  500    YES                         NO         
+CurrentExperience             int              NO       ((0))              NO         
+ExperienceToNextLevel         int              YES                         NO         
+TotalPointsGained_LevelUp     int              YES      ((0))              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+PetID   UserID PetName Level LevelUpTime            Experience Hunger Mood Stamina Cleanliness
+-----   ------ ------- ----- -----------            ---------- ------ ---- ------- -----------
+    1 10000001 多多          4 2024/4/11 上午 07:10:55         656     14   58      89          25
+    2 10000002 喵喵         38 2023/8/8 下午 11:34:25         4019     55   15      57          14
+    3 10000003 球球         19 2024/7/28 下午 02:56:34        2947     58   51      76          70
+    4 10000004 熊大         39 2023/12/6 上午 01:39:38        4377     76   44      67          56
+    5 10000005 Milo       44 2025/6/14 下午 03:10:14        7209     55   33      61          31
+    6 10000006 喵喵         20 2024/4/27 上午 06:22:59        2723     87   95      10          97
+    7 10000007 布丁         38 2024/12/30 下午 11:31:48       3265     57   47      64          39
+    8 10000008 小黃Rocky    46 2024/6/20 上午 05:09:58        4490     52   29      18          25
+    9 10000009 布丁          8 2024/1/7 下午 01:29:45          998     90   89      29          63
+   10 10000010 喵喵Max      50 2025/5/13 上午 09:39:29        4333     33   77      53          29
+   11 10000011 奶茶         23 2024/9/2 上午 06:51:41         2991     57   59      18          62
+   12 10000012 小黑Mimi     47 2024/2/28 下午 11:52:06        6258     62   55     100          65
+   13 10000013 皮卡Nana     27 2023/4/18 上午 03:42:14        2839     90   16      10          18
+   14 10000014 豆豆Mimi     33 2025/3/30 上午 01:03:04        4535     11   98      25          33
+   15 10000015 Leo        18 2024/8/31 上午 07:37:18        2364     16   81      56          78
+   16 10000016 Mimi       43 2023/8/20 上午 08:22:41        4963     20   89      84          80
+   17 10000017 花生         20 2023/11/23 上午 04:26:16       1453     17   24      33          11
+   18 10000018 Bella🦄    34 2024/1/13 下午 01:24:06        5007     54   19      76          72
+   19 10000019 小白         11 2025/3/27 下午 08:15:57         800     55   58      90          85
+   20 10000020 Mimi🦄      6 2025/1/15 下午 01:54:44        1060     67   23      43         100
+
+
+
+
+====================================================================================================
+TABLE: dbo.PetBackgroundCostSettings
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name      Data Type Length Nullable Default            Primary Key
+-----------      --------- ------ -------- -------            -----------
+SettingId        int              NO                          YES        
+BackgroundCode   nvarchar  50     NO                          NO         
+BackgroundName   nvarchar  100    NO                          NO         
+PointsCost       int              NO                          NO         
+Description      nvarchar  500    YES                         NO         
+PreviewImagePath nvarchar  200    YES                         NO         
+IsActive         bit              NO       ((1))              NO         
+DisplayOrder     int              YES      ((0))              NO         
+IsDeleted        bit              NO       ((0))              NO         
+DeletedAt        datetime2        YES                         NO         
+DeletedBy        int              YES                         NO         
+DeleteReason     nvarchar  500    YES                         NO         
+CreatedAt        datetime2        NO       (sysutcdatetime()) NO         
+UpdatedAt        datetime2        YES                         NO         
+UpdatedBy        int              YES                         NO         
+Rarity           nvarchar  20     YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 11
+
+
+SettingId BackgroundCode BackgroundName PointsCost Description          PreviewImagePath                             Is
+                                                                                                                     Ac
+                                                                                                                     ti
+                                                                                                                     ve
+--------- -------------- -------------- ---------- -----------          ----------------                             --
+       19 BG001          萬聖南瓜                    0 充滿萬聖節氣氛的南瓜場景，神秘又可愛   /images/backgrounds/halloween-pumpkin.jpg    ue
+       20 BG002          彩窗教堂                    0 神聖莊嚴的彩繪玻璃教堂，光影交錯如夢似幻 /images/backgrounds/stained-glass-church.jpg ue
+       21 BG003          珊瑚海灘                    0 熱帶珊瑚海灘，碧海藍天令人心曠神怡    /images/backgrounds/coral-beach.jpg          ue
+       22 BG004          清新森林                 2000 陽光灑落的清新森林，鳥語花香       /images/backgrounds/fresh-forest.jpg         ue
+       23 BG005          雨林瀑布                 2500 熱帶雨林深處的壯觀瀑布，生機盎然     /images/backgrounds/rainforest-waterfall.jpg ue
+       24 BG006          清晨教室                 3000 清晨陽光照進的日式教室，寧靜溫馨     /images/backgrounds/morning-classroom.jpg    ue
+       25 BG007          霓虹天際                 3500 未來都市的霓虹夜景，賽博龐克風格     /images/backgrounds/neon-skyline.jpg         ue
+       26 BG008          極光雪原                 4000 極地夜空下的絢爛極光，冰雪世界的奇景   /images/backgrounds/aurora-snowfield.jpg     ue
+       27 BG009          魔法書庫                 4500 古老魔法書庫，充滿神秘魔力的知識殿堂   /images/backgrounds/magic-library.jpg        ue
+       28 BG010          地獄熔岩                 6000 地獄深處的熔岩火海，危險而震撼      /images/backgrounds/hell-lava.jpg            ue
+       29 BG011          蒸汽工坊                 2000 工業革命時代的蒸汽機械工坊（已下架）   /images/backgrounds/steam-workshop.jpg       se
+
+
+
+
+====================================================================================================
+TABLE: dbo.PetLevelRewardSettings
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name     Data Type Length Nullable Default            Primary Key
+-----------     --------- ------ -------- -------            -----------
+SettingId       int              NO                          YES        
+LevelRangeStart int              NO                          NO         
+LevelRangeEnd   int              NO                          NO         
+PointsReward    int              NO                          NO         
+Description     nvarchar  500    YES                         NO         
+IsActive        bit              NO       ((1))              NO         
+DisplayOrder    int              NO       ((0))              NO         
+IsDeleted       bit              NO       ((0))              NO         
+DeletedAt       datetime2        YES                         NO         
+DeletedBy       int              YES                         NO         
+DeleteReason    nvarchar  500    YES                         NO         
+CreatedAt       datetime2        NO       (sysutcdatetime()) NO         
+UpdatedAt       datetime2        YES                         NO         
+UpdatedBy       int              YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+SettingId LevelRangeStart LevelRangeEnd PointsReward Description         IsActive DisplayOrder IsDeleted DeletedAt Dele
+                                                                                                                   tedB
+                                                                                                                   y   
+--------- --------------- ------------- ------------ -----------         -------- ------------ --------- --------- ----
+        1               1            10           10 初級獎勵（Level 1-10）        True            1     False               
+        2              11            20           20 進階獎勵（Level 11-20）       True            2     False               
+        3              21            30           30 中級獎勵（Level 21-30）       True            3     False               
+        4              31            40           40 高級獎勵（Level 31-40）       True            4     False               
+        5              41            50           50 精英獎勵（Level 41-50）       True            5     False               
+        6              51            60           60 專家獎勵（Level 51-60）       True            6     False               
+        7              61            70           70 大師獎勵（Level 61-70）       True            7     False               
+        8              71            80           80 宗師獎勵（Level 71-80）       True            8     False               
+        9              81            90           90 傳奇獎勵（Level 81-90）       True            9     False               
+       10              91           100          100 史詩獎勵（Level 91-100）      True           10     False               
+       11             101           110          110 神話獎勵（Level 101-110）     True           11     False               
+       12             111           120          120 不朽獎勵（Level 111-120）     True           12     False               
+       13             121           130          130 永恆獎勵（Level 121-130）     True           13     False               
+       14             131           140          140 至尊獎勵（Level 131-140）     True           14     False               
+       15             141           150          150 無上獎勵（Level 141-150）     True           15     False               
+       16             151           160          160 天域獎勵（Level 151-160）     True           16     False               
+       17             161           170          170 聖域獎勵（Level 161-170）     True           17     False               
+       18             171           180          180 神域獎勵（Level 171-180）     True           18     False               
+       19             181           190          190 魔域獎勵（Level 181-190）     True           19     False               
+       20             191           200          200 仙域獎勵（Level 191-200）     True           20     False               
+
+
+
+
+====================================================================================================
+TABLE: dbo.PetSkinColorCostSettings
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name      Data Type Length Nullable Default            Primary Key
+-----------      --------- ------ -------- -------            -----------
+SettingId        int              NO                          YES        
+ColorCode        varchar   10     NO                          NO         
+ColorName        nvarchar  50     NO                          NO         
+PointsCost       int              NO       ((2000))           NO         
+Rarity           nvarchar  20     NO       (N'普通')            NO         
+Description      nvarchar  500    YES                         NO         
+PreviewImagePath nvarchar  500    YES                         NO         
+ColorHex         varchar   7      YES                         NO         
+IsActive         bit              NO       ((1))              NO         
+DisplayOrder     int              NO       ((0))              NO         
+IsFree           bit              NO       ((0))              NO         
+IsLimitedEdition bit              NO       ((0))              NO         
+AvailableFrom    datetime2        YES                         NO         
+AvailableUntil   datetime2        YES                         NO         
+IsDeleted        bit              NO       ((0))              NO         
+DeletedAt        datetime2        YES                         NO         
+DeletedBy        int              YES                         NO         
+DeleteReason     nvarchar  500    YES                         NO         
+CreatedAt        datetime2        NO       (sysutcdatetime()) NO         
+UpdatedAt        datetime2        YES                         NO         
+UpdatedBy        int              YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 11
+
+
+SettingId ColorCode ColorName PointsCost Rarity Description PreviewImagePath ColorHex IsActive DisplayOrder
+--------- --------- --------- ---------- ------ ----------- ---------------- -------- -------- ------------
+        1 #FFFFFF   白色                 0 普通     純淨的白色，經典基礎色                               True            1
+        2 #000000   黑色                 0 普通     神秘的黑色，經典基礎色                               True            2
+        3 #FF0000   紅色                 0 普通     熱情的紅色，經典基礎色                               True            3
+        4 #FFA500   橙色              2000 普通     溫暖活潑的橙色                                   True           10
+        5 #FFFF00   黃色              2000 普通     明亮開朗的黃色                                   True           11
+        6 #008000   綠色              2000 普通     生機盎然的綠色                                   True           12
+        7 #00FFFF   青色              2000 普通     清爽透徹的青色                                   True           13
+        8 #0000FF   藍色              2000 普通     深邃沉穩的藍色                                   True           14
+        9 #800080   紫色              3500 稀有     高貴神秘的紫色                                   True           30
+       10 #6F4E37   咖啡色             3500 稀有     溫潤厚實的咖啡色                                  True           31
+       11 #6EFE19   螢光綠             2000 活動     限時活動顏色（已下架）                              False           99
+
+
+
+
+====================================================================================================
+TABLE: dbo.SignInRule
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name    Data Type Length Nullable Default            Primary Key
+-----------    --------- ------ -------- -------            -----------
+Id             int              NO                          YES        
+SignInDay      int              NO                          NO         
+Points         int              NO                          NO         
+Experience     int              NO                          NO         
+HasCoupon      bit              NO       ((0))              NO         
+CouponTypeCode nvarchar  50     YES                         NO         
+IsActive       bit              NO       ((1))              NO         
+CreatedAt      datetime2        NO       (sysutcdatetime()) NO         
+UpdatedAt      datetime2        YES                         NO         
+Description    nvarchar  255    YES                         NO         
+IsDeleted      bit              NO       ((0))              NO         
+DeletedAt      datetime2        YES                         NO         
+DeletedBy      int              YES                         NO         
+DeleteReason   nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 10
+
+
+Id SignInDay Points Experience HasCoupon CouponTypeCode IsActive CreatedAt              UpdatedAt              Descript
+                                                                                                               ion     
+-- --------- ------ ---------- --------- -------------- -------- ---------              ---------              --------
+ 1         1     20          0     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 1 天...
+ 2         2     20          0     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 2 天...
+ 3         3     20          0     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 3 天...
+ 4         4     20          0     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 4 天...
+ 5         5     20          0     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 5 天...
+ 6         6     30        200     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 6 天...
+ 7         7     70        500     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 第 7 天...
+10        30    200       2000     False                    True 2025/10/23 上午 10:32:52 2025/10/23 上午 10:33:23 連續簽到 ...
+11        14      0          0     False                    True 2025/10/23 上午 10:33:40                        連續簽到 ...
+12        21      0          0     False                    True 2025/10/23 上午 10:33:40                        連續簽到 ...
+
+
+
+
+====================================================================================================
+TABLE: dbo.SystemSettings
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name  Data Type Length Nullable Default            Primary Key
+-----------  --------- ------ -------- -------            -----------
+SettingId    int              NO                          YES        
+SettingKey   nvarchar  200    NO                          NO         
+SettingValue nvarchar  MAX    YES                         NO         
+Description  nvarchar  500    YES                         NO         
+Category     nvarchar  100    NO       ('General')        NO         
+SettingType  nvarchar  50     NO       ('String')         NO         
+IsReadOnly   bit              NO       ((0))              NO         
+IsActive     bit              NO       ((1))              NO         
+IsDeleted    bit              NO       ((0))              NO         
+DeletedAt    datetime2        YES                         NO         
+DeletedBy    int              YES                         NO         
+DeleteReason nvarchar  500    YES                         NO         
+CreatedAt    datetime2        NO       (sysutcdatetime()) NO         
+UpdatedAt    datetime2        YES                         NO         
+UpdatedBy    int              YES                         NO         
+
+
+
+DATA (All MiniGame Related Settings - Category IN ('Game', 'Pet', 'SignIn', 'Wallet')):
+----------------------------------------------------------------------------------------------------
+No data found in this table.
+
+
+====================================================================================================
+TABLE: dbo.User_Wallet
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name  Data Type Length Nullable Default Primary Key
+-----------  --------- ------ -------- ------- -----------
+User_Id      int              NO               YES        
+User_Point   int              NO       ((0))   NO         
+IsDeleted    bit              NO       ((0))   NO         
+DeletedAt    datetime2        YES              NO         
+DeletedBy    int              YES              NO         
+DeleteReason nvarchar  500    YES              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+ User_Id User_Point IsDeleted DeletedAt DeletedBy DeleteReason
+ ------- ---------- --------- --------- --------- ------------
+10000001      60030     False                                 
+10000002      21666     False                                 
+10000003      93043     False                                 
+10000004      52743     False                                 
+10000005      37320     False                                 
+10000006      94418     False                                 
+10000007      34256     False                                 
+10000008      74876     False                                 
+10000009      64151     False                                 
+10000010      42681     False                                 
+10000011       1478     False                                 
+10000012      33505     False                                 
+10000013      55568     False                                 
+10000014      60615     False                                 
+10000015      64659     False                                 
+10000016      11282     False                                 
+10000017      45496     False                                 
+10000018      12190     False                                 
+10000019      15604     False                                 
+10000020      76856     False                                 
+
+
+
+
+====================================================================================================
+TABLE: dbo.UserSignInStats
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name      Data Type Length Nullable Default            Primary Key
+-----------      --------- ------ -------- -------            -----------
+LogID            int              NO                          YES        
+SignTime         datetime2        NO       (sysutcdatetime()) NO         
+UserID           int              NO                          NO         
+PointsGained     int              NO                          NO         
+PointsGainedTime datetime2        NO       (sysutcdatetime()) NO         
+ExpGained        int              NO                          NO         
+ExpGainedTime    datetime2        NO       (sysutcdatetime()) NO         
+CouponGained     nvarchar  50     NO                          NO         
+CouponGainedTime datetime2        NO       (sysutcdatetime()) NO         
+IsDeleted        bit              NO       ((0))              NO         
+DeletedAt        datetime2        YES                         NO         
+DeletedBy        int              YES                         NO         
+DeleteReason     nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+LogID SignTime                 UserID PointsGained PointsGainedTime       ExpGained ExpGainedTime          CouponGained
+----- --------                 ------ ------------ ----------------       --------- -------------          ------------
+    1 2023/4/13 上午 10:56:22  10000001           15 2023/4/13 上午 10:56:22          0 2023/4/13 上午 10:56:22  AUTO-SIGN...
+    2 2023/6/2 上午 08:24:29   10000001           15 2023/6/2 上午 08:24:29          20 2023/6/2 上午 08:24:29   AUTO-SIGN...
+    3 2023/6/21 上午 10:03:48  10000001           20 2023/6/21 上午 10:03:48          5 2023/6/21 上午 10:03:48  AUTO-SIGN...
+    4 2023/7/18 上午 10:44:32  10000001           10 2023/7/18 上午 10:44:32          5 2023/7/18 上午 10:44:32  AUTO-SIGN...
+    5 2023/8/10 上午 09:36:22  10000001            5 2023/8/10 上午 09:36:22         10 2023/8/10 上午 09:36:22  AUTO-SIGN...
+    6 2024/3/3 上午 08:19:45   10000001           20 2024/3/3 上午 08:19:45          20 2024/3/3 上午 08:19:45   AUTO-SIGN...
+    7 2024/6/13 上午 06:14:52  10000001           15 2024/6/13 上午 06:14:52         15 2024/6/13 上午 06:14:52  AUTO-SIGN...
+    8 2024/10/22 上午 06:27:45 10000001           20 2024/10/22 上午 06:27:45         0 2024/10/22 上午 06:27:45 AUTO-SIGN...
+    9 2024/10/24 上午 10:07:24 10000001           25 2024/10/24 上午 10:07:24         0 2024/10/24 上午 10:07:24 AUTO-SIGN...
+   10 2024/10/28 上午 09:23:46 10000001            5 2024/10/28 上午 09:23:46        10 2024/10/28 上午 09:23:46 AUTO-SIGN...
+   11 2024/12/29 上午 10:54:37 10000001            5 2024/12/29 上午 10:54:37         0 2024/12/29 上午 10:54:37 AUTO-SIGN...
+   12 2025/1/15 上午 07:30:23  10000001           15 2025/1/15 上午 07:30:23          5 2025/1/15 上午 07:30:23  AUTO-SIGN...
+   13 2025/3/4 上午 09:20:30   10000001           10 2025/3/4 上午 09:20:30          10 2025/3/4 上午 09:20:30   AUTO-SIGN...
+   14 2025/3/7 上午 09:18:17   10000001           25 2025/3/7 上午 09:18:17          10 2025/3/7 上午 09:18:17   CPN-2501-...
+   15 2025/4/2 上午 08:35:23   10000001           10 2025/4/2 上午 08:35:23          10 2025/4/2 上午 08:35:23   AUTO-SIGN...
+   16 2025/6/4 上午 09:16:48   10000001           20 2025/6/4 上午 09:16:48          15 2025/6/4 上午 09:16:48   AUTO-SIGN...
+   17 2025/8/12 上午 09:11:44  10000001           25 2025/8/12 上午 09:11:44         10 2025/8/12 上午 09:11:44  AUTO-SIGN...
+   18 2025/8/24 上午 07:26:36  10000001           25 2025/8/24 上午 07:26:36          5 2025/8/24 上午 07:26:36  AUTO-SIGN...
+   19 2023/5/5 上午 06:05:16   10000002           30 2023/5/5 上午 06:05:16           0 2023/5/5 上午 06:05:16   AUTO-SIGN...
+   20 2023/9/23 上午 08:46:28  10000002           20 2023/9/23 上午 08:46:28          0 2023/9/23 上午 08:46:28  AUTO-SIGN...
+
+
+
+
+====================================================================================================
+TABLE: dbo.WalletHistory
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name   Data Type Length Nullable Default            Primary Key
+-----------   --------- ------ -------- -------            -----------
+LogID         int              NO                          YES        
+UserID        int              NO                          NO         
+ChangeType    nvarchar  20     NO                          NO         
+PointsChanged int              NO                          NO         
+ItemCode      nvarchar  50     YES                         NO         
+Description   nvarchar  255    YES                         NO         
+ChangeTime    datetime2        NO       (sysutcdatetime()) NO         
+IsDeleted     bit              NO       ((0))              NO         
+DeletedAt     datetime2        YES                         NO         
+DeletedBy     int              YES                         NO         
+DeleteReason  nvarchar  500    YES                         NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+LogID   UserID ChangeType PointsChanged ItemCode             Description  ChangeTime             IsDeleted DeletedAt De
+                                                                                                                     le
+                                                                                                                     te
+                                                                                                                     dB
+                                                                                                                     y 
+-----   ------ ---------- ------------- --------             -----------  ----------             --------- --------- --
+    1 10000001 Coupon                 0 CPN-2301-HRT805      小遊戲勝利獲得商城優惠券 2023/12/8 上午 03:34:50      False             
+    2 10000001 Point             -10000 CPN-2310-NCW491      會員點數兌換商城優惠券  2023/10/6 下午 06:52:28      False             
+    3 10000001 Point             -30000 EV-MOVIE-8JDW-064877 會員點數兌換電子禮券   2024/10/29 下午 03:17:44     False             
+    4 10000001 Coupon                 0 CPN-2301-HRT805      活動送商城優惠券     2025/9/6 下午 06:34:01       False             
+    5 10000001 Coupon                 0 CPN-2301-HRT805      每日簽到獲得商城優惠券  2025/8/24 上午 07:26:36      False             
+    6 10000001 Coupon                 0 CPN-2301-HRT805      小遊戲勝利獲得商城優惠券 2023/12/8 上午 03:34:50      False             
+    7 10000001 Point                 30                      小遊戲勝利獲得會員點數  2023/12/8 上午 03:34:50      False             
+    8 10000002 Point                446                      活動送會員點數      2025/9/16 下午 06:34:01      False             
+    9 10000002 Coupon                 0 CPN-2302-MRH896      活動送商城優惠券     2025/9/17 下午 06:34:01      False             
+   10 10000002 Point              -3000 BG006                會員點數兌換寵物背景   2024/11/20 上午 04:55:04     False             
+   11 10000002 Point             -40000 EV-CASH-G7HA-253496  會員點數兌換電子禮券   2023/8/7 下午 04:08:59       False             
+   12 10000002 Point                175 ORD-322501           商城訂單回饋會員點數   2025/9/5 下午 06:34:01       False             
+   13 10000002 Point                 77 ORD-634688           商城訂單回饋會員點數   2025/9/25 下午 06:34:01      False             
+   14 10000002 Point              -3500 #6F4E37              會員點數兌換寵物皮膚   2024/5/21 下午 01:07:37      False             
+   15 10000002 Point                127 ORD-302439           商城訂單回饋會員點數   2025/8/28 下午 06:34:01      False             
+   16 10000003 Point             -30000 EV-FOOD-O3L7-092171  會員點數兌換電子禮券   2025/5/18 上午 01:10:33      False             
+   17 10000003 Coupon                 0 CPN-2305-FFE860      每日簽到獲得商城優惠券  2023/11/10 上午 09:17:12     False             
+   18 10000003 Point                181 ORD-468231           商城訂單回饋會員點數   2025/9/24 下午 06:34:01      False             
+   19 10000003 Point              -3500 #6F4E37              會員點數兌換寵物皮膚   2024/8/14 上午 08:16:02      False             
+   20 10000003 Point                 95 ORD-038451           商城訂單回饋會員點數   2025/10/2 下午 06:34:01      False             
+
+
+
+
+====================================================================================================
+TABLE: dbo.ManagerData
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name                     Data Type Length Nullable Default Primary Key
+-----------                     --------- ------ -------- ------- -----------
+Manager_Id                      int              NO               YES        
+Manager_Name                    nvarchar  30     YES              NO         
+Manager_Account                 varchar   30     YES              NO         
+Manager_Password                nvarchar  200    YES              NO         
+Administrator_registration_date datetime2        YES              NO         
+Manager_Email                   nvarchar  255    NO               NO         
+Manager_EmailConfirmed          bit              NO       ((0))   NO         
+Manager_AccessFailedCount       int              NO       ((0))   NO         
+Manager_LockoutEnabled          bit              NO       ((1))   NO         
+Manager_LockoutEnd              datetime2        YES              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+Manager_Id Manager_Name    Manager_Account  Manager_Password Administrator_registration_date Manager_Email            
+---------- ------------    ---------------  ---------------- ------------------------------- -------------            
+  30000001 Milk Hung       zhang_zhiming_01 AdminPass001@    2019/1/15 上午 08:30:00           zhang.zhiming@company.com
+  30000002 李小華             li_xiaohua_02    SecurePass002#   2019/1/16 上午 09:15:00           li.xiaohua@company.com   
+  30000003 王美玲             wang_meiling_03  StrongPwd003!    2019/1/17 上午 10:45:00           wang.meiling@company.com 
+  30000004 陳大偉             chen_dawei_04    SafeLogin004$    2019/1/18 上午 11:20:00           chen.dawei@company.com   
+  30000005 林雅婷             lin_yating_05    Manager005%      2019/1/19 下午 02:30:00           lin.yating@company.com   
+  30000006 John Anderson   john_anderson_06 AdminJohn006^    2019/1/20 下午 03:45:00           john.anderson@company.com
+  30000007 劉建國             liu_jianguo_07   BuildNation007&  2019/1/21 下午 04:30:00           liu.jianguo@company.com  
+  30000008 Sarah Johnson   sarah_johnson_08 SarahMgr008*     2019/1/22 上午 08:00:00           sarah.johnson@company.com
+  30000009 黃金龍             huang_jinlong_09 GoldenDragon009( 2019/1/23 上午 09:30:00           huang.jinlong@company.com
+  30000010 Michael Chen    michael_chen_10  MikeChen010)     2019/1/24 上午 10:15:00           michael.chen@company.com 
+  30000011 趙文心             zhao_wenxin_11   HeartWrite011-   2019/1/25 上午 11:45:00           zhao.wenxin@company.com  
+  30000012 David Wilson    david_wilson_12  DavidWil012=     2019/1/26 下午 01:20:00           david.wilson@company.com 
+  30000013 吳佩君             wu_peijun_13     ElegantMgr013+   2019/1/27 下午 02:00:00           wu.peijun@company.com    
+  30000014 Jennifer Liu    jennifer_liu_14  JennyLiu014[     2019/1/28 下午 03:30:00           jennifer.liu@company.com 
+  30000015 許志偉             xu_zhiwei_15     WillPower015]    2019/1/29 下午 04:45:00           xu.zhiwei@company.com    
+  30000016 Robert Davis    robert_davis_16  RobertD016{      2019/1/30 上午 08:30:00           robert.davis@company.com 
+  30000017 蔡淑芬             cai_shufen_17    VirtueFlower017} 2019/1/31 上午 09:00:00           cai.shufen@company.com   
+  30000018 Christopher Lee chris_lee_18     ChrisLee018|     2019/2/1 上午 10:30:00            chris.lee@company.com    
+  30000019 鄭雅琪             zheng_yaqi_19    ElegantQi019\\   2019/2/2 上午 11:15:00            zheng.yaqi@company.com   
+  30000020 Matthew Brown   matthew_brown_20 MattBrown020:    2019/2/3 下午 12:45:00            matthew.brown@company.com
+
+
+
+
+====================================================================================================
+TABLE: dbo.ManagerRolePermission
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name                       Data Type Length Nullable Default Primary Key
+-----------                       --------- ------ -------- ------- -----------
+ManagerRole_Id                    int              NO               YES        
+role_name                         nvarchar  50     NO               NO         
+AdministratorPrivilegesManagement bit              YES              NO         
+UserStatusManagement              bit              YES              NO         
+ShoppingPermissionManagement      bit              YES              NO         
+MessagePermissionManagement       bit              YES              NO         
+Pet_Rights_Management             bit              YES              NO         
+customer_service                  bit              YES              NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 8
+
+
+ManagerRole_Id role_name  AdministratorPrivilegesManagement UserStatusManagement ShoppingPermissionManagement MessagePe
+                                                                                                              rmissionM
+                                                                                                              anagement
+-------------- ---------  --------------------------------- -------------------- ---------------------------- ---------
+             1 管理者平台管理人員                               True                 True                         True      True
+             2 使用者與論壇管理精理                             False                 True                        False      True
+             3 商城與寵物管理經理                              False                False                         True     False
+             4 使用者平台管理人員                              False                 True                        False     False
+             5 購物平台管理人員                               False                False                         True     False
+             6 論壇平台管理人員                               False                False                        False      True
+             7 寵物平台管理人員                               False                False                        False     False
+             8 客服與交友管理員                               False                False                        False     False
+
+
+
+
+====================================================================================================
+TABLE: dbo.Users
+====================================================================================================
+
+TABLE STRUCTURE:
+----------------------------------------------------------------------------------------------------
+
+Column Name               Data Type Length Nullable Default         Primary Key
+-----------               --------- ------ -------- -------         -----------
+User_ID                   int              NO                       YES        
+User_name                 nvarchar  30     NO                       NO         
+User_Account              nvarchar  30     NO                       NO         
+User_Password             nvarchar  255    NO                       NO         
+User_EmailConfirmed       bit              NO       ((0))           NO         
+User_PhoneNumberConfirmed bit              NO       ((0))           NO         
+User_TwoFactorEnabled     bit              NO       ((0))           NO         
+User_AccessFailedCount    int              NO       ((0))           NO         
+User_LockoutEnabled       bit              NO       ((1))           NO         
+User_LockoutEnd           datetime2        YES                      NO         
+Create_Account            datetime2        NO       (sysdatetime()) NO         
+
+
+
+DATA (First 20 rows):
+----------------------------------------------------------------------------------------------------
+Row Count: 20
+
+
+ User_ID User_name       User_Account    User_Password                                                                 
+ ------- ---------       ------------    -------------                                                                 
+10000001 DragonKnight88  dragonknight88  AQAAAAIAAYagAAAAEE3RO029bdWqOjXQFJW3Wq6CBoMHDi7zbvDSt2mAy46hlTSMot0+j/Uezml...
+10000002 TechGuru92      tech_guru_92    AQAAAAIAAYagAAAAEG3KFitzgF1+7WP9fCOT6dmjPwVChzd8+P4tDLDu2G4l09L7Ucyw6UOR6Ff...
+10000003 CoffeeAddict    coffee_addict   CoffeePwd003!                                                                 
+10000004 YogaMaster      yoga_master     YogaLife004$                                                                  
+10000005 BookLover       book_lover_95   ReadMore005%                                                                  
+10000006 MusicFan        music_fan_90    MelodyPwd006^                                                                 
+10000007 PhotoPro        photo_pro_87    SnapShot007&                                                                  
+10000008 GameMaster      game_master_94  PlayTime008*                                                                  
+10000009 ChefExpert      chef_expert_89  CookWell009(                                                                  
+10000010 FitnessGuru     fitness_guru_93 StayFit010)                                                                   
+10000011 TravelBlogger   travel_blogger  Explorer011-                                                                  
+10000012 ArtistSoul      artist_soul_96  Creative012=                                                                  
+10000013 ScienceTeacher  science_teacher Knowledge013+                                                                 
+10000014 MovieCritic     movie_critic_85 Cinema014[                                                                    
+10000015 GardenLover     garden_lover_92 GreenLife015]                                                                 
+10000016 PetCarer        pet_carer_88    AnimalLove016{                                                                
+10000017 TechWriter      tech_writer_91  WriteCode017}                                                                 
+10000018 FoodBlogger     food_blogger_86 TastyFood018|                                                                 
+10000019 CarEnthusiast   car_enthusiast  FastCar019\\                                                                  
+10000020 LanguageTeacher lang_teacher_90 Polyglot020:                                                                  
+
+
+
+

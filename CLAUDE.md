@@ -12,6 +12,19 @@ This is a dual ASP.NET Core MVC application for a gaming portal called "GameSpac
 
 ## Build and Run Commands
 
+### Prerequisites
+- .NET 8.0 SDK
+- SQL Server (LocalDB or Express)
+- Visual Studio 2022 or VS Code with C# extension
+
+**Key NuGet Packages (both projects):**
+- `Microsoft.EntityFrameworkCore.SqlServer` (8.0.19-8.0.20)
+- `Microsoft.AspNetCore.SignalR.Client` (8.0.19-8.0.20)
+- `Microsoft.AspNetCore.Identity.*` (8.0.19-8.0.20)
+
+**GameSpace-specific:**
+- `ClosedXML` (0.105.0) - Excel export functionality
+
 ### Build
 ```powershell
 # Build GameSpace (Admin)
@@ -19,6 +32,9 @@ dotnet build GameSpace/GameSpace/GameSpace.csproj
 
 # Build GamiPort (Frontend)
 dotnet build GamiPort/GamiPort/GamiPort.csproj
+
+# Build both projects
+dotnet build
 ```
 
 ### Run
@@ -32,9 +48,11 @@ dotnet run --project GamiPort/GamiPort/GamiPort.csproj
 
 ### Database
 The project uses SQL Server with the database name **GameSpacedatabase**. Connection strings are configured in `appsettings.json`:
-- GameSpace uses: `(local)\SQLEXPRESS01`
+- GameSpace uses: `(local)\SQLEXPRESS01` or `DESKTOP-8HQIS1S\SQLEXPRESS`
 - Database initialization is manual via SQL scripts in `schema/` directory
 - **CRITICAL**: Do NOT use EF Migrations to modify the schema. The SQL Server database is the single source of truth.
+- Schema extraction: Use `extract_schema.sql` to export current database structure
+- Complete schema reference: `COMPLETE_SCHEMA_EXPORT.md` contains the full database structure
 
 ### Test Commands
 No automated test suite is currently implemented. Manual testing is performed through the web interfaces.
@@ -133,8 +151,10 @@ config/
 - **Pet:** `Pet`, `Pet*Settings` (3 tables)
 - **Sign-In:** `SignInRule`, `UserSignInStats`
 - **Mini-Games:** `MiniGame`
-- **Admin:** `ManagerData`, `ManagerRole`, `ManagerRolePermission`
+- **Admin:** `ManagerData`, `ManagerRolePermission` (Note: `ManagerRole` removed in recent update)
 - **Config:** `SystemSettings`
+- **Store & Payment:** `SoOrderInfo`, `SoPaymentAudit`, `SoPaymentTransaction`, `VwPaymentOrderInconsistency`
+- **Rankings & Stats:** `SVRankingFavorite`, `SVRankingSale`, `SVRankingClick`, `SVRankingRating`
 
 **Design Patterns:**
 - All tables implement soft delete: `IsDeleted`, `DeletedAt`, `DeletedBy`, `DeleteReason`
@@ -190,6 +210,12 @@ When working on MiniGame Area features:
 ### Database Rules
 - **NO EF Migrations**: Database schema is manually managed via SQL scripts
 - **SQL Server is source of truth**: Always read from existing SQL Server database via SSMS
+- **Model Sync Process**: When database changes occur:
+  1. Run `extract_schema.sql` in SSMS to export schema
+  2. Use EF Core Power Tools or scaffold command to regenerate Models from database
+  3. Compare generated models with existing `GameSpace/Models/` and `GamiPort/Models/`
+  4. Update `GameSpacedatabaseContext.cs` with new table configurations
+  5. Update `COMPLETE_SCHEMA_EXPORT.md` with new schema information
 - All MiniGame-related tables must be 100% covered by the application
 - Use transactions for all point/coupon/pet mutation operations
 - Use `AsNoTracking()` for read-only queries
@@ -324,10 +350,17 @@ This endpoint verifies database connectivity and basic query functionality.
 3. **No Auto-Migration:** Database changes must be manually scripted and applied via SSMS
 4. **Specification Hierarchy:**
    - SQL Server database = 100% authority
+   - `COMPLETE_SCHEMA_EXPORT.md` = Complete database structure export
    - `schema/README_合併版.md` = Comprehensive specification
    - Schema docs in `schema/` = Reference implementation
 5. **Current Status:** GameSpace (Admin) is complete. GamiPort (Frontend) MiniGame Area features are in development.
 6. **Frontend Design:** GamiPort MiniGame Area must follow the teal/turquoise modern design system shown in reference images. This is non-negotiable for visual consistency.
+7. **Recent Updates:**
+   - Added `SVRankingFavorite` table for favorite rankings tracking
+   - Added `SoPaymentAudit` for payment audit logging
+   - Added `VwPaymentOrderInconsistency` view for payment validation
+   - Removed deprecated `ManagerRole` model (functionality moved to `ManagerRolePermission`)
+   - Implemented SystemSettings configuration center for business rule adjustments
 
 ## Verification Checklist
 

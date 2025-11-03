@@ -1,0 +1,1894 @@
+﻿{
+    "Tables":  {
+                   "dbo.Pet":  {
+                                   "Columns":  [
+                                                   {
+                                                       "PrimaryKey":  "YES",
+                                                       "Name":  "PetID",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "UserID",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "PetName",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "nvarchar",
+                                                       "Length":  "50"
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Level",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "LevelUpTime",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "datetime2",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Experience",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Hunger",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Mood",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Stamina",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Cleanliness",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "Health",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "SkinColor",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "varchar",
+                                                       "Length":  "10"
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "SkinColorChangedTime",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "datetime2",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "BackgroundColor",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "nvarchar",
+                                                       "Length":  "20"
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "BackgroundColorChangedTime",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "datetime2",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "PointsChanged_SkinColor",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "PointsChanged_BackgroundColor",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "PointsGained_LevelUp",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "PointsGainedTime_LevelUp",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "datetime2",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "IsDeleted",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "bit",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "DeletedAt",
+                                                       "Nullable":  "YES",
+                                                       "Type":  "datetime2",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "DeletedBy",
+                                                       "Nullable":  "YES",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "DeleteReason",
+                                                       "Nullable":  "YES",
+                                                       "Type":  "nvarchar",
+                                                       "Length":  "500"
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "CurrentExperience",
+                                                       "Nullable":  "NO",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "ExperienceToNextLevel",
+                                                       "Nullable":  "YES",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   },
+                                                   {
+                                                       "PrimaryKey":  "NO",
+                                                       "Name":  "TotalPointsGained_LevelUp",
+                                                       "Nullable":  "YES",
+                                                       "Type":  "int",
+                                                       "Length":  ""
+                                                   }
+                                               ],
+                                   "RowCount":  20
+                               },
+                   "dbo.WalletHistory":  {
+                                             "Columns":  [
+                                                             {
+                                                                 "PrimaryKey":  "YES",
+                                                                 "Name":  "LogID",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "UserID",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "ChangeType",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "nvarchar",
+                                                                 "Length":  "20"
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "PointsChanged",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "ItemCode",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "nvarchar",
+                                                                 "Length":  "50"
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "Description",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "nvarchar",
+                                                                 "Length":  "255"
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "ChangeTime",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "datetime2",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "IsDeleted",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "bit",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "DeletedAt",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "datetime2",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "DeletedBy",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "DeleteReason",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "nvarchar",
+                                                                 "Length":  "500"
+                                                             }
+                                                         ],
+                                             "RowCount":  20
+                                         },
+                   "dbo.ManagerData":  {
+                                           "Columns":  [
+                                                           {
+                                                               "PrimaryKey":  "YES",
+                                                               "Name":  "Manager_Id",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "int",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_Name",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "nvarchar",
+                                                               "Length":  "30"
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_Account",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "varchar",
+                                                               "Length":  "30"
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_Password",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "nvarchar",
+                                                               "Length":  "200"
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Administrator_registration_date",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "datetime2",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_Email",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "nvarchar",
+                                                               "Length":  "255"
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_EmailConfirmed",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "bit",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_AccessFailedCount",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "int",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_LockoutEnabled",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "bit",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "Manager_LockoutEnd",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "datetime2",
+                                                               "Length":  ""
+                                                           }
+                                                       ],
+                                           "RowCount":  20
+                                       },
+                   "dbo.UserSignInStats":  {
+                                               "Columns":  [
+                                                               {
+                                                                   "PrimaryKey":  "YES",
+                                                                   "Name":  "LogID",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "int",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "SignTime",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "datetime2",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "UserID",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "int",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "PointsGained",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "int",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "PointsGainedTime",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "datetime2",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "ExpGained",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "int",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "ExpGainedTime",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "datetime2",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "CouponGained",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "nvarchar",
+                                                                   "Length":  "50"
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "CouponGainedTime",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "datetime2",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "IsDeleted",
+                                                                   "Nullable":  "NO",
+                                                                   "Type":  "bit",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "DeletedAt",
+                                                                   "Nullable":  "YES",
+                                                                   "Type":  "datetime2",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "DeletedBy",
+                                                                   "Nullable":  "YES",
+                                                                   "Type":  "int",
+                                                                   "Length":  ""
+                                                               },
+                                                               {
+                                                                   "PrimaryKey":  "NO",
+                                                                   "Name":  "DeleteReason",
+                                                                   "Nullable":  "YES",
+                                                                   "Type":  "nvarchar",
+                                                                   "Length":  "500"
+                                                               }
+                                                           ],
+                                               "RowCount":  20
+                                           },
+                   "dbo.Users":  {
+                                     "Columns":  [
+                                                     {
+                                                         "PrimaryKey":  "YES",
+                                                         "Name":  "User_ID",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "int",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_name",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "nvarchar",
+                                                         "Length":  "30"
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_Account",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "nvarchar",
+                                                         "Length":  "30"
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_Password",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "nvarchar",
+                                                         "Length":  "255"
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_EmailConfirmed",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "bit",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_PhoneNumberConfirmed",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "bit",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_TwoFactorEnabled",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "bit",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_AccessFailedCount",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "int",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_LockoutEnabled",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "bit",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "User_LockoutEnd",
+                                                         "Nullable":  "YES",
+                                                         "Type":  "datetime2",
+                                                         "Length":  ""
+                                                     },
+                                                     {
+                                                         "PrimaryKey":  "NO",
+                                                         "Name":  "Create_Account",
+                                                         "Nullable":  "NO",
+                                                         "Type":  "datetime2",
+                                                         "Length":  ""
+                                                     }
+                                                 ],
+                                     "RowCount":  20
+                                 },
+                   "dbo.PetLevelRewardSettings":  {
+                                                      "Columns":  [
+                                                                      {
+                                                                          "PrimaryKey":  "YES",
+                                                                          "Name":  "SettingId",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "LevelRangeStart",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "LevelRangeEnd",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "PointsReward",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "Description",
+                                                                          "Nullable":  "YES",
+                                                                          "Type":  "nvarchar",
+                                                                          "Length":  "500"
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "IsActive",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "bit",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "DisplayOrder",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "IsDeleted",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "bit",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "DeletedAt",
+                                                                          "Nullable":  "YES",
+                                                                          "Type":  "datetime2",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "DeletedBy",
+                                                                          "Nullable":  "YES",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "DeleteReason",
+                                                                          "Nullable":  "YES",
+                                                                          "Type":  "nvarchar",
+                                                                          "Length":  "500"
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "CreatedAt",
+                                                                          "Nullable":  "NO",
+                                                                          "Type":  "datetime2",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "UpdatedAt",
+                                                                          "Nullable":  "YES",
+                                                                          "Type":  "datetime2",
+                                                                          "Length":  ""
+                                                                      },
+                                                                      {
+                                                                          "PrimaryKey":  "NO",
+                                                                          "Name":  "UpdatedBy",
+                                                                          "Nullable":  "YES",
+                                                                          "Type":  "int",
+                                                                          "Length":  ""
+                                                                      }
+                                                                  ],
+                                                      "RowCount":  20
+                                                  },
+                   "dbo.MiniGame":  {
+                                        "Columns":  [
+                                                        {
+                                                            "PrimaryKey":  "YES",
+                                                            "Name":  "PlayID",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "UserID",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "PetID",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "Level",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "MonsterCount",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "SpeedMultiplier",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "decimal",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "Result",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "nvarchar",
+                                                            "Length":  "20"
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "ExpGained",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "ExpGainedTime",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "PointsGained",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "PointsGainedTime",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "CouponGained",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "nvarchar",
+                                                            "Length":  "50"
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "CouponGainedTime",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "HungerDelta",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "MoodDelta",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "StaminaDelta",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "CleanlinessDelta",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "StartTime",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "EndTime",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "Aborted",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "bit",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "IsDeleted",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "bit",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "DeletedAt",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "DeletedBy",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "DeleteReason",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "nvarchar",
+                                                            "Length":  "500"
+                                                        }
+                                                    ],
+                                        "RowCount":  20
+                                    },
+                   "dbo.SystemSettings":  {
+                                              "Columns":  [
+                                                              {
+                                                                  "PrimaryKey":  "YES",
+                                                                  "Name":  "SettingId",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "int",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "SettingKey",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "nvarchar",
+                                                                  "Length":  "200"
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "SettingValue",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "nvarchar",
+                                                                  "Length":  "MAX"
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "Description",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "nvarchar",
+                                                                  "Length":  "500"
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "Category",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "nvarchar",
+                                                                  "Length":  "100"
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "SettingType",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "nvarchar",
+                                                                  "Length":  "50"
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "IsReadOnly",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "bit",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "IsActive",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "bit",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "IsDeleted",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "bit",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "DeletedAt",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "datetime2",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "DeletedBy",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "int",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "DeleteReason",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "nvarchar",
+                                                                  "Length":  "500"
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "CreatedAt",
+                                                                  "Nullable":  "NO",
+                                                                  "Type":  "datetime2",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "UpdatedAt",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "datetime2",
+                                                                  "Length":  ""
+                                                              },
+                                                              {
+                                                                  "PrimaryKey":  "NO",
+                                                                  "Name":  "UpdatedBy",
+                                                                  "Nullable":  "YES",
+                                                                  "Type":  "int",
+                                                                  "Length":  ""
+                                                              }
+                                                          ],
+                                              "RowCount":  0
+                                          },
+                   "dbo.EVoucherToken":  {
+                                             "Columns":  [
+                                                             {
+                                                                 "PrimaryKey":  "YES",
+                                                                 "Name":  "TokenID",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "EVoucherID",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "Token",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "varchar",
+                                                                 "Length":  "64"
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "ExpiresAt",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "datetime2",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "IsRevoked",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "bit",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "IsDeleted",
+                                                                 "Nullable":  "NO",
+                                                                 "Type":  "bit",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "DeletedAt",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "datetime2",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "DeletedBy",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "int",
+                                                                 "Length":  ""
+                                                             },
+                                                             {
+                                                                 "PrimaryKey":  "NO",
+                                                                 "Name":  "DeleteReason",
+                                                                 "Nullable":  "YES",
+                                                                 "Type":  "nvarchar",
+                                                                 "Length":  "500"
+                                                             }
+                                                         ],
+                                             "RowCount":  20
+                                         },
+                   "dbo.PetBackgroundCostSettings":  {
+                                                         "Columns":  [
+                                                                         {
+                                                                             "PrimaryKey":  "YES",
+                                                                             "Name":  "SettingId",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "int",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "BackgroundCode",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "nvarchar",
+                                                                             "Length":  "50"
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "BackgroundName",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "nvarchar",
+                                                                             "Length":  "100"
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "PointsCost",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "int",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "Description",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "nvarchar",
+                                                                             "Length":  "500"
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "PreviewImagePath",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "nvarchar",
+                                                                             "Length":  "200"
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "IsActive",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "bit",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "DisplayOrder",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "int",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "IsDeleted",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "bit",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "DeletedAt",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "datetime2",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "DeletedBy",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "int",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "DeleteReason",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "nvarchar",
+                                                                             "Length":  "500"
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "CreatedAt",
+                                                                             "Nullable":  "NO",
+                                                                             "Type":  "datetime2",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "UpdatedAt",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "datetime2",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "UpdatedBy",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "int",
+                                                                             "Length":  ""
+                                                                         },
+                                                                         {
+                                                                             "PrimaryKey":  "NO",
+                                                                             "Name":  "Rarity",
+                                                                             "Nullable":  "YES",
+                                                                             "Type":  "nvarchar",
+                                                                             "Length":  "20"
+                                                                         }
+                                                                     ],
+                                                         "RowCount":  11
+                                                     },
+                   "dbo.Coupon":  {
+                                      "Columns":  [
+                                                      {
+                                                          "PrimaryKey":  "YES",
+                                                          "Name":  "CouponID",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "int",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "CouponCode",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "nvarchar",
+                                                          "Length":  "50"
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "CouponTypeID",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "int",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "UserID",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "int",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "IsUsed",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "bit",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "AcquiredTime",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "datetime2",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "UsedTime",
+                                                          "Nullable":  "YES",
+                                                          "Type":  "datetime2",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "UsedInOrderID",
+                                                          "Nullable":  "YES",
+                                                          "Type":  "int",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "IsDeleted",
+                                                          "Nullable":  "NO",
+                                                          "Type":  "bit",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "DeletedAt",
+                                                          "Nullable":  "YES",
+                                                          "Type":  "datetime2",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "DeletedBy",
+                                                          "Nullable":  "YES",
+                                                          "Type":  "int",
+                                                          "Length":  ""
+                                                      },
+                                                      {
+                                                          "PrimaryKey":  "NO",
+                                                          "Name":  "DeleteReason",
+                                                          "Nullable":  "YES",
+                                                          "Type":  "nvarchar",
+                                                          "Length":  "500"
+                                                      }
+                                                  ],
+                                      "RowCount":  20
+                                  },
+                   "dbo.EVoucher":  {
+                                        "Columns":  [
+                                                        {
+                                                            "PrimaryKey":  "YES",
+                                                            "Name":  "EVoucherID",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "EVoucherCode",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "nvarchar",
+                                                            "Length":  "50"
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "EVoucherTypeID",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "UserID",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "IsUsed",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "bit",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "AcquiredTime",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "UsedTime",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "IsDeleted",
+                                                            "Nullable":  "NO",
+                                                            "Type":  "bit",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "DeletedAt",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "datetime2",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "DeletedBy",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "int",
+                                                            "Length":  ""
+                                                        },
+                                                        {
+                                                            "PrimaryKey":  "NO",
+                                                            "Name":  "DeleteReason",
+                                                            "Nullable":  "YES",
+                                                            "Type":  "nvarchar",
+                                                            "Length":  "500"
+                                                        }
+                                                    ],
+                                        "RowCount":  20
+                                    },
+                   "dbo.EVoucherRedeemLog":  {
+                                                 "Columns":  [
+                                                                 {
+                                                                     "PrimaryKey":  "YES",
+                                                                     "Name":  "RedeemID",
+                                                                     "Nullable":  "NO",
+                                                                     "Type":  "int",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "EVoucherID",
+                                                                     "Nullable":  "NO",
+                                                                     "Type":  "int",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "TokenID",
+                                                                     "Nullable":  "YES",
+                                                                     "Type":  "int",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "UserID",
+                                                                     "Nullable":  "NO",
+                                                                     "Type":  "int",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "ScannedAt",
+                                                                     "Nullable":  "NO",
+                                                                     "Type":  "datetime2",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "Status",
+                                                                     "Nullable":  "NO",
+                                                                     "Type":  "nvarchar",
+                                                                     "Length":  "20"
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "IsDeleted",
+                                                                     "Nullable":  "NO",
+                                                                     "Type":  "bit",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "DeletedAt",
+                                                                     "Nullable":  "YES",
+                                                                     "Type":  "datetime2",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "DeletedBy",
+                                                                     "Nullable":  "YES",
+                                                                     "Type":  "int",
+                                                                     "Length":  ""
+                                                                 },
+                                                                 {
+                                                                     "PrimaryKey":  "NO",
+                                                                     "Name":  "DeleteReason",
+                                                                     "Nullable":  "YES",
+                                                                     "Type":  "nvarchar",
+                                                                     "Length":  "500"
+                                                                 }
+                                                             ],
+                                                 "RowCount":  20
+                                             },
+                   "dbo.PetSkinColorCostSettings":  {
+                                                        "Columns":  [
+                                                                        {
+                                                                            "PrimaryKey":  "YES",
+                                                                            "Name":  "SettingId",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "int",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "ColorCode",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "varchar",
+                                                                            "Length":  "10"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "ColorName",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "nvarchar",
+                                                                            "Length":  "50"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "PointsCost",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "int",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "Rarity",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "nvarchar",
+                                                                            "Length":  "20"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "Description",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "nvarchar",
+                                                                            "Length":  "500"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "PreviewImagePath",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "nvarchar",
+                                                                            "Length":  "500"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "ColorHex",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "varchar",
+                                                                            "Length":  "7"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "IsActive",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "bit",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "DisplayOrder",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "int",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "IsFree",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "bit",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "IsLimitedEdition",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "bit",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "AvailableFrom",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "datetime2",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "AvailableUntil",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "datetime2",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "IsDeleted",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "bit",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "DeletedAt",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "datetime2",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "DeletedBy",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "int",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "DeleteReason",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "nvarchar",
+                                                                            "Length":  "500"
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "CreatedAt",
+                                                                            "Nullable":  "NO",
+                                                                            "Type":  "datetime2",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "UpdatedAt",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "datetime2",
+                                                                            "Length":  ""
+                                                                        },
+                                                                        {
+                                                                            "PrimaryKey":  "NO",
+                                                                            "Name":  "UpdatedBy",
+                                                                            "Nullable":  "YES",
+                                                                            "Type":  "int",
+                                                                            "Length":  ""
+                                                                        }
+                                                                    ],
+                                                        "RowCount":  11
+                                                    },
+                   "dbo.EVoucherType":  {
+                                            "Columns":  [
+                                                            {
+                                                                "PrimaryKey":  "YES",
+                                                                "Name":  "EVoucherTypeID",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "int",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "Name",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "nvarchar",
+                                                                "Length":  "50"
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "ValueAmount",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "decimal",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "ValidFrom",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "datetime2",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "ValidTo",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "datetime2",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "PointsCost",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "int",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "TotalAvailable",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "int",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "Description",
+                                                                "Nullable":  "YES",
+                                                                "Type":  "nvarchar",
+                                                                "Length":  "600"
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "IsDeleted",
+                                                                "Nullable":  "NO",
+                                                                "Type":  "bit",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "DeletedAt",
+                                                                "Nullable":  "YES",
+                                                                "Type":  "datetime2",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "DeletedBy",
+                                                                "Nullable":  "YES",
+                                                                "Type":  "int",
+                                                                "Length":  ""
+                                                            },
+                                                            {
+                                                                "PrimaryKey":  "NO",
+                                                                "Name":  "DeleteReason",
+                                                                "Nullable":  "YES",
+                                                                "Type":  "nvarchar",
+                                                                "Length":  "500"
+                                                            }
+                                                        ],
+                                            "RowCount":  20
+                                        },
+                   "dbo.CouponType":  {
+                                          "Columns":  [
+                                                          {
+                                                              "PrimaryKey":  "YES",
+                                                              "Name":  "CouponTypeID",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "Name",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "50"
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DiscountType",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "20"
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DiscountValue",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "decimal",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "MinSpend",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "decimal",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "ValidFrom",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "datetime2",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "ValidTo",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "datetime2",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "PointsCost",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "Description",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "600"
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "IsDeleted",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "bit",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DeletedAt",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "datetime2",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DeletedBy",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DeleteReason",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "500"
+                                                          }
+                                                      ],
+                                          "RowCount":  3
+                                      },
+                   "dbo.User_Wallet":  {
+                                           "Columns":  [
+                                                           {
+                                                               "PrimaryKey":  "YES",
+                                                               "Name":  "User_Id",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "int",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "User_Point",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "int",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "IsDeleted",
+                                                               "Nullable":  "NO",
+                                                               "Type":  "bit",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "DeletedAt",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "datetime2",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "DeletedBy",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "int",
+                                                               "Length":  ""
+                                                           },
+                                                           {
+                                                               "PrimaryKey":  "NO",
+                                                               "Name":  "DeleteReason",
+                                                               "Nullable":  "YES",
+                                                               "Type":  "nvarchar",
+                                                               "Length":  "500"
+                                                           }
+                                                       ],
+                                           "RowCount":  20
+                                       },
+                   "dbo.SignInRule":  {
+                                          "Columns":  [
+                                                          {
+                                                              "PrimaryKey":  "YES",
+                                                              "Name":  "Id",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "SignInDay",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "Points",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "Experience",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "HasCoupon",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "bit",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "CouponTypeCode",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "50"
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "IsActive",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "bit",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "CreatedAt",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "datetime2",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "UpdatedAt",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "datetime2",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "Description",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "255"
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "IsDeleted",
+                                                              "Nullable":  "NO",
+                                                              "Type":  "bit",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DeletedAt",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "datetime2",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DeletedBy",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "int",
+                                                              "Length":  ""
+                                                          },
+                                                          {
+                                                              "PrimaryKey":  "NO",
+                                                              "Name":  "DeleteReason",
+                                                              "Nullable":  "YES",
+                                                              "Type":  "nvarchar",
+                                                              "Length":  "500"
+                                                          }
+                                                      ],
+                                          "RowCount":  10
+                                      },
+                   "dbo.ManagerRolePermission":  {
+                                                     "Columns":  [
+                                                                     {
+                                                                         "PrimaryKey":  "YES",
+                                                                         "Name":  "ManagerRole_Id",
+                                                                         "Nullable":  "NO",
+                                                                         "Type":  "int",
+                                                                         "Length":  ""
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "role_name",
+                                                                         "Nullable":  "NO",
+                                                                         "Type":  "nvarchar",
+                                                                         "Length":  "50"
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "AdministratorPrivilegesManagement",
+                                                                         "Nullable":  "YES",
+                                                                         "Type":  "bit",
+                                                                         "Length":  ""
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "UserStatusManagement",
+                                                                         "Nullable":  "YES",
+                                                                         "Type":  "bit",
+                                                                         "Length":  ""
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "ShoppingPermissionManagement",
+                                                                         "Nullable":  "YES",
+                                                                         "Type":  "bit",
+                                                                         "Length":  ""
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "MessagePermissionManagement",
+                                                                         "Nullable":  "YES",
+                                                                         "Type":  "bit",
+                                                                         "Length":  ""
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "Pet_Rights_Management",
+                                                                         "Nullable":  "YES",
+                                                                         "Type":  "bit",
+                                                                         "Length":  ""
+                                                                     },
+                                                                     {
+                                                                         "PrimaryKey":  "NO",
+                                                                         "Name":  "customer_service",
+                                                                         "Nullable":  "YES",
+                                                                         "Type":  "bit",
+                                                                         "Length":  ""
+                                                                     }
+                                                                 ],
+                                                     "RowCount":  8
+                                                 }
+               },
+    "Server":  "DESKTOP-8HQIS1S\\SQLEXPRESS",
+    "QueryTime":  "2025-11-03 14:50:32",
+    "Database":  "GameSpacedatabase"
+}
