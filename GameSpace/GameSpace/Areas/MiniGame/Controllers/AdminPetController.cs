@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using GameSpace.Areas.MiniGame.Models;
 using GameSpace.Areas.MiniGame.Models.ViewModels;
 using GameSpace.Areas.MiniGame.Services;
@@ -912,6 +913,13 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 try
                 {
                     var pets = await _petService.GetAllPetsAsync();
+
+                    // 載入背景設定以供顯示
+                    var backgrounds = await _context.PetBackgroundCostSettings
+                        .AsNoTracking()
+                        .ToDictionaryAsync(b => b.BackgroundCode, b => b.BackgroundName);
+                    ViewBag.Backgrounds = backgrounds;
+
                     return View("PetSelection", pets);
                 }
                 catch (Exception ex)
@@ -1064,17 +1072,23 @@ namespace GameSpace.Areas.MiniGame.Controllers
             try
             {
                 // 從 SystemSettings 讀取現有設定
+                // 注意：實際的互動獎勵使用 Pet.Interaction.* 設定，而非 Pet.*Bonus
+                var feedBonus = await GetSystemSettingIntAsync("Pet.Interaction.Feed.HungerIncrease", 10);
+                var cleanBonus = await GetSystemSettingIntAsync("Pet.Interaction.Bath.CleanlinessIncrease", 10);
+                var playBonus = await GetSystemSettingIntAsync("Pet.Interaction.Coax.MoodIncrease", 10);
+                var sleepBonus = await GetSystemSettingIntAsync("Pet.Interaction.Rest.StaminaIncrease", 10);
+
                 var model = new PetSystemRulesInputModel
                 {
                     LevelUpExpBase = await GetSystemSettingIntAsync("Pet.LevelUpExpBase", 100),
-                    LevelUpFormula = await GetSystemSettingAsync("Pet.LevelUpFormula", "Level 1-10: 40×level+60; 11-100: 0.8×level²+380; ≥101: 285.69×1.06^level"),
-                    FeedBonus = await GetSystemSettingIntAsync("Pet.FeedBonus", 10),
-                    CleanBonus = await GetSystemSettingIntAsync("Pet.CleanBonus", 10),
-                    PlayBonus = await GetSystemSettingIntAsync("Pet.PlayBonus", 10),
-                    SleepBonus = await GetSystemSettingIntAsync("Pet.SleepBonus", 10),
+                    LevelUpFormula = "Level 1-10: 40×level+60; 11-100: 0.8×level²+380; ≥101: 285.69×1.06^level",
+                    FeedBonus = feedBonus,
+                    CleanBonus = cleanBonus,
+                    PlayBonus = playBonus,
+                    SleepBonus = sleepBonus,
                     ExpBonus = await GetSystemSettingIntAsync("Pet.ExpBonus", 1),
-                    ColorChangePoints = await GetSystemSettingIntAsync("Pet.ColorChangePoints", 2000),
-                    BackgroundChangePoints = await GetSystemSettingIntAsync("Pet.BackgroundChangePoints", 1000),
+                    ColorChangePoints = await GetSystemSettingIntAsync("Pet.ColorChange.PointsCost", 2000),
+                    BackgroundChangePoints = await GetSystemSettingIntAsync("Pet.BackgroundChange.PointsCost", 1000),
                     AvailableColors = await GetSystemSettingAsync("Pet.AvailableColors", "#FFFFFF,#FFD700,#FF6B6B,#4ECDC4,#45B7D1,#FFA07A,#98D8C8,#F7DC6F,#BB8FCE,#85C1E2"),
                     AvailableBackgrounds = await GetSystemSettingAsync("Pet.AvailableBackgrounds", "#FFFFFF,#F0F0F0,#E8F5E9,#E3F2FD,#FFF3E0,#FCE4EC,#F3E5F5,#E0F2F1,#FFF8E1,#EFEBE9")
                 };
@@ -1144,7 +1158,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SearchPets(int? userId, string userName, string petName, string petType,
-            int? minLevel, int? maxLevel, string status, string color)
+            int? minLevel, int? maxLevel, string color, string sortBy, string sortOrder)
         {
             try
             {
@@ -1157,6 +1171,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     MinLevel = minLevel,
                     MaxLevel = maxLevel,
                     SkinColor = color,
+                    SortBy = sortBy ?? "level",
+                    SortOrder = sortOrder ?? "desc",
                     PageNumber = 1,
                     PageSize = 100  // AJAX 搜尋返回更多結果
                 };
@@ -1356,51 +1372,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
             }
         }
 
-        /// <summary>
-        /// 匯出寵物資料為 CSV
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> ExportPets(int? userId, string userName, string petName, string petType,
-            int? minLevel, int? maxLevel, string status, string color)
-        {
-            try
-            {
-                // 構建查詢模型
-                var query = new PetAdminListQueryModel
-                {
-                    UserId = userId,
-                    SearchTerm = userName,
-                    PetName = petName,
-                    MinLevel = minLevel,
-                    MaxLevel = maxLevel,
-                    SkinColor = color,
-                    PageNumber = 1,
-                    PageSize = 10000  // 匯出所有符合條件的記錄
-                };
-
-                // 執行查詢
-                var result = await _petQueryService.GetPetListAsync(query);
-
-                // 構建 CSV 內容
-                var csvBuilder = new System.Text.StringBuilder();
-                csvBuilder.AppendLine("會員ID,會員名稱,寵物名稱,等級,經驗值,生命值,飢餓度,心情,體力,清潔度,膚色,背景顏色");
-
-                foreach (var pet in result.Items)
-                {
-                    csvBuilder.AppendLine($"{pet.UserId},{pet.UserName ?? "未知"},{pet.PetName},{pet.Level},{pet.Experience},{pet.Health},{pet.Hunger},{pet.Mood},{pet.Stamina},{pet.Cleanliness},{pet.SkinColor},{pet.BackgroundColor}");
-                }
-
-                var csvBytes = System.Text.Encoding.UTF8.GetBytes(csvBuilder.ToString());
-                var fileName = $"Pets_Export_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
-
-                return File(csvBytes, "text/csv", fileName);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"匯出失敗：{ex.Message}";
-                return RedirectToAction(nameof(QueryPets));
-            }
-        }
 
         // ==================== 私有輔助方法 ====================
 
@@ -1415,21 +1386,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
             return "活躍";
         }
 
-        /// <summary>
-        /// 從系統設定讀取整數值
-        /// </summary>
-        private async Task<int> GetSystemSettingIntAsync(string key, int defaultValue)
-        {
-            try
-            {
-                var value = await GetSystemSettingAsync(key, defaultValue.ToString());
-                return int.TryParse(value, out int result) ? result : defaultValue;
-            }
-            catch
-            {
-                return defaultValue;
-            }
-        }
     }
 }
 

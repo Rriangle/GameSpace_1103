@@ -7,6 +7,10 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
     {
         public WalletQueryModel Query { get; set; } = new();
         public PagedResult<WalletPointRecord> Results { get; set; } = new();
+        public int TotalMembers { get; set; }          // 會員總數
+        public long TotalPoints { get; set; }          // 總餘額
+        public int AveragePoints { get; set; }         // 平均點數
+        public int HighestPoints { get; set; }         // 最高點數
     }
 
     public class WalletPointRecord
@@ -22,12 +26,20 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
     {
         public CouponQueryModel Query { get; set; } = new();
         public PagedResult<UserCouponReadModel> Results { get; set; } = new();
+        public int TotalCoupons { get; set; }       // 優惠券總數
+        public int UnusedCount { get; set; }        // 未使用
+        public int UsedCount { get; set; }          // 已使用
+        public int ExpiredCount { get; set; }       // 已過期
     }
 
     public class WalletEVouchersQueryViewModel
     {
         public EVoucherQueryModel Query { get; set; } = new();
         public PagedResult<EVoucherReadModel> Results { get; set; } = new();
+        public int TotalEVouchers { get; set; }      // 電子禮券總數
+        public int UnusedCount { get; set; }        // 未使用
+        public int UsedCount { get; set; }          // 已使用
+        public int ExpiredCount { get; set; }       // 已過期
     }
 
     public class WalletHistoryQueryModel
@@ -60,6 +72,10 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
     {
         public WalletHistoryQueryModel Query { get; set; } = new();
         public PagedResult<WalletHistoryRecord> Results { get; set; } = new();
+        // 統計數據（基於所有符合條件的記錄，而非分頁結果）
+        public long TotalIncome { get; set; }
+        public long TotalExpense { get; set; }
+        public long NetChange { get; set; }
     }
 
     public class CouponTypeSummary

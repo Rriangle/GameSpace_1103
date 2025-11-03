@@ -13,68 +13,89 @@ namespace GameSpace.Areas.MiniGame.Services
     {
         private readonly GameSpacedatabaseContext _context;
         private readonly IAppClock _appClock;
+        private readonly ISystemSettingsService _systemSettings;
 
-        public GameQueryService(GameSpacedatabaseContext context, IAppClock appClock)
+        public GameQueryService(GameSpacedatabaseContext context, IAppClock appClock, ISystemSettingsService systemSettings)
         {
             _context = context;
             _appClock = appClock;
+            _systemSettings = systemSettings;
         }
 
         /// <summary>
-        /// 取得遊戲規則設定，包含基本設定和關卡設定
+        /// 取得遊戲規則設定，包含基本設定和關卡設定 - 從 SQL Server SystemSettings 讀取
         /// </summary>
         public async Task<GameRuleViewModel> GetGameRulesAsync()
         {
-            // 預設遊戲規則，Adventure Game 冒險遊戲
+            // 從 SystemSettings 讀取遊戲設定
+            var dailyLimit = await _systemSettings.GetSettingIntAsync("Game.DefaultDailyLimit", 3);
+
+            // 讀取各關卡設定
+            var level1Monster = await _systemSettings.GetSettingIntAsync("Game.Level1.MonsterCount", 6);
+            var level1Speed = await _systemSettings.GetSettingDecimalAsync("Game.Level1.SpeedMultiplier", 1.0m);
+            var level1Exp = await _systemSettings.GetSettingIntAsync("Game.Level1.ExperienceReward", 100);
+            var level1Points = await _systemSettings.GetSettingIntAsync("Game.Level1.PointsReward", 10);
+
+            var level2Monster = await _systemSettings.GetSettingIntAsync("Game.Level2.MonsterCount", 8);
+            var level2Speed = await _systemSettings.GetSettingDecimalAsync("Game.Level2.SpeedMultiplier", 1.5m);
+            var level2Exp = await _systemSettings.GetSettingIntAsync("Game.Level2.ExperienceReward", 200);
+            var level2Points = await _systemSettings.GetSettingIntAsync("Game.Level2.PointsReward", 20);
+
+            var level3Monster = await _systemSettings.GetSettingIntAsync("Game.Level3.MonsterCount", 10);
+            var level3Speed = await _systemSettings.GetSettingDecimalAsync("Game.Level3.SpeedMultiplier", 2.0m);
+            var level3Exp = await _systemSettings.GetSettingIntAsync("Game.Level3.ExperienceReward", 300);
+            var level3Points = await _systemSettings.GetSettingIntAsync("Game.Level3.PointsReward", 30);
+            var level3HasCoupon = await _systemSettings.GetSettingBoolAsync("Game.Level3.HasCoupon", true);
+
             var viewModel = new GameRuleViewModel
             {
                 GameName = "Adventure Game - 冒險遊戲",
                 Description = "經典冒險遊戲，通過擊敗怪物來獲得經驗值和點數獎勵",
-                DailyPlayLimit = 3,
+                DailyPlayLimit = dailyLimit,
                 IsActive = true,
                 LevelSettings = new List<GameLevelSettingViewModel>
                 {
                     new GameLevelSettingViewModel
                     {
                         Level = 1,
-                        MonsterCount = 6,
-                        SpeedMultiplier = 1.0m,
-                        WinPointsReward = 10,
-                        WinExpReward = 100,
+                        MonsterCount = level1Monster,
+                        SpeedMultiplier = level1Speed,
+                        WinPointsReward = level1Points,
+                        WinExpReward = level1Exp,
                         WinCouponReward = 0,
-                        LosePointsReward = 5,
-                        LoseExpReward = 50,
+                        LosePointsReward = level1Points / 2,
+                        LoseExpReward = level1Exp / 2,
                         AbortPointsReward = 0,
                         AbortExpReward = 0,
-                        Description = "關卡1 擊敗6個怪物"
+                        Description = $"關卡1 擊敗{level1Monster}個怪物"
                     },
                     new GameLevelSettingViewModel
                     {
                         Level = 2,
-                        MonsterCount = 8,
-                        SpeedMultiplier = 1.5m,
-                        WinPointsReward = 20,
-                        WinExpReward = 200,
+                        MonsterCount = level2Monster,
+                        SpeedMultiplier = level2Speed,
+                        WinPointsReward = level2Points,
+                        WinExpReward = level2Exp,
                         WinCouponReward = 0,
-                        LosePointsReward = 10,
-                        LoseExpReward = 100,
+                        LosePointsReward = level2Points / 2,
+                        LoseExpReward = level2Exp / 2,
                         AbortPointsReward = 0,
                         AbortExpReward = 0,
-                        Description = "關卡2 擊敗8個怪物"
+                        Description = $"關卡2 擊敗{level2Monster}個怪物"
                     },
                     new GameLevelSettingViewModel
                     {
                         Level = 3,
-                        MonsterCount = 10,
-                        SpeedMultiplier = 2.0m,
-                        WinPointsReward = 30,
-                        WinExpReward = 300,
-                        WinCouponReward = 1,
-                        LosePointsReward = 15,
-                        LoseExpReward = 150,
+                        MonsterCount = level3Monster,
+                        SpeedMultiplier = level3Speed,
+                        WinPointsReward = level3Points,
+                        WinExpReward = level3Exp,
+                        WinCouponReward = level3HasCoupon ? 1 : 0,
+                        LosePointsReward = level3Points / 2,
+                        LoseExpReward = level3Exp / 2,
                         AbortPointsReward = 0,
                         AbortExpReward = 0,
-                        Description = "Pass 3 checkpoints to win, lose when HP reaches 0",
+                        Description = $"關卡3 擊敗{level3Monster}個怪物 (通關獎勵優惠券)"
                     }
                 }
             };
@@ -107,16 +128,18 @@ namespace GameSpace.Areas.MiniGame.Services
                 .AsNoTracking()
                 .AsQueryable();
 
-            // 應用篩選條件
-            if (query.UserId.HasValue)
-            {
-                baseQuery = baseQuery.Where(m => m.UserId == query.UserId.Value);
-            }
+            // 應用篩選條件 - 會員ID 與 會員名稱採用 OR 邏輯（聯集）
+            // 當兩個條件同時符合時，優先順序：會員ID > 會員名稱
+            var hasUserId = query.UserId.HasValue;
+            var hasUserName = !string.IsNullOrWhiteSpace(query.UserName);
 
-            if (!string.IsNullOrWhiteSpace(query.UserName))
+            if (hasUserId || hasUserName)
             {
-                var searchTerm = query.UserName.Trim().ToLower();
-                baseQuery = baseQuery.Where(m => m.User.UserName.ToLower().Contains(searchTerm));
+                // 使用 OR 邏輯：任一條件符合即顯示
+                var searchTerm = hasUserName ? query.UserName.Trim() : "";
+                baseQuery = baseQuery.Where(m =>
+                    (hasUserId && m.UserId == query.UserId.Value) ||
+                    (hasUserName && m.User.UserName.Contains(searchTerm)));
             }
 
             if (query.PetId.HasValue)
@@ -149,28 +172,66 @@ namespace GameSpace.Areas.MiniGame.Services
             // 計算總數
             var totalCount = await baseQuery.CountAsync();
 
-            // 排序
-            var sortedQuery = query.SortBy?.ToLower() switch
+            // 排序 - 當有會員ID或會員名稱條件時，先按優先級排序
+            IQueryable<GameSpace.Models.MiniGame> sortedQuery;
+
+            if (hasUserId || hasUserName)
             {
-                "userid" => query.SortOrder?.ToLower() == "asc"
-                    ? baseQuery.OrderBy(m => m.UserId)
-                    : baseQuery.OrderByDescending(m => m.UserId),
-                "level" => query.SortOrder?.ToLower() == "asc"
-                    ? baseQuery.OrderBy(m => m.Level)
-                    : baseQuery.OrderByDescending(m => m.Level),
-                "result" => query.SortOrder?.ToLower() == "asc"
-                    ? baseQuery.OrderBy(m => m.Result)
-                    : baseQuery.OrderByDescending(m => m.Result),
-                "pointsgained" => query.SortOrder?.ToLower() == "asc"
-                    ? baseQuery.OrderBy(m => m.PointsGained)
-                    : baseQuery.OrderByDescending(m => m.PointsGained),
-                "expgained" => query.SortOrder?.ToLower() == "asc"
-                    ? baseQuery.OrderBy(m => m.ExpGained)
-                    : baseQuery.OrderByDescending(m => m.ExpGained),
-                _ => query.SortOrder?.ToLower() == "asc"
-                    ? baseQuery.OrderBy(m => m.StartTime)
-                    : baseQuery.OrderByDescending(m => m.StartTime)
-            };
+                // 優先級排序：會員ID > 會員名稱
+                var searchTerm = hasUserName ? query.UserName.Trim() : "";
+                var priorityOrdered = baseQuery.OrderBy(m =>
+                    hasUserId && m.UserId == query.UserId.Value ? 1 :
+                    hasUserName && m.User.UserName.Contains(searchTerm) ? 2 : 3
+                );
+
+                // 然後按使用者指定的排序欄位進行次要排序
+                sortedQuery = query.SortBy?.ToLower() switch
+                {
+                    "userid" => query.SortOrder?.ToLower() == "asc"
+                        ? priorityOrdered.ThenBy(m => m.UserId)
+                        : priorityOrdered.ThenByDescending(m => m.UserId),
+                    "level" => query.SortOrder?.ToLower() == "asc"
+                        ? priorityOrdered.ThenBy(m => m.Level)
+                        : priorityOrdered.ThenByDescending(m => m.Level),
+                    "result" => query.SortOrder?.ToLower() == "asc"
+                        ? priorityOrdered.ThenBy(m => m.Result)
+                        : priorityOrdered.ThenByDescending(m => m.Result),
+                    "pointsgained" => query.SortOrder?.ToLower() == "asc"
+                        ? priorityOrdered.ThenBy(m => m.PointsGained)
+                        : priorityOrdered.ThenByDescending(m => m.PointsGained),
+                    "expgained" => query.SortOrder?.ToLower() == "asc"
+                        ? priorityOrdered.ThenBy(m => m.ExpGained)
+                        : priorityOrdered.ThenByDescending(m => m.ExpGained),
+                    _ => query.SortOrder?.ToLower() == "asc"
+                        ? priorityOrdered.ThenBy(m => m.StartTime)
+                        : priorityOrdered.ThenByDescending(m => m.StartTime)
+                };
+            }
+            else
+            {
+                // 無搜尋條件時，使用一般排序
+                sortedQuery = query.SortBy?.ToLower() switch
+                {
+                    "userid" => query.SortOrder?.ToLower() == "asc"
+                        ? baseQuery.OrderBy(m => m.UserId)
+                        : baseQuery.OrderByDescending(m => m.UserId),
+                    "level" => query.SortOrder?.ToLower() == "asc"
+                        ? baseQuery.OrderBy(m => m.Level)
+                        : baseQuery.OrderByDescending(m => m.Level),
+                    "result" => query.SortOrder?.ToLower() == "asc"
+                        ? baseQuery.OrderBy(m => m.Result)
+                        : baseQuery.OrderByDescending(m => m.Result),
+                    "pointsgained" => query.SortOrder?.ToLower() == "asc"
+                        ? baseQuery.OrderBy(m => m.PointsGained)
+                        : baseQuery.OrderByDescending(m => m.PointsGained),
+                    "expgained" => query.SortOrder?.ToLower() == "asc"
+                        ? baseQuery.OrderBy(m => m.ExpGained)
+                        : baseQuery.OrderByDescending(m => m.ExpGained),
+                    _ => query.SortOrder?.ToLower() == "asc"
+                        ? baseQuery.OrderBy(m => m.StartTime)
+                        : baseQuery.OrderByDescending(m => m.StartTime)
+                };
+            }
 
             // 分頁
             var pageNumber = query.PageNumber < 1 ? 1 : query.PageNumber;
@@ -200,6 +261,12 @@ namespace GameSpace.Areas.MiniGame.Services
                         : null
                 })
                 .ToListAsync();
+
+            // 計算分數階級（在記憶體中計算）
+            foreach (var record in records)
+            {
+                record.ScoreRank = GetScoreRank(record.PointsGained);
+            }
 
             return new GameRecordsListViewModel
             {
@@ -381,6 +448,22 @@ namespace GameSpace.Areas.MiniGame.Services
                     Description = "Pass 3 checkpoints to win, lose when HP reaches 0",
                 }
             });
+        }
+
+        /// <summary>
+        /// 根據分數計算階級（位數分級）
+        /// </summary>
+        /// <param name="score">分數</param>
+        /// <returns>階級名稱</returns>
+        private static string GetScoreRank(int score)
+        {
+            if (score >= 1000000) return "SSS級 (百萬+)";
+            if (score >= 100000) return "SS級 (十萬+)";
+            if (score >= 10000) return "S級 (萬+)";
+            if (score >= 1000) return "A級 (千+)";
+            if (score >= 100) return "B級 (百+)";
+            if (score >= 10) return "C級 (十+)";
+            return "D級 (個位)";
         }
     }
 }

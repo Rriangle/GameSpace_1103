@@ -43,10 +43,6 @@
                                     <option value="strategy">策略遊戲</option>
                                 </select>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="gameName" class="form-label">遊戲名稱</label>
-                                <input type="text" class="form-control" id="gameName" name="gameName" placeholder="輸入遊戲名稱">
-                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-3 mb-3">
@@ -103,9 +99,6 @@
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="resetBtn">
                                     <i class="fas fa-undo"></i> 重置
-                                </button>
-                                <button type="button" class="btn btn-success" id="exportBtn">
-                                    <i class="fas fa-download"></i> 匯出
                                 </button>
                             </div>
                         </div>
@@ -323,13 +316,7 @@
             updateStatistics({ totalGames: 0, completedGames: 0, avgScore: 0, maxScore: 0 });
         });
 
-        // 匯出功能
-        $("#exportBtn").click(function() {
-            var formData = $("#searchForm").serialize();
-            window.open("@Url.Action("ExportGameRecords", "AdminMiniGame")?" + formData, "_blank");
-        });
-
-        // 載入數據到表格
+// 載入數據到表格
         function loadDataToTable(data) {
             table.clear();
             data.forEach(function(row) {

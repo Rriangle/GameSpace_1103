@@ -92,71 +92,67 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <input type="text" class="form-control rounded" id="userId" name="userId" placeholder="輸入會員ID">
-                            <label for="userId"><i class="fas fa-user me-1"></i>會員ID</label>
+                            <input type="number" class="form-control rounded" id="UserId" name="UserId" placeholder="輸入會員ID">
+                            <label for="UserId"><i class="fas fa-user me-1"></i>會員ID</label>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <input type="text" class="form-control rounded" id="userName" name="userName" placeholder="輸入會員名稱">
-                            <label for="userName"><i class="fas fa-user-tag me-1"></i>會員名稱</label>
+                            <input type="text" class="form-control rounded" id="SearchTerm" name="SearchTerm" placeholder="輸入會員名稱或寵物名稱">
+                            <label for="SearchTerm"><i class="fas fa-search me-1"></i>搜尋關鍵字</label>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <input type="text" class="form-control rounded" id="petName" name="petName" placeholder="輸入寵物名稱">
-                            <label for="petName"><i class="fas fa-paw me-1"></i>寵物名稱</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="form-floating">
-                            <select class="form-control rounded" id="petType" name="petType">
-                                <option value="">全部類型</option>
-                                <option value="slime">史萊姆</option>
-                                <option value="dragon">龍</option>
-                                <option value="cat">貓</option>
-                                <option value="dog">狗</option>
-                            </select>
-                            <label for="petType"><i class="fas fa-dragon me-1"></i>寵物類型</label>
+                            <input type="text" class="form-control rounded" id="PetName" name="PetName" placeholder="輸入寵物名稱">
+                            <label for="PetName"><i class="fas fa-paw me-1"></i>寵物名稱（額外條件）</label>
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <input type="number" class="form-control rounded" id="minLevel" name="minLevel" placeholder="1" min="1">
-                            <label for="minLevel"><i class="fas fa-arrow-up me-1"></i>最小等級</label>
+                            <input type="number" class="form-control rounded" id="MinLevel" name="MinLevel" placeholder="1" min="1">
+                            <label for="MinLevel"><i class="fas fa-arrow-up me-1"></i>最小等級</label>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <input type="number" class="form-control rounded" id="maxLevel" name="maxLevel" placeholder="100" max="100">
-                            <label for="maxLevel"><i class="fas fa-arrow-down me-1"></i>最大等級</label>
+                            <input type="number" class="form-control rounded" id="MaxLevel" name="MaxLevel" placeholder="100" max="100">
+                            <label for="MaxLevel"><i class="fas fa-arrow-down me-1"></i>最大等級</label>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <select class="form-control rounded" id="status" name="status">
-                                <option value="">全部狀態</option>
-                                <option value="healthy">健康</option>
-                                <option value="normal">普通</option>
-                                <option value="needcare">需照顧</option>
-                                <option value="critical">危急</option>
-                            </select>
-                            <label for="status"><i class="fas fa-heartbeat me-1"></i>健康狀態</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="form-floating">
-                            <select class="form-control rounded" id="color" name="color">
-                                <option value="">全部顏色</option>
+                            <select class="form-control rounded" id="SkinColor" name="SkinColor">
                                 <option value="red">紅色</option>
                                 <option value="blue">藍色</option>
                                 <option value="green">綠色</option>
                                 <option value="yellow">黃色</option>
                                 <option value="purple">紫色</option>
                             </select>
-                            <label for="color"><i class="fas fa-palette me-1"></i>顏色</label>
+                            <label for="SkinColor"><i class="fas fa-palette me-1"></i>膚色</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="form-floating">
+                            <select class="form-control rounded" id="sortBy" name="sortBy">
+                                <option value="level">等級</option>
+                                <option value="experience">經驗值</option>
+                                <option value="health">健康度</option>
+                                <option value="petname">寵物名稱</option>
+                                <option value="userid">會員ID</option>
+                            </select>
+                            <label for="sortBy"><i class="fas fa-sort me-1"></i>排序欄位</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="form-floating">
+                            <select class="form-control rounded" id="sortOrder" name="sortOrder">
+                                <option value="desc">最大 (Ｚ→Ａ，９→１)</option>
+                                <option value="asc">最小 (Ａ→Ｚ，１→９)</option>
+                            </select>
+                            <label for="sortOrder"><i class="fas fa-sort-amount-down me-1"></i>排序方式</label>
                         </div>
                     </div>
                 </div>
@@ -167,9 +163,6 @@
                         </button>
                         <button type="button" class="btn btn-secondary btn-lg rounded-pill" id="resetBtn">
                             <i class="fas fa-undo me-2"></i>重置
-                        </button>
-                        <button type="button" class="btn btn-success btn-lg rounded-pill" id="exportBtn">
-                            <i class="fas fa-download me-2"></i>匯出
                         </button>
                     </div>
                 </div>

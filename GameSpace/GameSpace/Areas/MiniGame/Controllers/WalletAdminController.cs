@@ -100,6 +100,13 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 };
             }).ToList();
 
+            // 計算統計數據 - 從 SQL Server 讀取所有錢包資料
+            var allWallets = await _context.UserWallets.AsNoTracking().ToListAsync();
+            var totalMembers = allWallets.Count;
+            var totalPoints = allWallets.Sum(w => (long)w.UserPoint);
+            var avgPoints = totalMembers > 0 ? (int)(totalPoints / totalMembers) : 0;
+            var maxPoints = allWallets.Any() ? allWallets.Max(w => w.UserPoint) : 0;
+
             var model = new WalletPointsQueryViewModel
             {
                 Query = query,
@@ -109,7 +116,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     TotalCount = totalCount,
                     CurrentPage = page,
                     PageSize = pageSize
-                }
+                },
+                TotalMembers = totalMembers,
+                TotalPoints = totalPoints,
+                AveragePoints = avgPoints,
+                HighestPoints = maxPoints
             };
 
             return View(model);
@@ -190,6 +201,18 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 IsUsed = x.c.IsUsed
             }).ToList();
 
+            // 計算統計數據 - 從 SQL Server 讀取所有優惠券資料
+            var nowTime = _appClock.UtcNow;
+            var allCouponsQuery = from c in _context.Coupons.AsNoTracking()
+                                  join ct in _context.CouponTypes.AsNoTracking() on c.CouponTypeId equals ct.CouponTypeId into ctj
+                                  from ct in ctj.DefaultIfEmpty()
+                                  select new { c, ct };
+
+            var totalCoupons = await allCouponsQuery.CountAsync();
+            var unusedCount = await allCouponsQuery.CountAsync(x => !x.c.IsUsed && (x.ct == null || x.ct.ValidTo >= nowTime));
+            var usedCount = await allCouponsQuery.CountAsync(x => x.c.IsUsed);
+            var expiredCount = await allCouponsQuery.CountAsync(x => !x.c.IsUsed && x.ct != null && x.ct.ValidTo < nowTime);
+
             var model = new WalletCouponsQueryViewModel
             {
                 Query = query,
@@ -199,7 +222,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     TotalCount = totalCount,
                     CurrentPage = page,
                     PageSize = pageSize
-                }
+                },
+                TotalCoupons = totalCoupons,
+                UnusedCount = unusedCount,
+                UsedCount = usedCount,
+                ExpiredCount = expiredCount
             };
 
             return View(model);
@@ -286,6 +313,18 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 UsedLocation = null
             }).ToList();
 
+            // 計算統計數據 - 從 SQL Server 讀取所有電子禮券資料
+            var nowEVoucher = _appClock.UtcNow;
+            var allEVouchersQuery = from e in _context.Evouchers.AsNoTracking()
+                                    join et in _context.EvoucherTypes.AsNoTracking() on e.EvoucherTypeId equals et.EvoucherTypeId into etj
+                                    from et in etj.DefaultIfEmpty()
+                                    select new { e, et };
+
+            var totalEvouchers = await allEVouchersQuery.CountAsync();
+            var unusedEVoucherCount = await allEVouchersQuery.CountAsync(x => !x.e.IsUsed && (x.et == null || x.et.ValidTo >= nowEVoucher));
+            var usedEVoucherCount = await allEVouchersQuery.CountAsync(x => x.e.IsUsed);
+            var expiredEVoucherCount = await allEVouchersQuery.CountAsync(x => !x.e.IsUsed && x.et != null && x.et.ValidTo < nowEVoucher);
+
             var model = new WalletEVouchersQueryViewModel
             {
                 Query = query,
@@ -295,7 +334,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     TotalCount = totalCount,
                     CurrentPage = page,
                     PageSize = pageSize
-                }
+                },
+                TotalEVouchers = totalEvouchers,
+                UnusedCount = unusedEVoucherCount,
+                UsedCount = usedEVoucherCount,
+                ExpiredCount = expiredEVoucherCount
             };
 
             return View(model);
@@ -349,7 +392,15 @@ namespace GameSpace.Areas.MiniGame.Controllers
             source = source.OrderByDescending(h => h.ChangeTime);
 
             var totalCount = await source.CountAsync();
-            var items = await source.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // 計算統計數據（基於所有符合條件的記錄，而非分頁結果）
+            var allResults = await source.ToListAsync();
+            var totalIncome = allResults.Where(h => h.PointsChanged > 0).Sum(h => (long)h.PointsChanged);
+            var totalExpense = allResults.Where(h => h.PointsChanged < 0).Sum(h => (long)Math.Abs(h.PointsChanged));
+            var netChange = totalIncome - totalExpense;
+
+            // 取得分頁的項目
+            var items = allResults.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             // 手動載入用戶資料
             var lookupIds = items.Select(h => h.UserId).Distinct().ToList();
@@ -357,7 +408,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .AsNoTracking()
                 .Where(u => lookupIds.Contains(u.UserId))
                 .ToDictionaryAsync(u => u.UserId, u => new { u.UserAccount, u.UserName });
-            
+
             var walletLookup = await _context.UserWallets
                 .AsNoTracking()
                 .Where(w => lookupIds.Contains(w.UserId))
@@ -367,7 +418,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
             {
                 userLookup.TryGetValue(h.UserId, out var userData);
                 walletLookup.TryGetValue(h.UserId, out var balance);
-                
+
                 return new WalletHistoryRecord
                 {
                     LogId = h.LogId,
@@ -391,7 +442,10 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     TotalCount = totalCount,
                     CurrentPage = page,
                     PageSize = pageSize
-                }
+                },
+                TotalIncome = totalIncome,
+                TotalExpense = totalExpense,
+                NetChange = netChange
             };
 
             return View(model);

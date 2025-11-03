@@ -64,7 +64,11 @@
                                     <td>
                                         @if (!string.IsNullOrEmpty(pet.BackgroundColor))
                                         {
-                                            <span class="badge" style="background-color: @pet.BackgroundColor; color: white;">@pet.BackgroundColor</span>
+                                            var backgrounds = ViewBag.Backgrounds as Dictionary<string, string>;
+                                            var bgName = backgrounds != null && backgrounds.ContainsKey(pet.BackgroundColor)
+                                                ? backgrounds[pet.BackgroundColor]
+                                                : pet.BackgroundColor;
+                                            <span class="badge badge-info">@bgName</span>
                                         }
                                         else
                                         {

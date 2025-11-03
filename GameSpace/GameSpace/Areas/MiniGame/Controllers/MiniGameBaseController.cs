@@ -301,10 +301,41 @@ namespace GameSpace.Areas.MiniGame.Controllers
             return DateTime.Now.Subtract(operationTime.Value).TotalHours <= maxHours;
         }
 
-        // 獲取系統設定值 (暫時返回預設值，等待 SystemSettings 表實作)
+        // 獲取系統設定值（從 SQL Server SystemSettings 表讀取）
         protected async Task<string> GetSystemSettingAsync(string key, string defaultValue = "")
         {
-            return await Task.FromResult(defaultValue);
+            try
+            {
+                // 從 DI 容器取得 ISystemSettingsService
+                var settingsService = HttpContext.RequestServices.GetService(typeof(ISystemSettingsService)) as ISystemSettingsService;
+                if (settingsService != null)
+                {
+                    return await settingsService.GetSettingStringAsync(key, defaultValue);
+                }
+                return defaultValue;
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
+
+        // 獲取系統設定值（整數）
+        protected async Task<int> GetSystemSettingIntAsync(string key, int defaultValue = 0)
+        {
+            try
+            {
+                var settingsService = HttpContext.RequestServices.GetService(typeof(ISystemSettingsService)) as ISystemSettingsService;
+                if (settingsService != null)
+                {
+                    return await settingsService.GetSettingIntAsync(key, defaultValue);
+                }
+                return defaultValue;
+            }
+            catch
+            {
+                return defaultValue;
+            }
         }
 
         // 設定系統設定值
