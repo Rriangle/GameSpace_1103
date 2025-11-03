@@ -14,8 +14,8 @@ namespace GameSpace.Areas.MiniGame.config
             // 不需要在此註冊 DbContext
 
             // ==================== 2025-11-03: SystemSettings 統一讀取服務 ====================
-            // 註冊 SystemSettings 讀取服務（Singleton，帶快取）
-            services.AddSingleton<ISystemSettingsService, SystemSettingsService>();
+            // 註冊 SystemSettings 讀取服務（Scoped，避免 DI lifetime 違規）
+            services.AddScoped<ISystemSettingsService, SystemSettingsService>();
             // =========================================================================
 
             // 註冊核心管理服務
