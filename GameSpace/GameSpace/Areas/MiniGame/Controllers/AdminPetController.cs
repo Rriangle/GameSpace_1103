@@ -1141,12 +1141,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 }).ToList();
 
                 // 計算統計資訊
+                // 健康寵物: Health >= 20
+                // 需照顧寵物: Health < 20
                 var statistics = new
                 {
                     totalPets = result.TotalCount,
-                    activePets = result.Items.Count(p => p.Health >= 80 && p.Hunger >= 30),
+                    activePets = result.Items.Count(p => p.Health >= 20),
                     avgLevel = result.Items.Any() ? result.Items.Average(p => (double)p.Level) : 0,
-                    maxLevel = result.Items.Any() ? result.Items.Max(p => p.Level) : 0
+                    needCarePets = result.Items.Count(p => p.Health < 20)
                 };
 
                 return Json(new { success = true, data, statistics });
