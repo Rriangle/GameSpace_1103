@@ -808,13 +808,16 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 return RedirectToAction(nameof(GrantCoupon));
             }
 
+            // 使用台灣時間 (Asia/Taipei)
+            var nowUtc = _appClock.UtcNow;
+            var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
+
             // 生成優惠券序號 CPN-YYYYMM-XXXXXX
-            var now = _appClock.UtcNow;
             var random = new Random();
             var randomCode = new string(Enumerable.Range(0, 6)
                 .Select(_ => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[random.Next(36)])
                 .ToArray());
-            var couponCode = $"CPN-{now:yyMM}-{randomCode}";
+            var couponCode = $"CPN-{nowTaiwanTime:yyMM}-{randomCode}";
 
             // 使用交易確保數據一致性
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -827,7 +830,9 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     CouponTypeId = couponTypeId,
                     UserId = userId,
                     IsUsed = false,
-                    AcquiredTime = now
+                    AcquiredTime = nowTaiwanTime,  // 使用台灣時間
+                    UsedTime = null,  // 明確設為 null (剛發放時未使用)
+                    IsDeleted = false  // 必填字段：未刪除
                 };
                 _context.Coupons.Add(coupon);
 
@@ -839,7 +844,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     PointsChanged = 0,
                     ItemCode = couponCode,
                     Description = $"發放商城優惠券：{couponType.Name}",
-                    ChangeTime = now
+                    ChangeTime = nowTaiwanTime  // 使用台灣時間
                 };
                 _context.WalletHistories.Add(history);
 
@@ -902,7 +907,9 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 return RedirectToAction(nameof(AdjustEVoucher));
             }
 
-            var now = _appClock.UtcNow;
+            // 使用台灣時間 (Asia/Taipei)
+            var nowUtc = _appClock.UtcNow;
+            var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
 
             // 使用交易確保數據一致性
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -933,7 +940,9 @@ namespace GameSpace.Areas.MiniGame.Controllers
                         EvoucherTypeId = evoucherTypeId,
                         UserId = userId,
                         IsUsed = false,
-                        AcquiredTime = now
+                        AcquiredTime = nowTaiwanTime,  // 使用台灣時間
+                        UsedTime = null,  // 明確設為 null (剛發放時未使用)
+                        IsDeleted = false  // 必填字段：未刪除
                     };
                     _context.Evouchers.Add(evoucher);
 
@@ -945,7 +954,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
                         PointsChanged = 0,
                         ItemCode = evoucherCode,
                         Description = $"發放電子禮券：{evoucherType.Name}",
-                        ChangeTime = now
+                        ChangeTime = nowTaiwanTime  // 使用台灣時間
                     };
                     _context.WalletHistories.Add(history);
 
@@ -979,7 +988,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
                         PointsChanged = 0,
                         ItemCode = evoucherToRevoke.EvoucherCode,
                         Description = $"撤銷電子禮券：{evoucherType.Name}",
-                        ChangeTime = now
+                        ChangeTime = nowTaiwanTime  // 使用台灣時間
                     };
                     _context.WalletHistories.Add(history);
 
