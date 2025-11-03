@@ -35,7 +35,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
             // 搜尋功能 - 依使用者ID或結果
             if (!string.IsNullOrEmpty(searchTerm) && int.TryParse(searchTerm, out int userId))
             {
-                query = query.Where(g => g.UserId == userId);
+                var userIdStr = userId.ToString();
+                query = query.Where(g => g.UserId.ToString().Contains(userIdStr));
             }
 
             // 遊戲結果篩選

@@ -36,9 +36,27 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .AsNoTracking()
                 .AsQueryable();
 
-            if (query.UserId.HasValue)
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            var hasUserId = query.UserId.HasValue;
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+
+            List<int> matchedUserIds = new List<int>();
+            if (hasUserId || hasSearchTerm)
             {
-                source = source.Where(w => w.UserId == query.UserId.Value);
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                // 查詢所有符合條件的用戶（OR邏輯）
+                var matchedUsers = await _context.Users
+                    .AsNoTracking()
+                    .Where(u =>
+                        (hasUserId && u.UserId.ToString().Contains(userIdStr)) ||
+                        (hasSearchTerm && (u.UserAccount.Contains(searchTerm) || u.UserName.Contains(searchTerm))))
+                    .Select(u => new { u.UserId, u.UserAccount, u.UserName })
+                    .ToListAsync();
+
+                matchedUserIds = matchedUsers.Select(u => u.UserId).Distinct().ToList();
+                source = source.Where(w => matchedUserIds.Contains(w.UserId));
             }
 
             if (query.MinAmount.HasValue)
@@ -51,24 +69,49 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 source = source.Where(w => w.UserPoint <= query.MaxAmount.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+            // 優先順序排序：UserId精確 > UserId模糊 > UserAccount > UserName
+            IOrderedQueryable<UserWallet> orderedSource;
+            if (hasUserId || hasSearchTerm)
             {
-                var term = query.SearchTerm.Trim();
-                var matchedUserIds = await _context.Users
-                    .AsNoTracking()
-                    .Where(u => u.UserAccount.Contains(term) || u.UserName.Contains(term))
-                    .Select(u => u.UserId)
-                    .ToListAsync();
-                source = source.Where(w => matchedUserIds.Contains(w.UserId));
-            }
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
 
-            source = query.SortBy?.ToLowerInvariant() switch
+                var userPriority = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => matchedUserIds.Contains(u.UserId))
+                    .Select(u => new
+                    {
+                        u.UserId,
+                        Priority = hasUserId && u.UserId == query.UserId.Value ? 1 :
+                                   hasUserId && u.UserId.ToString().Contains(userIdStr) ? 2 :
+                                   hasSearchTerm && u.UserAccount.Contains(searchTerm) ? 3 :
+                                   hasSearchTerm && u.UserName.Contains(searchTerm) ? 4 : 5
+                    })
+                    .ToDictionaryAsync(x => x.UserId, x => x.Priority);
+
+                orderedSource = source.OrderBy(w => userPriority.ContainsKey(w.UserId) ? userPriority[w.UserId] : 99);
+
+                // 次要排序
+                source = query.SortBy?.ToLowerInvariant() switch
+                {
+                    "points_asc" => orderedSource.ThenBy(w => w.UserPoint),
+                    "points_desc" => orderedSource.ThenByDescending(w => w.UserPoint),
+                    "userid_desc" => orderedSource.ThenByDescending(w => w.UserId),
+                    "userid_asc" => orderedSource.ThenBy(w => w.UserId),
+                    _ => orderedSource.ThenByDescending(w => w.UserPoint)
+                };
+            }
+            else
             {
-                "points_asc" => source.OrderBy(w => w.UserPoint),
-                "userid_desc" => source.OrderByDescending(w => w.UserId),
-                "userid_asc" => source.OrderBy(w => w.UserId),
-                _ => source.OrderByDescending(w => w.UserPoint)
-            };
+                // 沒有搜尋條件時的正常排序
+                source = query.SortBy?.ToLowerInvariant() switch
+                {
+                    "points_asc" => source.OrderBy(w => w.UserPoint),
+                    "userid_desc" => source.OrderByDescending(w => w.UserId),
+                    "userid_asc" => source.OrderBy(w => w.UserId),
+                    _ => source.OrderByDescending(w => w.UserPoint)
+                };
+            }
 
             var totalCount = await source.CountAsync();
             var items = await source
@@ -143,9 +186,19 @@ namespace GameSpace.Areas.MiniGame.Controllers
                          from ct in ctj.DefaultIfEmpty()
                          select new { c, u, ct };
 
-            if (query.UserId.HasValue)
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            var hasUserId = query.UserId.HasValue;
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+
+            if (hasUserId || hasSearchTerm)
             {
-                source = source.Where(x => x.c.UserId == query.UserId.Value);
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                source = source.Where(x =>
+                    (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) ||
+                    (hasSearchTerm && (x.c.CouponCode.Contains(term) ||
+                                      (x.u != null && (x.u.UserAccount.Contains(term) || x.u.UserName.Contains(term))))));
             }
 
             if (query.CouponTypeId.HasValue)
@@ -165,23 +218,50 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 };
             }
 
-            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
-            {
-                var term = query.SearchTerm.Trim();
-                source = source.Where(x =>
-                    x.c.CouponCode.Contains(term) ||
-                    (x.u != null && (x.u.UserAccount.Contains(term) || x.u.UserName.Contains(term))));
-            }
-
-            source = query.SortBy?.ToLowerInvariant() switch
-            {
-                "acquiredtime" => query.Descending ? source.OrderByDescending(x => x.c.AcquiredTime) : source.OrderBy(x => x.c.AcquiredTime),
-                "usetime" => query.Descending ? source.OrderByDescending(x => x.c.UsedTime) : source.OrderBy(x => x.c.UsedTime),
-                _ => source.OrderByDescending(x => x.c.AcquiredTime)
-            };
-
             var totalCount = await source.CountAsync();
-            var items = await source.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // 優先順序排序：先取資料再排序（避免 EF 無法轉換 dynamic）
+            var allItems = await source.ToListAsync();
+            var items = allItems;
+
+            if (hasUserId || hasSearchTerm)
+            {
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                // 在記憶體中進行優先順序排序
+                var ordered = allItems.OrderBy(x =>
+                {
+                    if (hasUserId && x.u != null && x.u.UserId == query.UserId.Value) return 1;
+                    if (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) return 2;
+                    if (hasSearchTerm && x.u != null && x.u.UserAccount.Contains(term)) return 3;
+                    if (hasSearchTerm && x.u != null && x.u.UserName.Contains(term)) return 4;
+                    if (hasSearchTerm && x.c.CouponCode.Contains(term)) return 5;
+                    return 6;
+                });
+
+                // 次要排序
+                var sorted = query.SortBy?.ToLowerInvariant() switch
+                {
+                    "acquiredtime" => query.Descending ? ordered.ThenByDescending(x => x.c.AcquiredTime) : ordered.ThenBy(x => x.c.AcquiredTime),
+                    "usetime" => query.Descending ? ordered.ThenByDescending(x => x.c.UsedTime) : ordered.ThenBy(x => x.c.UsedTime),
+                    _ => ordered.ThenByDescending(x => x.c.AcquiredTime)
+                };
+
+                items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
+            else
+            {
+                // 沒有搜尋條件時使用資料庫排序
+                var sorted = query.SortBy?.ToLowerInvariant() switch
+                {
+                    "acquiredtime" => query.Descending ? source.OrderByDescending(x => x.c.AcquiredTime) : source.OrderBy(x => x.c.AcquiredTime),
+                    "usetime" => query.Descending ? source.OrderByDescending(x => x.c.UsedTime) : source.OrderBy(x => x.c.UsedTime),
+                    _ => source.OrderByDescending(x => x.c.AcquiredTime)
+                };
+
+                items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
 
             var records = items.Select(x => new UserCouponReadModel
             {
@@ -280,9 +360,19 @@ namespace GameSpace.Areas.MiniGame.Controllers
                          from et in etj.DefaultIfEmpty()
                          select new { e, u, et };
 
-            if (query.UserId.HasValue)
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            var hasUserId = query.UserId.HasValue;
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+
+            if (hasUserId || hasSearchTerm)
             {
-                source = source.Where(x => x.e.UserId == query.UserId.Value);
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                source = source.Where(x =>
+                    (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) ||
+                    (hasSearchTerm && (x.e.EvoucherCode.Contains(term) ||
+                                      (x.u != null && (x.u.UserAccount.Contains(term) || x.u.UserName.Contains(term))))));
             }
 
             if (query.EVoucherTypeId.HasValue)
@@ -293,14 +383,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
             if (!string.IsNullOrWhiteSpace(query.TypeCode))
             {
                 source = source.Where(x => x.et != null && x.et.Name.Contains(query.TypeCode));
-            }
-
-            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
-            {
-                var term = query.SearchTerm.Trim();
-                source = source.Where(x =>
-                    x.e.EvoucherCode.Contains(term) ||
-                    (x.u != null && (x.u.UserAccount.Contains(term) || x.u.UserName.Contains(term))));
             }
 
             if (!string.IsNullOrWhiteSpace(query.Status))
@@ -315,15 +397,50 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 };
             }
 
-            source = query.SortBy?.ToLowerInvariant() switch
-            {
-                "acquiredtime" => query.Descending ? source.OrderByDescending(x => x.e.AcquiredTime) : source.OrderBy(x => x.e.AcquiredTime),
-                "validto" => query.Descending ? source.OrderByDescending(x => x.et != null ? x.et.ValidTo : DateTime.MinValue) : source.OrderBy(x => x.et != null ? x.et.ValidTo : DateTime.MinValue),
-                _ => source.OrderByDescending(x => x.e.AcquiredTime)
-            };
-
             var totalCount = await source.CountAsync();
-            var items = await source.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // 優先順序排序：先取資料再排序（避免 EF 無法轉換 dynamic）
+            var allItems = await source.ToListAsync();
+            var items = allItems;
+
+            if (hasUserId || hasSearchTerm)
+            {
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                // 在記憶體中進行優先順序排序
+                var ordered = allItems.OrderBy(x =>
+                {
+                    if (hasUserId && x.u != null && x.u.UserId == query.UserId.Value) return 1;
+                    if (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) return 2;
+                    if (hasSearchTerm && x.u != null && x.u.UserAccount.Contains(term)) return 3;
+                    if (hasSearchTerm && x.u != null && x.u.UserName.Contains(term)) return 4;
+                    if (hasSearchTerm && x.e.EvoucherCode.Contains(term)) return 5;
+                    return 6;
+                });
+
+                // 次要排序
+                var sorted = query.SortBy?.ToLowerInvariant() switch
+                {
+                    "acquiredtime" => query.Descending ? ordered.ThenByDescending(x => x.e.AcquiredTime) : ordered.ThenBy(x => x.e.AcquiredTime),
+                    "validto" => query.Descending ? ordered.ThenByDescending(x => x.et != null ? x.et.ValidTo : DateTime.MinValue) : ordered.ThenBy(x => x.et != null ? x.et.ValidTo : DateTime.MinValue),
+                    _ => ordered.ThenByDescending(x => x.e.AcquiredTime)
+                };
+
+                items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
+            else
+            {
+                // 沒有搜尋條件時使用資料庫排序
+                var sorted = query.SortBy?.ToLowerInvariant() switch
+                {
+                    "acquiredtime" => query.Descending ? source.OrderByDescending(x => x.e.AcquiredTime) : source.OrderBy(x => x.e.AcquiredTime),
+                    "validto" => query.Descending ? source.OrderByDescending(x => x.et != null ? x.et.ValidTo : DateTime.MinValue) : source.OrderBy(x => x.et != null ? x.et.ValidTo : DateTime.MinValue),
+                    _ => source.OrderByDescending(x => x.e.AcquiredTime)
+                };
+
+                items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
 
             var records = items.Select(x => new Models.ViewModels.EVoucherReadModel
             {
@@ -386,9 +503,31 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .AsNoTracking()
                 .AsQueryable();
 
-            if (query.UserId.HasValue)
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            var hasUserId = query.UserId.HasValue;
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+
+            List<int> matchedUserIds = new List<int>();
+            if (hasUserId || hasSearchTerm)
             {
-                source = source.Where(h => h.UserId == query.UserId.Value);
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                // 查詢所有符合條件的用戶（OR邏輯）
+                var matchedUsers = await _context.Users
+                    .AsNoTracking()
+                    .Where(u =>
+                        (hasUserId && u.UserId.ToString().Contains(userIdStr)) ||
+                        (hasSearchTerm && (u.UserAccount.Contains(term) || u.UserName.Contains(term))))
+                    .Select(u => new { u.UserId, u.UserAccount, u.UserName })
+                    .ToListAsync();
+
+                matchedUserIds = matchedUsers.Select(u => u.UserId).Distinct().ToList();
+
+                // 應用用戶ID篩選或描述搜尋（OR邏輯）
+                source = source.Where(h =>
+                    matchedUserIds.Contains(h.UserId) ||
+                    (hasSearchTerm && h.Description != null && h.Description.Contains(term)));
             }
 
             if (!string.IsNullOrWhiteSpace(query.ChangeType))
@@ -406,26 +545,50 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 source = source.Where(h => h.ChangeTime <= query.EndDate.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
-            {
-                var term = query.SearchTerm.Trim();
-                var userIds = await _context.Users
-                    .AsNoTracking()
-                    .Where(u => u.UserAccount.Contains(term) || u.UserName.Contains(term))
-                    .Select(u => u.UserId)
-                    .ToListAsync();
-                
-                source = source.Where(h =>
-                    (h.Description != null && h.Description.Contains(term)) ||
-                    userIds.Contains(h.UserId));
-            }
-
-            source = source.OrderByDescending(h => h.ChangeTime);
-
             var totalCount = await source.CountAsync();
 
             // 計算統計數據（基於所有符合條件的記錄，而非分頁結果）
             var allResults = await source.ToListAsync();
+
+            // 優先順序排序：先取資料再排序（避免 EF 無法處理複雜 lambda）
+            List<WalletHistory> sortedResults;
+            if (hasUserId || hasSearchTerm)
+            {
+                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
+                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+
+                var userPriority = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => matchedUserIds.Contains(u.UserId))
+                    .Select(u => new
+                    {
+                        u.UserId,
+                        Priority = hasUserId && u.UserId == query.UserId.Value ? 1 :
+                                   hasUserId && u.UserId.ToString().Contains(userIdStr) ? 2 :
+                                   hasSearchTerm && u.UserAccount.Contains(term) ? 3 :
+                                   hasSearchTerm && u.UserName.Contains(term) ? 4 : 5
+                    })
+                    .ToDictionaryAsync(x => x.UserId, x => x.Priority);
+
+                // 在記憶體中進行優先順序排序
+                var ordered = allResults.OrderBy(h =>
+                {
+                    if (userPriority.ContainsKey(h.UserId))
+                        return userPriority[h.UserId];
+                    if (hasSearchTerm && h.Description != null && h.Description.Contains(term))
+                        return 5;
+                    return 6;
+                }).ThenByDescending(h => h.ChangeTime);
+
+                sortedResults = ordered.ToList();
+            }
+            else
+            {
+                // 沒有搜尋條件時的正常排序
+                sortedResults = allResults.OrderByDescending(h => h.ChangeTime).ToList();
+            }
+
+            allResults = sortedResults;
             var totalIncome = allResults.Where(h => h.PointsChanged > 0).Sum(h => (long)h.PointsChanged);
             var totalExpense = allResults.Where(h => h.PointsChanged < 0).Sum(h => (long)Math.Abs(h.PointsChanged));
             var netChange = totalIncome - totalExpense;

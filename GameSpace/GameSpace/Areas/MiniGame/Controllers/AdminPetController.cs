@@ -43,7 +43,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
             {
                 if (int.TryParse(searchTerm, out int userId))
                 {
-                    pets = pets.Where(p => p.UserId == userId);
+                    var userIdStr = userId.ToString();
+                    pets = pets.Where(p => p.UserId.ToString().Contains(userIdStr));
                 }
                 else
                 {
