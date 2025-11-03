@@ -36,69 +36,6 @@
         </div>
     }
 
-    <!-- 統計卡片區 -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-primary border-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">升級經驗基數</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">@(Model?.LevelUpExpBase ?? 100)</div>
-                        </div>
-                        <div class="text-primary opacity-50">
-                            <i class="fas fa-star fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-success border-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-xs fw-bold text-success text-uppercase mb-1">經驗值倍數</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">@(Model?.ExpBonus ?? 1)x</div>
-                        </div>
-                        <div class="text-success opacity-50">
-                            <i class="fas fa-bolt fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-warning border-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">換色點數</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">@(Model?.ColorChangePoints ?? 1000)</div>
-                        </div>
-                        <div class="text-warning opacity-50">
-                            <i class="fas fa-palette fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-start border-info border-4 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-xs fw-bold text-info text-uppercase mb-1">換背景點數</div>
-                            <div class="h5 mb-0 fw-bold text-gray-800">@(Model?.BackgroundChangePoints ?? 500)</div>
-                        </div>
-                        <div class="text-info opacity-50">
-                            <i class="fas fa-image fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <form asp-action="UpdateSystemRules" method="post">
         @Html.AntiForgeryToken()
@@ -112,29 +49,6 @@
                         <h4 class="mb-0"><i class="fas fa-cog me-2"></i>寵物系統配置</h4>
                     </div>
                     <div class="card-body p-4">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
-                                    <input asp-for="LevelUpExpBase" class="form-control rounded" placeholder="請輸入基礎經驗值" />
-                                    <label asp-for="LevelUpExpBase">
-                                        <i class="fas fa-star me-1"></i>升級基礎經驗值 *
-                                    </label>
-                                    <span asp-validation-for="LevelUpExpBase" class="text-danger"></span>
-                                </div>
-                                <small class="form-text text-muted d-block mb-3">升級所需的基礎經驗值</small>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-floating mb-3">
-                                    <input asp-for="ExpBonus" class="form-control rounded" placeholder="請輸入倍數" />
-                                    <label asp-for="ExpBonus">
-                                        <i class="fas fa-bolt me-1"></i>經驗值獎勵倍數 *
-                                    </label>
-                                    <span asp-validation-for="ExpBonus" class="text-danger"></span>
-                                </div>
-                                <small class="form-text text-muted d-block mb-3">獲得經驗值的倍數</small>
-                            </div>
-                        </div>
-
                         <div class="form-floating mb-3">
                             <input asp-for="LevelUpFormula" class="form-control rounded" readonly style="background-color: #f8f9fc;" />
                             <label asp-for="LevelUpFormula">
