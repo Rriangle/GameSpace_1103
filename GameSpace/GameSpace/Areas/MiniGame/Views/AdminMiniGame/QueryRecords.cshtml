@@ -44,12 +44,11 @@
                                 <input type="date" class="form-control" id="endDate" name="endDate">
                             </div>
                             <div class="col-md-3 mb-3">
-                                <label for="minScore" class="form-label">最小分數</label>
-                                <input type="number" class="form-control" id="minScore" name="minScore" placeholder="0">
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="maxScore" class="form-label">最大分數</label>
-                                <input type="number" class="form-control" id="maxScore" name="maxScore" placeholder="999999">
+                                <label for="sortBy" class="form-label">排序方式</label>
+                                <select class="form-control" id="sortBy" name="sortBy">
+                                    <option value="score_desc">分數（高 → 低）</option>
+                                    <option value="score_asc">分數（低 → 高）</option>
+                                </select>
                             </div>
                         </div>
                         <div class="row">
