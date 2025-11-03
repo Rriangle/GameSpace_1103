@@ -18,6 +18,11 @@ namespace GameSpace.Areas.MiniGame.config
             services.AddScoped<ISystemSettingsService, SystemSettingsService>();
             // =========================================================================
 
+            // ==================== 2025-11-04: 模糊搜尋服務 ====================
+            // 註冊模糊搜尋服務（支援全面模糊搜尋、OR 邏輯、5 級優先順序排序）
+            services.AddScoped<IFuzzySearchService, FuzzySearchService>();
+            // =========================================================================
+
             // 註冊核心管理服務
             services.AddScoped<IMiniGameAdminService, MiniGameAdminService>();
             services.AddScoped<IMiniGameAdminAuthService, MiniGameAdminAuthService>();

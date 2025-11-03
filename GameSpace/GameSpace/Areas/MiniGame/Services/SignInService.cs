@@ -268,8 +268,34 @@ namespace GameSpace.Areas.MiniGame.Services
                 ConsecutiveDayBonus = 0
             };
 
-            // ✅ 連續 7 天: 從 SystemSettings 讀取額外獎勵
-            if (nextDay % 7 == 0)
+            // ✅ 查詢 SignInRule 表，獲取對應天數的規則和描述
+            var signInRule = await _context.SignInRules
+                .AsNoTracking()
+                .Where(r => r.SignInDay == nextDay && r.IsActive && !r.IsDeleted)
+                .FirstOrDefaultAsync();
+
+            if (signInRule != null)
+            {
+                // 使用 SignInRule 表的數據覆蓋基礎獎勵
+                reward.Points = signInRule.Points;
+                reward.Experience = signInRule.Experience;
+                reward.Description = signInRule.Description ?? $"第 {nextDay} 天簽到獎勵";
+
+                if (signInRule.HasCoupon && !string.IsNullOrWhiteSpace(signInRule.CouponTypeCode))
+                {
+                    reward.CouponCode = signInRule.CouponTypeCode;
+                }
+            }
+            else
+            {
+                // 沒有對應規則時使用預設描述
+                reward.Description = isHoliday
+                    ? $"假日簽到獎勵（第 {nextDay} 天）"
+                    : $"平日簽到獎勵（第 {nextDay} 天）";
+            }
+
+            // ✅ 連續 7 天: 從 SystemSettings 讀取額外獎勵（額外加成）
+            if (nextDay % 7 == 0 && signInRule == null)
             {
                 var streak7BonusPoints = await _settingsService.GetSettingIntAsync("SignIn.Streak7Days.BonusPoints", 40);
                 var streak7BonusExp = await _settingsService.GetSettingIntAsync("SignIn.Streak7Days.BonusExperience", 300);
@@ -279,17 +305,17 @@ namespace GameSpace.Areas.MiniGame.Services
                 reward.ConsecutiveDayBonus = streak7BonusPoints;
             }
 
-            // ✅ 當月全勤: 從 SystemSettings 讀取額外獎勵
+            // ✅ 當月全勤: 從 SystemSettings 讀取額外獎勵（額外加成）
             bool hasPerfectAttendance = await CheckMonthlyPerfectAttendanceAsync(userId, nowTaiwan);
-            if (hasPerfectAttendance)
+            if (hasPerfectAttendance && signInRule == null)
             {
                 var perfectAttendancePoints = await _settingsService.GetSettingIntAsync("SignIn.PerfectAttendance30Days.BonusPoints", 200);
                 var perfectAttendanceExp = await _settingsService.GetSettingIntAsync("SignIn.PerfectAttendance30Days.BonusExperience", 2000);
-                var perfectAttendanceCouponType = await _settingsService.GetSettingStringAsync("SignIn.PerfectAttendance30Days.CouponType", "MONTH_BONUS");
 
                 reward.Points += perfectAttendancePoints;
                 reward.Experience += perfectAttendanceExp;
                 reward.CouponCode = $"PERFECT_ATTENDANCE_{nowTaiwan:yyyyMM}";
+                reward.Description = reward.Description + " + 當月全勤獎勵";
             }
 
             return reward;
@@ -353,7 +379,7 @@ namespace GameSpace.Areas.MiniGame.Services
                         ChangeType = "SignIn",
                         PointsChanged = reward.Points,
                         ItemCode = "SIGNIN_REWARD",
-                        Description = $"簽到獎勵 (連續 {(reward.ConsecutiveDayBonus > 0 ? "+" + reward.ConsecutiveDayBonus : "")}天加成)",
+                        Description = reward.Description ?? "簽到獎勵",  // 使用 SignInRule.Description
                         ChangeTime = nowTaiwanTime  // 使用台灣時間
                     };
                     _context.WalletHistories.Add(history);
@@ -408,7 +434,7 @@ namespace GameSpace.Areas.MiniGame.Services
                             ChangeType = "Coupon",
                             PointsChanged = 0,
                             ItemCode = coupon.CouponCode,
-                            Description = $"全勤獎勵優惠券：{couponType.Name}",
+                            Description = reward.Description ?? $"優惠券獎勵：{couponType.Name}",  // 使用 SignInRule.Description
                             ChangeTime = nowTaiwanTime  // 使用台灣時間
                         };
                         _context.WalletHistories.Add(history);

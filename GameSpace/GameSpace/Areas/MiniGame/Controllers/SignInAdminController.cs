@@ -28,6 +28,20 @@ namespace GameSpace.Areas.MiniGame.Controllers
         {
             var rules = await _ruleService.GetAllRulesAsync();
 
+            // 動態查詢 CouponTypes（不可硬編碼）
+            var couponTypes = await _context.CouponTypes
+                .AsNoTracking()
+                .Where(ct => !ct.IsDeleted)
+                .OrderBy(ct => ct.CouponTypeId)
+                .Select(ct => new { ct.CouponTypeId, ct.Name })
+                .ToListAsync();
+
+            ViewBag.CouponTypes = couponTypes;
+
+            // 建立 Name → CouponTypeId 的映射（用於 JavaScript）
+            var couponTypeMapping = couponTypes.ToDictionary(ct => ct.Name, ct => ct.CouponTypeId);
+            ViewBag.CouponTypeMapping = System.Text.Json.JsonSerializer.Serialize(couponTypeMapping);
+
             var model = new SignInRuleSettingsViewModel
             {
                 Rules = rules.OrderBy(r => r.DayNumber).ToList()
@@ -38,7 +52,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateRule(int ruleId, int points, int experience, bool hasCoupon, string? couponTypeCode, bool isActive, string? description)
+        public async Task<IActionResult> UpdateRule(int ruleId, int points, int experience, bool hasCoupon, int? couponTypeId, bool isActive, string? description)
         {
             if (points < 0 || experience < 0)
             {
@@ -46,9 +60,28 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 return RedirectToAction(nameof(RuleSettings));
             }
 
+            // 將 CouponTypeId 映射為 CouponType.Name（因為資料庫 FK 使用 Name）
+            string? couponTypeCode = null;
+            if (hasCoupon && couponTypeId.HasValue)
+            {
+                var couponType = await _context.CouponTypes
+                    .AsNoTracking()
+                    .Where(ct => ct.CouponTypeId == couponTypeId.Value && !ct.IsDeleted)
+                    .Select(ct => ct.Name)
+                    .FirstOrDefaultAsync();
+
+                if (couponType == null)
+                {
+                    TempData["Error"] = "找不到指定的優惠券類型";
+                    return RedirectToAction(nameof(RuleSettings));
+                }
+
+                couponTypeCode = couponType;
+            }
+
             // 使用記憶體服務更新規則
             var success = await _ruleService.UpdateRuleAsync(ruleId, points, experience, hasCoupon, couponTypeCode, isActive, description);
-            
+
             if (!success)
             {
                 TempData["Error"] = "找不到該簽到規則";
