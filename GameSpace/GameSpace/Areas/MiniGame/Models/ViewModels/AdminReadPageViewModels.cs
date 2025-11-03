@@ -171,6 +171,28 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
     public class SignInRecordsViewModel
     {
         public PagedResult<SignInRecordViewModel> Records { get; set; } = new();
+        public SignInRecordsQueryModel Query { get; set; } = new();
+        // 統計數據（基於篩選後的結果）
+        public int FilteredRecordCount { get; set; }
+        public long TotalRewardedPoints { get; set; }
+        public long TotalRewardedExp { get; set; }
+        public int TotalCouponsGranted { get; set; }
+    }
+
+    public class SignInRecordsQueryModel
+    {
+        public int? UserId { get; set; }
+        public string? UserAccount { get; set; }
+        public string? UserName { get; set; }
+        public DateTime? StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public int? MinConsecutiveDays { get; set; }
+        public int? MaxConsecutiveDays { get; set; }
+        public string? SearchTerm { get; set; }
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public string SortBy { get; set; } = "SignTime";
+        public bool Descending { get; set; } = true;
     }
 
     public class PetMemberSummaryViewModel

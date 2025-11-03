@@ -16,24 +16,30 @@ namespace GameSpace.Areas.MiniGame.Controllers
         private readonly IGameQueryService _gameQueryService;
         private readonly IGameMutationService _gameMutationService;
         private readonly IFuzzySearchService _fuzzySearchService;
+        private readonly IGameRulesConfigService _gameRulesConfigService;
 
         public AdminMiniGameController(
             GameSpacedatabaseContext context,
             IGameQueryService gameQueryService,
             IGameMutationService gameMutationService,
-            IFuzzySearchService fuzzySearchService)
+            IFuzzySearchService fuzzySearchService,
+            IGameRulesConfigService gameRulesConfigService)
             : base(context)
         {
             _gameQueryService = gameQueryService;
             _gameMutationService = gameMutationService;
             _fuzzySearchService = fuzzySearchService;
+            _gameRulesConfigService = gameRulesConfigService;
         }
 
         // GET: AdminMiniGame
         // Note: MiniGame entity represents game play records, not game definitions
         public async Task<IActionResult> Index(string searchTerm = "", string result = "", string sortBy = "recent", int page = 1, int pageSize = 10)
         {
-            var query = _context.MiniGames.Include(g => g.User).AsQueryable();
+            var query = _context.MiniGames
+                .Include(g => g.User)
+                .Where(g => !g.IsDeleted)
+                .AsQueryable();
 
             // 模糊搜尋：SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
             var hasSearchTerm = !string.IsNullOrWhiteSpace(searchTerm);
@@ -469,7 +475,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
 
         /// <summary>
         /// GET: AdminMiniGame/GameRules
-        /// Display game rules configuration page
+        /// Display game rules configuration page with complete settings
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GameRules()
@@ -483,18 +489,10 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     return RedirectToAction(nameof(Index));
                 }
 
-                // Load current game rules
-                var gameRules = await _gameQueryService.GetGameRulesAsync();
+                // Load complete game rules configuration
+                var gameRulesConfig = await _gameRulesConfigService.GetCompleteGameRulesAsync();
 
-                // Load statistics - 暫時註解掉可能有問題的部分
-                // var stats = await _gameQueryService.GetGameStatisticsAsync();
-
-                // Pass additional data to view
-                // ViewBag.Statistics = stats;
-                ViewBag.TotalGamesPlayed = gameRules.TotalGamesPlayed;
-                ViewBag.TodayGamesPlayed = gameRules.TodayGamesPlayed;
-
-                return View(gameRules);
+                return View(gameRulesConfig);
             }
             catch (Exception ex)
             {
@@ -681,6 +679,143 @@ namespace GameSpace.Areas.MiniGame.Controllers
         }
 
         /// <summary>
+        /// POST: AdminMiniGame/UpdateLevelConfig
+        /// Update individual level configuration using new system
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateLevelConfig(LevelConfigInputModel model)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.Edit"))
+                {
+                    return Json(new { success = false, message = "您沒有權限修改關卡設定" });
+                }
+
+                // Validate model state
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return Json(new { success = false, message = $"驗證失敗: {string.Join(", ", errors)}" });
+                }
+
+                // Get current manager ID
+                var managerId = GetCurrentManagerId();
+                if (!managerId.HasValue)
+                {
+                    return Json(new { success = false, message = "無法取得管理員資訊" });
+                }
+
+                // Update level config
+                var (success, message) = await _gameRulesConfigService.UpdateLevelConfigAsync(model, managerId.Value);
+
+                if (success)
+                {
+                    await LogOperationAsync("UpdateLevelConfig", $"更新第 {model.Level} 關設定");
+                }
+
+                return Json(new { success, message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"更新關卡設定時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// POST: AdminMiniGame/UpdateAdventureImpact
+        /// Update adventure result impact (pet status changes)
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateAdventureImpact(AdventureResultImpactInputModel model)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.Edit"))
+                {
+                    return Json(new { success = false, message = "您沒有權限修改冒險結果影響設定" });
+                }
+
+                // Validate model state
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    return Json(new { success = false, message = $"驗證失敗: {string.Join(", ", errors)}" });
+                }
+
+                // Get current manager ID
+                var managerId = GetCurrentManagerId();
+                if (!managerId.HasValue)
+                {
+                    return Json(new { success = false, message = "無法取得管理員資訊" });
+                }
+
+                // Update adventure impact
+                var (success, message) = await _gameRulesConfigService.UpdateAdventureResultImpactAsync(model, managerId.Value);
+
+                if (success)
+                {
+                    await LogOperationAsync("UpdateAdventureImpact", $"更新冒險{model.ResultType}結果影響設定");
+                }
+
+                return Json(new { success, message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"更新冒險結果影響時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// POST: AdminMiniGame/UpdateGameDailyLimit
+        /// Update daily game limit using new system
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateGameDailyLimit(int dailyLimit)
+        {
+            try
+            {
+                // Check permission
+                if (!await HasPermissionAsync("MiniGame.Edit"))
+                {
+                    return Json(new { success = false, message = "您沒有權限修改每日次數限制" });
+                }
+
+                // Validate
+                if (dailyLimit < 1 || dailyLimit > 100)
+                {
+                    return Json(new { success = false, message = "每日次數必須在1-100之間" });
+                }
+
+                // Get current manager ID
+                var managerId = GetCurrentManagerId();
+                if (!managerId.HasValue)
+                {
+                    return Json(new { success = false, message = "無法取得管理員資訊" });
+                }
+
+                // Update daily limit
+                var (success, message) = await _gameRulesConfigService.UpdateDailyLimitAsync(dailyLimit, managerId.Value);
+
+                if (success)
+                {
+                    await LogOperationAsync("UpdateGameDailyLimit", $"更新每日遊戲次數限制為 {dailyLimit} 次");
+                }
+
+                return Json(new { success, message });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"更新每日次數限制時發生錯誤: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
         /// GET: AdminMiniGame/QueryRecords
         /// Alias for ViewGameRecords for backward compatibility
         /// </summary>
@@ -723,9 +858,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 // Query game records - will return ALL results if no filters provided
                 var result = await _gameQueryService.QueryGameRecordsAsync(query);
 
-                // Get statistics for the filtered results
-                var stats = await _gameQueryService.GetGameStatisticsAsync(query.StartDate, query.EndDate);
-
                 // Transform records to match frontend expectations
                 var data = result.Records.Select(r => new
                 {
@@ -738,12 +870,12 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     gameTime = r.StartTime.ToString("yyyy-MM-dd HH:mm:ss")
                 }).ToList();
 
-                // Return statistics
+                // Calculate statistics from filtered results (not just all records)
                 var statistics = new
                 {
                     totalGames = result.TotalCount,
-                    completedGames = stats.WinGames,
-                    avgScore = stats.AveragePointsPerGame,
+                    completedGames = result.Records.Count(r => r.Result == "Win" || r.Result == "勝利"),
+                    avgScore = result.Records.Any() ? (decimal)result.Records.Average(r => r.PointsGained) : 0,
                     maxScore = result.Records.Any() ? result.Records.Max(r => r.PointsGained) : 0
                 };
 

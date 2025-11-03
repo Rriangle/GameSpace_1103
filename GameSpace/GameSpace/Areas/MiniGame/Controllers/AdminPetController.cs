@@ -18,6 +18,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
         private readonly IPetQueryService _petQueryService;
         private readonly IPetMutationService _petMutationService;
         private readonly IFuzzySearchService _fuzzySearchService;
+        private readonly ILogger<AdminPetController> _logger;
 
         public AdminPetController(
             GameSpacedatabaseContext context,
@@ -25,7 +26,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
             IPetRulesService petRulesService,
             IPetQueryService petQueryService,
             IPetMutationService petMutationService,
-            IFuzzySearchService fuzzySearchService)
+            IFuzzySearchService fuzzySearchService,
+            ILogger<AdminPetController> logger)
             : base(context)
         {
             _petService = petService;
@@ -33,6 +35,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
             _petQueryService = petQueryService;
             _petMutationService = petMutationService;
             _fuzzySearchService = fuzzySearchService;
+            _logger = logger;
         }
 
         // GET: AdminPet
@@ -1228,6 +1231,10 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     ExpBonus = await GetSystemSettingIntAsync("Pet.ExpBonus", 1),
                     ColorChangePoints = await GetSystemSettingIntAsync("Pet.ColorChange.PointsCost", 2000),
                     BackgroundChangePoints = await GetSystemSettingIntAsync("Pet.BackgroundChange.PointsCost", 1000),
+                    DailyDecayHunger = await GetSystemSettingIntAsync("Pet.DailyDecay.Hunger", 20),
+                    DailyDecayMood = await GetSystemSettingIntAsync("Pet.DailyDecay.Mood", 30),
+                    DailyDecayStamina = await GetSystemSettingIntAsync("Pet.DailyDecay.Stamina", 10),
+                    DailyDecayCleanliness = await GetSystemSettingIntAsync("Pet.DailyDecay.Cleanliness", 20),
                     AvailableColors = await GetSystemSettingAsync("Pet.AvailableColors", "#FFFFFF,#FFD700,#FF6B6B,#4ECDC4,#45B7D1,#FFA07A,#98D8C8,#F7DC6F,#BB8FCE,#85C1E2"),
                     AvailableBackgrounds = await GetSystemSettingAsync("Pet.AvailableBackgrounds", "#FFFFFF,#F0F0F0,#E8F5E9,#E3F2FD,#FFF3E0,#FCE4EC,#F3E5F5,#E0F2F1,#FFF8E1,#EFEBE9")
                 };
@@ -1522,6 +1529,317 @@ namespace GameSpace.Areas.MiniGame.Controllers
             if (health < 30 || hunger < 20 || mood < 20) return "生病";
             if (hunger < 50) return "睡眠";
             return "活躍";
+        }
+
+        // ==================== 膚色與背景管理 API ====================
+
+        /// <summary>
+        /// 獲取所有膚色選項
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetSkinColors()
+        {
+            try
+            {
+                var colors = await _context.PetSkinColorCostSettings
+                    .Where(s => !s.IsDeleted)
+                    .OrderBy(s => s.DisplayOrder)
+                    .Select(s => new
+                    {
+                        s.SettingId,
+                        s.ColorCode,
+                        s.ColorName,
+                        s.PointsCost,
+                        s.ColorHex,
+                        s.IsActive,
+                        s.DisplayOrder
+                    })
+                    .ToListAsync();
+
+                return Json(colors);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "獲取膚色選項失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 獲取所有背景選項
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetBackgrounds()
+        {
+            try
+            {
+                var backgrounds = await _context.PetBackgroundCostSettings
+                    .Where(b => !b.IsDeleted)
+                    .OrderBy(b => b.DisplayOrder)
+                    .Select(b => new
+                    {
+                        b.SettingId,
+                        b.BackgroundCode,
+                        b.BackgroundName,
+                        b.PointsCost,
+                        b.IsActive,
+                        b.DisplayOrder
+                    })
+                    .ToListAsync();
+
+                return Json(backgrounds);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "獲取背景選項失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 新增膚色選項
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> AddSkinColor(string colorCode, string colorName, int pointsCost)
+        {
+            try
+            {
+                var maxOrder = await _context.PetSkinColorCostSettings
+                    .Where(s => !s.IsDeleted)
+                    .MaxAsync(s => (int?)s.DisplayOrder) ?? 0;
+
+                var setting = new PetSkinColorCostSetting
+                {
+                    ColorCode = colorCode,
+                    ColorName = colorName,
+                    ColorHex = colorCode,
+                    PointsCost = pointsCost,
+                    Rarity = "Common",
+                    IsActive = true,
+                    DisplayOrder = maxOrder + 1,
+                    IsFree = pointsCost == 0,
+                    IsLimitedEdition = false,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.PetSkinColorCostSettings.Add(setting);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "膚色新增成功" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "新增膚色失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 新增背景選項
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> AddBackground(string backgroundCode, string backgroundName, int pointsCost)
+        {
+            try
+            {
+                var maxOrder = await _context.PetBackgroundCostSettings
+                    .Where(b => !b.IsDeleted)
+                    .MaxAsync(b => (int?)b.DisplayOrder) ?? 0;
+
+                var setting = new PetBackgroundCostSetting
+                {
+                    BackgroundCode = backgroundCode,
+                    BackgroundName = backgroundName,
+                    PointsCost = pointsCost,
+                    Rarity = "Common",
+                    IsActive = true,
+                    DisplayOrder = maxOrder + 1,
+                    IsDeleted = false,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.PetBackgroundCostSettings.Add(setting);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "背景新增成功" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "新增背景失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 更新膚色所需點數
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> UpdateSkinColorPoints(int settingId, int pointsCost)
+        {
+            try
+            {
+                var setting = await _context.PetSkinColorCostSettings.FindAsync(settingId);
+                if (setting == null || setting.IsDeleted)
+                {
+                    return Json(new { success = false, message = "找不到膚色設定" });
+                }
+
+                setting.PointsCost = pointsCost;
+                setting.IsFree = pointsCost == 0;
+                setting.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新膚色點數失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 更新背景所需點數
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> UpdateBackgroundPoints(int settingId, int pointsCost)
+        {
+            try
+            {
+                var setting = await _context.PetBackgroundCostSettings.FindAsync(settingId);
+                if (setting == null || setting.IsDeleted)
+                {
+                    return Json(new { success = false, message = "找不到背景設定" });
+                }
+
+                setting.PointsCost = pointsCost;
+                setting.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "更新背景點數失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 切換膚色啟用狀態
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ToggleSkinColorActive(int settingId, bool isActive)
+        {
+            try
+            {
+                var setting = await _context.PetSkinColorCostSettings.FindAsync(settingId);
+                if (setting == null || setting.IsDeleted)
+                {
+                    return Json(new { success = false, message = "找不到膚色設定" });
+                }
+
+                setting.IsActive = isActive;
+                setting.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切換膚色狀態失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 切換背景啟用狀態
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ToggleBackgroundActive(int settingId, bool isActive)
+        {
+            try
+            {
+                var setting = await _context.PetBackgroundCostSettings.FindAsync(settingId);
+                if (setting == null || setting.IsDeleted)
+                {
+                    return Json(new { success = false, message = "找不到背景設定" });
+                }
+
+                setting.IsActive = isActive;
+                setting.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "切換背景狀態失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 刪除膚色選項（軟刪除）
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> DeleteSkinColor(int settingId)
+        {
+            try
+            {
+                var setting = await _context.PetSkinColorCostSettings.FindAsync(settingId);
+                if (setting == null || setting.IsDeleted)
+                {
+                    return Json(new { success = false, message = "找不到膚色設定" });
+                }
+
+                setting.IsDeleted = true;
+                setting.DeletedAt = DateTime.UtcNow;
+                setting.DeletedBy = GetCurrentManagerId();
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "膚色刪除成功" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刪除膚色失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 刪除背景選項（軟刪除）
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> DeleteBackground(int settingId)
+        {
+            try
+            {
+                var setting = await _context.PetBackgroundCostSettings.FindAsync(settingId);
+                if (setting == null || setting.IsDeleted)
+                {
+                    return Json(new { success = false, message = "找不到背景設定" });
+                }
+
+                setting.IsDeleted = true;
+                setting.DeletedAt = DateTime.UtcNow;
+                setting.DeletedBy = GetCurrentManagerId();
+
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "背景刪除成功" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "刪除背景失敗");
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
     }

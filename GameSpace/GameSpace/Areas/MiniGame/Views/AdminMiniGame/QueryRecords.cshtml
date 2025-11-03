@@ -318,10 +318,8 @@
                     case "放棄": statusClass = "badge-warning"; break;
                 }
                 
-                var actionButtons = "<button class=\"btn btn-sm btn-info\" onclick=\"viewDetail(\
- + row.recordId + 
-\)\">查看</button> " +
-                                   "<button class=\"btn btn-sm btn-warning\" onclick=\"adjustScore(\ + row.recordId + \)\">調整</button>";
+                var actionButtons = "<button class=\"btn btn-sm btn-info\" onclick=\"viewDetail(" + row.recordId + ")\">查看</button> " +
+                                   "<button class=\"btn btn-sm btn-warning\" onclick=\"adjustScore(" + row.recordId + ")\">調整</button>";
                 
                 table.row.add([
                     row.userId,

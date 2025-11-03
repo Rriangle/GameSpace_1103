@@ -14,12 +14,18 @@ namespace GameSpace.Areas.MiniGame.Services
         private readonly GameSpacedatabaseContext _context;
         private readonly IAppClock _appClock;
         private readonly ISystemSettingsService _systemSettings;
+        private readonly IFuzzySearchService _fuzzySearchService;
 
-        public GameQueryService(GameSpacedatabaseContext context, IAppClock appClock, ISystemSettingsService systemSettings)
+        public GameQueryService(
+            GameSpacedatabaseContext context,
+            IAppClock appClock,
+            ISystemSettingsService systemSettings,
+            IFuzzySearchService fuzzySearchService)
         {
             _context = context;
             _appClock = appClock;
             _systemSettings = systemSettings;
+            _fuzzySearchService = fuzzySearchService;
         }
 
         /// <summary>
@@ -101,13 +107,13 @@ namespace GameSpace.Areas.MiniGame.Services
             };
 
             // 計算統計數據
-            var totalGames = await _context.MiniGames.CountAsync();
+            var totalGames = await _context.MiniGames.Where(g => !g.IsDeleted).CountAsync();
             // Count games started today in Asia/Taipei timezone
             var taipeiNow = _appClock.ToAppTime(_appClock.UtcNow);
             var startUtc = _appClock.ToUtc(taipeiNow.Date);
             var endUtc = _appClock.ToUtc(taipeiNow.Date.AddDays(1));
             var activeToday = await _context.MiniGames
-                .Where(g => g.StartTime >= startUtc && g.StartTime < endUtc)
+                .Where(g => g.StartTime >= startUtc && g.StartTime < endUtc && !g.IsDeleted)
                 .CountAsync();
 
             viewModel.TotalGamesPlayed = totalGames;
@@ -123,9 +129,10 @@ namespace GameSpace.Areas.MiniGame.Services
         /// </summary>
         public async Task<GameRecordsListViewModel> QueryGameRecordsAsync(GameRecordQueryModel query)
         {
-            // 基礎查詢
+            // 基礎查詢 - 排除已刪除的記錄
             var baseQuery = _context.MiniGames
                 .AsNoTracking()
+                .Where(m => !m.IsDeleted)
                 .AsQueryable();
 
             // 應用篩選條件 - 會員ID 與 會員名稱採用 OR 邏輯（聯集）
@@ -152,21 +159,31 @@ namespace GameSpace.Areas.MiniGame.Services
                     .Select(u => new { u.UserId, u.UserAccount, u.UserName })
                     .ToListAsync();
 
-                // 建立優先級字典（在記憶體中計算）
+                // 建立優先級字典（在記憶體中計算，使用 FuzzySearchService）
                 foreach (var u in matchedUsers)
                 {
-                    var priority = 99;
+                    int priority = 99;
 
-                    if (hasUserId && u.UserId == query.UserId.Value)
-                        priority = 1; // UserId 精確匹配
-                    else if (hasUserId && u.UserId.ToString().Contains(userIdStr))
-                        priority = 2; // UserId 模糊匹配
-                    else if (hasUserName && u.UserAccount.Contains(searchTerm))
-                        priority = 3; // UserAccount 匹配
-                    else if (hasUserName && u.UserName.Contains(searchTerm))
-                        priority = 4; // UserName 匹配
+                    // 如果有 UserId 搜尋，優先檢查 UserId 匹配
+                    if (hasUserId)
+                    {
+                        if (u.UserId == query.UserId.Value)
+                            priority = 1; // UserId 精確匹配
+                        else if (u.UserId.ToString().Contains(userIdStr))
+                            priority = 2; // UserId 部分匹配
+                    }
 
-                    if (!userPriority.ContainsKey(u.UserId) || priority < userPriority[u.UserId])
+                    // 如果還沒匹配到且有 UserName 搜尋，使用 FuzzySearchService
+                    if (priority == 99 && hasUserName)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            searchTerm,
+                            u.UserAccount,
+                            u.UserName
+                        );
+                    }
+
+                    if (priority > 0 && (!userPriority.ContainsKey(u.UserId) || priority < userPriority[u.UserId]))
                     {
                         userPriority[u.UserId] = priority;
                     }
@@ -377,7 +394,7 @@ namespace GameSpace.Areas.MiniGame.Services
             var record = await _context.MiniGames
                 .Include(m => m.User)
                 .AsNoTracking()
-                .Where(m => m.PlayId == playId)
+                .Where(m => m.PlayId == playId && !m.IsDeleted)
                 .Select(m => new GameRecordDetailViewModel
                 {
                     PlayId = m.PlayId,
@@ -416,7 +433,10 @@ namespace GameSpace.Areas.MiniGame.Services
         /// </summary>
         public async Task<Models.ViewModels.GameStatisticsViewModel> GetGameStatisticsAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
-            var query = _context.MiniGames.AsNoTracking().AsQueryable();
+            var query = _context.MiniGames
+                .AsNoTracking()
+                .Where(m => !m.IsDeleted)
+                .AsQueryable();
 
             if (startDate.HasValue)
             {
@@ -483,7 +503,7 @@ namespace GameSpace.Areas.MiniGame.Services
 
             return await _context.MiniGames
                 .AsNoTracking()
-                .Where(m => m.UserId == userId && m.StartTime >= startUtc && m.StartTime < endUtc)
+                .Where(m => m.UserId == userId && m.StartTime >= startUtc && m.StartTime < endUtc && !m.IsDeleted)
                 .CountAsync();
         }
 

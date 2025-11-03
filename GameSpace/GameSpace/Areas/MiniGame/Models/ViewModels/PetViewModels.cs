@@ -588,6 +588,26 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
         [Range(0, 100, ErrorMessage = "最大健康度必須在 0-100 之間")]
         public int MaxHealth { get; set; } = 100;
 
+        [Display(Name = "每日飢餓度衰減")]
+        [Required(ErrorMessage = "每日飢餓度衰減為必填欄位")]
+        [Range(0, 100, ErrorMessage = "每日飢餓度衰減必須在 0-100 之間")]
+        public int DailyDecayHunger { get; set; } = 20;
+
+        [Display(Name = "每日心情衰減")]
+        [Required(ErrorMessage = "每日心情衰減為必填欄位")]
+        [Range(0, 100, ErrorMessage = "每日心情衰減必須在 0-100 之間")]
+        public int DailyDecayMood { get; set; } = 30;
+
+        [Display(Name = "每日體力衰減")]
+        [Required(ErrorMessage = "每日體力衰減為必填欄位")]
+        [Range(0, 100, ErrorMessage = "每日體力衰減必須在 0-100 之間")]
+        public int DailyDecayStamina { get; set; } = 10;
+
+        [Display(Name = "每日清潔度衰減")]
+        [Required(ErrorMessage = "每日清潔度衰減為必填欄位")]
+        [Range(0, 100, ErrorMessage = "每日清潔度衰減必須在 0-100 之間")]
+        public int DailyDecayCleanliness { get; set; } = 20;
+
         [Display(Name = "飢餓度衰減率")]
         [Required(ErrorMessage = "飢餓度衰減率為必填欄位")]
         [Range(1, 10, ErrorMessage = "飢餓度衰減率必須在 1-10 之間")]
