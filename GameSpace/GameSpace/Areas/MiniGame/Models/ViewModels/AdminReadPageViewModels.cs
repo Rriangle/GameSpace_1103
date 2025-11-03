@@ -30,6 +30,7 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
         public int UnusedCount { get; set; }        // 未使用
         public int UsedCount { get; set; }          // 已使用
         public int ExpiredCount { get; set; }       // 已過期
+        public List<CouponTypeOption> CouponTypeList { get; set; } = new();  // 優惠券類型下拉菜單列表
     }
 
     public class WalletEVouchersQueryViewModel

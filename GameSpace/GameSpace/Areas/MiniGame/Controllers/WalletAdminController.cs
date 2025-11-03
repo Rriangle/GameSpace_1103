@@ -232,6 +232,17 @@ namespace GameSpace.Areas.MiniGame.Controllers
 
             var unusedCount = unusedButNotExpiredCount + expiredCount;
 
+            // 動態讀取優惠券類型列表（用於下拉菜單）
+            var couponTypeList = await _context.CouponTypes
+                .AsNoTracking()
+                .OrderBy(ct => ct.CouponTypeId)
+                .Select(ct => new CouponTypeOption
+                {
+                    CouponTypeId = ct.CouponTypeId,
+                    Name = ct.Name
+                })
+                .ToListAsync();
+
             var model = new WalletCouponsQueryViewModel
             {
                 Query = query,
@@ -245,7 +256,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 TotalCoupons = totalCoupons,
                 UnusedCount = unusedCount,
                 UsedCount = usedCount,
-                ExpiredCount = expiredCount
+                ExpiredCount = expiredCount,
+                CouponTypeList = couponTypeList
             };
 
             return View(model);

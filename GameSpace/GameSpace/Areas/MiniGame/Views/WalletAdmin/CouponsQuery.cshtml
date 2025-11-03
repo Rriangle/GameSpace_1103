@@ -84,8 +84,14 @@
             </div>
             <div class="col-md-3">
                 <div class="form-floating">
-                    <input class="form-control rounded" id="Query_CouponTypeId" name="CouponTypeId" type="number" min="0" value="@(Model.Query.CouponTypeId ?? null)" placeholder="類型 ID" />
-                    <label for="Query_CouponTypeId"><i class="fas fa-tag me-1"></i>優惠券類型 ID</label>
+                    <select class="form-select rounded" id="Query_CouponTypeId" name="CouponTypeId">
+                        <option value="">全部類型</option>
+                        @foreach (var couponType in Model.CouponTypeList)
+                        {
+                            <option value="@couponType.CouponTypeId" selected="@(Model.Query.CouponTypeId == couponType.CouponTypeId)">@couponType.DisplayText</option>
+                        }
+                    </select>
+                    <label for="Query_CouponTypeId"><i class="fas fa-tag me-1"></i>優惠券類型</label>
                 </div>
             </div>
             <div class="col-md-3">
