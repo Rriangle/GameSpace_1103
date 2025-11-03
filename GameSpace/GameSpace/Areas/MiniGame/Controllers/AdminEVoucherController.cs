@@ -89,8 +89,40 @@ namespace GameSpace.Areas.MiniGame.Controllers
             ViewBag.EvoucherType = evoucherType;
             ViewBag.SortBy = sortBy;
             ViewBag.TotalEVouchers = totalCount;
-            ViewBag.UsedEVouchers = await _context.Evouchers.CountAsync(e => e.IsUsed);
-            ViewBag.UnusedEVouchers = await _context.Evouchers.CountAsync(e => !e.IsUsed);
+
+            // Build filtered query for statistics (before pagination)
+            var statsQuery = _context.Evouchers
+                .Include(e => e.User)
+                .Include(e => e.EvoucherType)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                statsQuery = statsQuery.Where(e => e.EvoucherCode.Contains(searchTerm) ||
+                                       e.User.UserName.Contains(searchTerm) ||
+                                       e.EvoucherType.Name.Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                var nowUtc = _appClock.UtcNow;
+                var now = _appClock.ToAppTime(nowUtc);
+                statsQuery = status switch
+                {
+                    "unused" => statsQuery.Where(e => !e.IsUsed && e.EvoucherType.ValidTo >= now),
+                    "used" => statsQuery.Where(e => e.IsUsed),
+                    "expired" => statsQuery.Where(e => !e.IsUsed && e.EvoucherType.ValidTo < now),
+                    _ => statsQuery
+                };
+            }
+
+            if (!string.IsNullOrEmpty(evoucherType) && int.TryParse(evoucherType, out int statsTypeId))
+            {
+                statsQuery = statsQuery.Where(e => e.EvoucherTypeId == statsTypeId);
+            }
+
+            ViewBag.UsedEVouchers = await statsQuery.CountAsync(e => e.IsUsed);
+            ViewBag.UnusedEVouchers = await statsQuery.CountAsync(e => !e.IsUsed);
             ViewBag.EvoucherTypes = await _context.EvoucherTypes.CountAsync();
             ViewBag.EvoucherTypeList = await _context.EvoucherTypes.ToListAsync();
 

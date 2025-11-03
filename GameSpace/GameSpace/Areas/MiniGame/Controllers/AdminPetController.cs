@@ -80,14 +80,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
             };
 
             // 設定 ViewBag 用於搜尋和篩選
-            var allPets = await _petService.GetAllPetsAsync();
+            // 修正：統計應該從篩選後的資料計算，不是重新查詢全表
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SortBy = sortBy;
-            ViewBag.TotalPets = allPets.Count();
-            ViewBag.HighLevelPets = allPets.Count(p => p.Level >= 10);
-            ViewBag.HealthyPets = allPets.Count(p => p.Health >= 80);
-            ViewBag.AverageLevel = allPets.Any() ? allPets.Average(p => (double)p.Level) : 0;
-            ViewBag.AverageHealth = allPets.Any() ? allPets.Average(p => (double)p.Health) : 0;
+            ViewBag.TotalPets = totalCount;
+            ViewBag.HighLevelPets = pets.Count(p => p.Level >= 10);
+            ViewBag.HealthyPets = pets.Count(p => p.Health >= 80);
+            ViewBag.AverageLevel = pets.Any() ? pets.Average(p => (double)p.Level) : 0;
+            ViewBag.AverageHealth = pets.Any() ? pets.Average(p => (double)p.Health) : 0;
 
             return View(viewModel);
         }
@@ -797,13 +797,45 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     .ToListAsync();
                 ViewBag.BackgroundColors = backgroundColors;
 
-                // 計算統計資訊
-                if (result.Items.Any())
+                // 修正：計算統計資訊應該從所有篩選結果計算，不是只從當前分頁
+                // 需要重新查詢所有篩選後的資料來計算統計值
+                if (result.TotalCount > 0)
                 {
+                    // 重新構建相同的篩選條件但不分頁，用於計算統計
+                    var statsQuery = _context.Pets
+                        .Include(p => p.User)
+                        .AsNoTracking()
+                        .AsQueryable();
+
+                    // 應用相同的篩選條件
+                    var hasUserId = query.UserId.HasValue;
+                    var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+                    var hasExtraPetName = !string.IsNullOrWhiteSpace(query.PetName);
+
+                    if (hasUserId || hasSearchTerm || hasExtraPetName)
+                    {
+                        statsQuery = statsQuery.Where(p =>
+                            (hasUserId && p.UserId == query.UserId.Value) ||
+                            (hasSearchTerm && (p.User.UserName.Contains(query.SearchTerm.Trim()) || p.PetName.Contains(query.SearchTerm.Trim()))) ||
+                            (hasExtraPetName && p.PetName.Contains(query.PetName.Trim()))
+                        );
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(query.SkinColor))
+                    {
+                        statsQuery = statsQuery.Where(p => p.SkinColor != null && p.SkinColor.Contains(query.SkinColor.Trim()));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(query.BackgroundColor))
+                    {
+                        statsQuery = statsQuery.Where(p => p.BackgroundColor != null && p.BackgroundColor.Contains(query.BackgroundColor.Trim()));
+                    }
+
+                    // 計算統計值（從所有篩選結果）
                     ViewBag.TotalPets = result.TotalCount;
-                    ViewBag.HealthyPets = result.Items.Count(p => p.Health >= 80);
-                    ViewBag.AverageLevel = result.Items.Average(p => (double)p.Level);
-                    ViewBag.MaxPetLevel = result.Items.Max(p => p.Level);
+                    ViewBag.HealthyPets = await statsQuery.CountAsync(p => p.Health >= 80);
+                    ViewBag.AverageLevel = await statsQuery.AverageAsync(p => (double)p.Level);
+                    ViewBag.MaxPetLevel = await statsQuery.MaxAsync(p => p.Level);
                 }
                 else
                 {

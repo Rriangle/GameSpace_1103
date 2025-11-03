@@ -7,10 +7,11 @@ namespace GameSpace.Areas.MiniGame.Models.ViewModels
     {
         public WalletQueryModel Query { get; set; } = new();
         public PagedResult<WalletPointRecord> Results { get; set; } = new();
-        public int TotalMembers { get; set; }          // 會員總數
-        public long TotalPoints { get; set; }          // 總餘額
-        public int AveragePoints { get; set; }         // 平均點數
-        public int HighestPoints { get; set; }         // 最高點數
+        public int QueryMemberCount { get; set; }      // 查詢會員數（根據篩選後的結果）
+        public long TotalPoints { get; set; }          // 總餘額（根據篩選後的結果）
+        public int AveragePoints { get; set; }         // 平均點數（根據篩選後的結果）
+        public int HighestPoints { get; set; }         // 最高點數（根據篩選後的結果）
+        public int LowestPoints { get; set; }          // 最低點數（根據篩選後的結果）
     }
 
     public class WalletPointRecord

@@ -14,11 +14,13 @@ namespace GameSpace.Areas.MiniGame.Controllers
     public class WalletAdminController : MiniGameBaseController
     {
         private readonly IAppClock _appClock;
+        private readonly Services.IFuzzySearchService _fuzzySearchService;
 
-        public WalletAdminController(GameSpacedatabaseContext context, IAppClock appClock)
+        public WalletAdminController(GameSpacedatabaseContext context, IAppClock appClock, Services.IFuzzySearchService fuzzySearchService)
             : base(context)
         {
             _appClock = appClock;
+            _fuzzySearchService = fuzzySearchService;
         }
 
         [HttpGet]
@@ -36,26 +38,59 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .AsNoTracking()
                 .AsQueryable();
 
-            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
             var hasUserId = query.UserId.HasValue;
             var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
 
             List<int> matchedUserIds = new List<int>();
+            Dictionary<int, int> userPriority = new Dictionary<int, int>();
+
             if (hasUserId || hasSearchTerm)
             {
                 var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
                 var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
 
-                // 查詢所有符合條件的用戶（OR邏輯）
-                var matchedUsers = await _context.Users
+                // 查詢所有用戶並使用 FuzzySearchService 計算優先順序
+                var allUsers = await _context.Users
                     .AsNoTracking()
-                    .Where(u =>
-                        (hasUserId && u.UserId.ToString().Contains(userIdStr)) ||
-                        (hasSearchTerm && (u.UserAccount.Contains(searchTerm) || u.UserName.Contains(searchTerm))))
                     .Select(u => new { u.UserId, u.UserAccount, u.UserName })
                     .ToListAsync();
 
-                matchedUserIds = matchedUsers.Select(u => u.UserId).Distinct().ToList();
+                foreach (var user in allUsers)
+                {
+                    int priority = 0;
+
+                    // 如果有 UserId 條件，優先匹配 UserId
+                    if (hasUserId)
+                    {
+                        if (user.UserId == query.UserId.Value)
+                        {
+                            priority = 1; // 完全匹配 UserId
+                        }
+                        else if (user.UserId.ToString().Contains(userIdStr))
+                        {
+                            priority = 2; // 部分匹配 UserId
+                        }
+                    }
+
+                    // 如果有 SearchTerm 條件，使用 FuzzySearchService
+                    if (hasSearchTerm && priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            searchTerm,
+                            user.UserAccount,
+                            user.UserName
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedUserIds.Add(user.UserId);
+                        userPriority[user.UserId] = priority;
+                    }
+                }
+
                 source = source.Where(w => matchedUserIds.Contains(w.UserId));
             }
 
@@ -69,32 +104,21 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 source = source.Where(w => w.UserPoint <= query.MaxAmount.Value);
             }
 
-            // 計算總數（在資料實體化之前）
-            var totalCount = await source.CountAsync();
+            // 計算篩選後的總數和統計數據
+            var filteredWallets = await source.ToListAsync();
+            var totalCount = filteredWallets.Count;
 
-            // 優先順序排序：先取資料再排序（避免 EF 無法轉換 Dictionary）
+            // 動態計算統計數據（基於篩選後的資料）
+            var queryMemberCount = totalCount;
+            var totalPoints = filteredWallets.Sum(w => (long)w.UserPoint);
+            var avgPoints = totalCount > 0 ? (int)(totalPoints / totalCount) : 0;
+            var maxPoints = filteredWallets.Any() ? filteredWallets.Max(w => w.UserPoint) : 0;
+            var minPoints = filteredWallets.Any() ? filteredWallets.Min(w => w.UserPoint) : 0;
+
+            // 優先順序排序
             List<UserWallet> items;
             if (hasUserId || hasSearchTerm)
             {
-                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
-                var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
-
-                // 先將篩選後的資料載入記憶體
-                var filteredWallets = await source.ToListAsync();
-
-                var userPriority = await _context.Users
-                    .AsNoTracking()
-                    .Where(u => matchedUserIds.Contains(u.UserId))
-                    .Select(u => new
-                    {
-                        u.UserId,
-                        Priority = hasUserId && u.UserId == query.UserId.Value ? 1 :
-                                   hasUserId && u.UserId.ToString().Contains(userIdStr) ? 2 :
-                                   hasSearchTerm && u.UserAccount.Contains(searchTerm) ? 3 :
-                                   hasSearchTerm && u.UserName.Contains(searchTerm) ? 4 : 5
-                    })
-                    .ToDictionaryAsync(x => x.UserId, x => x.Priority);
-
                 // 在記憶體中進行優先順序排序
                 var ordered = filteredWallets.OrderBy(w => userPriority.ContainsKey(w.UserId) ? userPriority[w.UserId] : 99);
 
@@ -116,13 +140,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 // 沒有搜尋條件時使用資料庫排序
                 var sorted = query.SortBy?.ToLowerInvariant() switch
                 {
-                    "points_asc" => source.OrderBy(w => w.UserPoint),
-                    "userid_desc" => source.OrderByDescending(w => w.UserId),
-                    "userid_asc" => source.OrderBy(w => w.UserId),
-                    _ => source.OrderByDescending(w => w.UserPoint)
+                    "points_asc" => filteredWallets.OrderBy(w => w.UserPoint),
+                    "points_desc" => filteredWallets.OrderByDescending(w => w.UserPoint),
+                    "userid_desc" => filteredWallets.OrderByDescending(w => w.UserId),
+                    "userid_asc" => filteredWallets.OrderBy(w => w.UserId),
+                    _ => filteredWallets.OrderByDescending(w => w.UserPoint)
                 };
 
-                items = await sorted.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                items = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             }
 
             var userIds = items.Select(i => i.UserId).Distinct().ToList();
@@ -149,13 +174,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 };
             }).ToList();
 
-            // 計算統計數據 - 從 SQL Server 讀取所有錢包資料
-            var allWallets = await _context.UserWallets.AsNoTracking().ToListAsync();
-            var totalMembers = allWallets.Count;
-            var totalPoints = allWallets.Sum(w => (long)w.UserPoint);
-            var avgPoints = totalMembers > 0 ? (int)(totalPoints / totalMembers) : 0;
-            var maxPoints = allWallets.Any() ? allWallets.Max(w => w.UserPoint) : 0;
-
             var model = new WalletPointsQueryViewModel
             {
                 Query = query,
@@ -166,10 +184,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     CurrentPage = page,
                     PageSize = pageSize
                 },
-                TotalMembers = totalMembers,
+                QueryMemberCount = queryMemberCount,
                 TotalPoints = totalPoints,
                 AveragePoints = avgPoints,
-                HighestPoints = maxPoints
+                HighestPoints = maxPoints,
+                LowestPoints = minPoints
             };
 
             return View(model);
@@ -192,19 +211,61 @@ namespace GameSpace.Areas.MiniGame.Controllers
                          from ct in ctj.DefaultIfEmpty()
                          select new { c, u, ct };
 
-            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
             var hasUserId = query.UserId.HasValue;
             var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+
+            List<int> matchedUserIds = new List<int>();
+            Dictionary<int, int> userPriority = new Dictionary<int, int>();
 
             if (hasUserId || hasSearchTerm)
             {
                 var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
-                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+                var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
 
-                source = source.Where(x =>
-                    (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) ||
-                    (hasSearchTerm && (x.c.CouponCode.Contains(term) ||
-                                      (x.u != null && (x.u.UserAccount.Contains(term) || x.u.UserName.Contains(term))))));
+                // 查詢所有用戶並使用 FuzzySearchService 計算優先順序
+                var allUsers = await _context.Users
+                    .AsNoTracking()
+                    .Select(u => new { u.UserId, u.UserAccount, u.UserName })
+                    .ToListAsync();
+
+                foreach (var user in allUsers)
+                {
+                    int priority = 0;
+
+                    // 如果有 UserId 條件，優先匹配 UserId
+                    if (hasUserId)
+                    {
+                        if (user.UserId == query.UserId.Value)
+                        {
+                            priority = 1; // 完全匹配 UserId
+                        }
+                        else if (user.UserId.ToString().Contains(userIdStr))
+                        {
+                            priority = 2; // 部分匹配 UserId
+                        }
+                    }
+
+                    // 如果有 SearchTerm 條件，使用 FuzzySearchService
+                    if (hasSearchTerm && priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            searchTerm,
+                            user.UserAccount,
+                            user.UserName
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedUserIds.Add(user.UserId);
+                        userPriority[user.UserId] = priority;
+                    }
+                }
+
+                source = source.Where(x => matchedUserIds.Contains(x.u.UserId) ||
+                                           (hasSearchTerm && x.c.CouponCode.Contains(searchTerm)));
             }
 
             if (query.CouponTypeId.HasValue)
@@ -232,18 +293,22 @@ namespace GameSpace.Areas.MiniGame.Controllers
 
             if (hasUserId || hasSearchTerm)
             {
-                var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
-                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+                var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
 
-                // 在記憶體中進行優先順序排序
+                // 在記憶體中進行優先順序排序（使用 userPriority 字典）
                 var ordered = allItems.OrderBy(x =>
                 {
-                    if (hasUserId && x.u != null && x.u.UserId == query.UserId.Value) return 1;
-                    if (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) return 2;
-                    if (hasSearchTerm && x.u != null && x.u.UserAccount.Contains(term)) return 3;
-                    if (hasSearchTerm && x.u != null && x.u.UserName.Contains(term)) return 4;
-                    if (hasSearchTerm && x.c.CouponCode.Contains(term)) return 5;
-                    return 6;
+                    // 如果用戶匹配，返回對應優先順序
+                    if (x.u != null && userPriority.ContainsKey(x.u.UserId))
+                    {
+                        return userPriority[x.u.UserId];
+                    }
+                    // 如果優惠券代碼匹配
+                    if (hasSearchTerm && x.c.CouponCode.Contains(searchTerm))
+                    {
+                        return 5;
+                    }
+                    return 99;
                 });
 
                 // 次要排序
@@ -287,34 +352,20 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 IsUsed = x.c.IsUsed
             }).ToList();
 
-            // 計算統計數據 - 從 SQL Server 讀取所有優惠券資料
+            // 計算統計數據 - 從篩選後的 source 計算（而不是從全表）
             var nowTime = _appClock.UtcNow;
 
-            // 直接從 Coupon 表讀取統計數據
-            var totalCoupons = await _context.Coupons
-                .AsNoTracking()
-                .CountAsync();
+            // 使用已經篩選過的 allItems 來計算統計數據
+            var totalCoupons = totalCount;
 
             // 已使用的優惠券
-            var usedCount = await _context.Coupons
-                .AsNoTracking()
-                .CountAsync(c => c.IsUsed);
+            var usedCount = allItems.Count(x => x.c.IsUsed);
 
-            // 未使用的優惠券
-            var unusedButNotExpiredCount = await (from c in _context.Coupons.AsNoTracking()
-                                                   join ct in _context.CouponTypes.AsNoTracking()
-                                                      on c.CouponTypeId equals ct.CouponTypeId
-                                                   where !c.IsUsed && ct.ValidTo >= nowTime
-                                                   select c)
-                .CountAsync();
+            // 未使用的優惠券（未過期）
+            var unusedButNotExpiredCount = allItems.Count(x => !x.c.IsUsed && (x.ct == null || x.ct.ValidTo >= nowTime));
 
             // 已過期的未使用優惠券
-            var expiredCount = await (from c in _context.Coupons.AsNoTracking()
-                                       join ct in _context.CouponTypes.AsNoTracking()
-                                           on c.CouponTypeId equals ct.CouponTypeId
-                                       where !c.IsUsed && ct.ValidTo < nowTime
-                                       select c)
-                .CountAsync();
+            var expiredCount = allItems.Count(x => !x.c.IsUsed && x.ct != null && x.ct.ValidTo < nowTime);
 
             var unusedCount = unusedButNotExpiredCount + expiredCount;
 
@@ -366,19 +417,61 @@ namespace GameSpace.Areas.MiniGame.Controllers
                          from et in etj.DefaultIfEmpty()
                          select new { e, u, et };
 
-            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯）
+            // 模糊搜尋：UserId 或 SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
             var hasUserId = query.UserId.HasValue;
             var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
+
+            List<int> matchedUserIds = new List<int>();
+            Dictionary<int, int> userPriority = new Dictionary<int, int>();
 
             if (hasUserId || hasSearchTerm)
             {
                 var userIdStr = hasUserId ? query.UserId.Value.ToString() : "";
-                var term = hasSearchTerm ? query.SearchTerm!.Trim() : "";
+                var searchTerm = hasSearchTerm ? query.SearchTerm!.Trim() : "";
 
-                source = source.Where(x =>
-                    (hasUserId && x.u != null && x.u.UserId.ToString().Contains(userIdStr)) ||
-                    (hasSearchTerm && (x.e.EvoucherCode.Contains(term) ||
-                                      (x.u != null && (x.u.UserAccount.Contains(term) || x.u.UserName.Contains(term))))));
+                // 查詢所有用戶並使用 FuzzySearchService 計算優先順序
+                var allUsers = await _context.Users
+                    .AsNoTracking()
+                    .Select(u => new { u.UserId, u.UserAccount, u.UserName })
+                    .ToListAsync();
+
+                foreach (var user in allUsers)
+                {
+                    int priority = 0;
+
+                    // 如果有 UserId 條件，優先匹配 UserId
+                    if (hasUserId)
+                    {
+                        if (user.UserId == query.UserId.Value)
+                        {
+                            priority = 1; // 完全匹配 UserId
+                        }
+                        else if (user.UserId.ToString().Contains(userIdStr))
+                        {
+                            priority = 2; // 部分匹配 UserId
+                        }
+                    }
+
+                    // 如果有 SearchTerm 條件，使用 FuzzySearchService
+                    if (hasSearchTerm && priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            searchTerm,
+                            user.UserAccount,
+                            user.UserName
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedUserIds.Add(user.UserId);
+                        userPriority[user.UserId] = priority;
+                    }
+                }
+
+                source = source.Where(x => matchedUserIds.Contains(x.u.UserId) ||
+                                           (hasSearchTerm && x.e.EvoucherCode.Contains(searchTerm)));
             }
 
             if (query.EVoucherTypeId.HasValue)
@@ -467,17 +560,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 UsedLocation = null
             }).ToList();
 
-            // 計算統計數據 - 從 SQL Server 讀取所有電子禮券資料
+            // 計算統計數據 - 從篩選後的 allItems 計算（而不是從全表）
             var nowEVoucher = _appClock.UtcNow;
-            var allEVouchersQuery = from e in _context.Evouchers.AsNoTracking()
-                                    join et in _context.EvoucherTypes.AsNoTracking() on e.EvoucherTypeId equals et.EvoucherTypeId into etj
-                                    from et in etj.DefaultIfEmpty()
-                                    select new { e, et };
 
-            var totalEvouchers = await allEVouchersQuery.CountAsync();
-            var unusedEVoucherCount = await allEVouchersQuery.CountAsync(x => !x.e.IsUsed && (x.et == null || x.et.ValidTo >= nowEVoucher));
-            var usedEVoucherCount = await allEVouchersQuery.CountAsync(x => x.e.IsUsed);
-            var expiredEVoucherCount = await allEVouchersQuery.CountAsync(x => !x.e.IsUsed && x.et != null && x.et.ValidTo < nowEVoucher);
+            // 使用已經篩選過的 allItems 來計算統計數據
+            var totalEvouchers = totalCount;
+            var unusedEVoucherCount = allItems.Count(x => !x.e.IsUsed && (x.et == null || x.et.ValidTo >= nowEVoucher));
+            var usedEVoucherCount = allItems.Count(x => x.e.IsUsed);
+            var expiredEVoucherCount = allItems.Count(x => !x.e.IsUsed && x.et != null && x.et.ValidTo < nowEVoucher);
 
             var model = new WalletEVouchersQueryViewModel
             {

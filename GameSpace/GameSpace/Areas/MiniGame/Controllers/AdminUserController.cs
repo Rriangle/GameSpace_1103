@@ -85,9 +85,36 @@ namespace GameSpace.Areas.MiniGame.Controllers
             ViewBag.SearchTerm = searchTerm;
             ViewBag.Status = status;
             ViewBag.SortBy = sortBy;
-            ViewBag.TotalUsers = await _userService.GetTotalUsersCountAsync();
-            ViewBag.ActiveUsers = await _userService.GetActiveUsersCountAsync();
-            ViewBag.InactiveUsers = ViewBag.TotalUsers - ViewBag.ActiveUsers;
+
+            // Calculate statistics from filtered data (before pagination)
+            ViewBag.TotalUsers = totalCount;
+
+            // Rebuild filtered users without pagination for active/inactive counts
+            IEnumerable<User> filteredUsers;
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status == "active")
+                    filteredUsers = await _userService.GetActiveUsersAsync();
+                else if (status == "inactive")
+                    filteredUsers = await _userService.GetInactiveUsersAsync();
+                else
+                    filteredUsers = await _userService.GetAllUsersAsync(1, 10000);
+            }
+            else
+            {
+                filteredUsers = await _userService.GetAllUsersAsync(1, 10000);
+            }
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                filteredUsers = filteredUsers.Where(u => u.UserName.Contains(searchTerm) ||
+                                        u.UserAccount.Contains(searchTerm) ||
+                                        (u.UserIntroduce != null && u.UserIntroduce.Email.Contains(searchTerm)));
+            }
+
+            // Count active/inactive from filtered data
+            ViewBag.ActiveUsers = filteredUsers.Count(u => u.UserRight?.UserStatus == true);
+            ViewBag.InactiveUsers = filteredUsers.Count(u => u.UserRight?.UserStatus != true);
 
             return View(viewModel);
         }

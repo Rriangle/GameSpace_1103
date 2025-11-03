@@ -71,7 +71,32 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var activeManagers = await _context.ManagerData.CountAsync(m => !m.ManagerLockoutEnabled || !m.ManagerLockoutEnd.HasValue || m.ManagerLockoutEnd <= DateTime.Now);
+            // Build filtered query for statistics (before pagination) - same filters as main query
+            var statsQuery = _context.ManagerData
+                .Include(m => m.ManagerRoles)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                statsQuery = statsQuery.Where(m => (m.ManagerName != null && m.ManagerName.Contains(searchTerm)) ||
+                                       (m.ManagerAccount != null && m.ManagerAccount.Contains(searchTerm)) ||
+                                       m.ManagerEmail.Contains(searchTerm));
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status == "active")
+                    statsQuery = statsQuery.Where(m => !m.ManagerLockoutEnabled || !m.ManagerLockoutEnd.HasValue || m.ManagerLockoutEnd <= DateTime.Now);
+                else if (status == "locked")
+                    statsQuery = statsQuery.Where(m => m.ManagerLockoutEnabled && m.ManagerLockoutEnd.HasValue && m.ManagerLockoutEnd > DateTime.Now);
+            }
+
+            if (!string.IsNullOrEmpty(role) && int.TryParse(role, out int statsRoleId))
+            {
+                statsQuery = statsQuery.Where(m => m.ManagerRoles.Any(mr => mr.ManagerRoleId == statsRoleId));
+            }
+
+            var activeManagers = await statsQuery.CountAsync(m => !m.ManagerLockoutEnabled || !m.ManagerLockoutEnd.HasValue || m.ManagerLockoutEnd <= DateTime.Now);
             var roles = await _context.ManagerRolePermissions
                 .OrderBy(r => r.RoleName)
                 .ToListAsync();

@@ -77,10 +77,12 @@ namespace GameSpace.Areas.MiniGame.Controllers
             ViewBag.Result = result;
             ViewBag.SortBy = sortBy;
             ViewBag.TotalGames = totalCount;
-            ViewBag.CompletedGames = await _context.MiniGames.CountAsync(g => g.Result == "勝利" || g.Result == "Win");
-            ViewBag.AbortedGames = await _context.MiniGames.CountAsync(g => g.Aborted);
-            ViewBag.TotalPointsAwarded = await _context.MiniGames.SumAsync(g => (int?)g.PointsGained) ?? 0;
-            ViewBag.TotalExpAwarded = await _context.MiniGames.SumAsync(g => (int?)g.ExpGained) ?? 0;
+
+            // 修正：統計應該從篩選後的 query 計算（而不是從全表 _context.MiniGames）
+            ViewBag.CompletedGames = await query.CountAsync(g => g.Result == "勝利" || g.Result == "Win");
+            ViewBag.AbortedGames = await query.CountAsync(g => g.Aborted);
+            ViewBag.TotalPointsAwarded = await query.SumAsync(g => (int?)g.PointsGained) ?? 0;
+            ViewBag.TotalExpAwarded = await query.SumAsync(g => (int?)g.ExpGained) ?? 0;
 
             return View(viewModel);
         }
