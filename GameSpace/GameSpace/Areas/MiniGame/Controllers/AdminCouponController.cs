@@ -352,9 +352,10 @@ namespace GameSpace.Areas.MiniGame.Controllers
         #region CouponType Management
 
         // GET: AdminCoupon/CouponTypes
-        public async Task<IActionResult> CouponTypes(string searchTerm = "", string discountType = "", string sortBy = "name", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> CouponTypes(string searchTerm = "", string discountType = "", string sortBy = "id", int page = 1, int pageSize = 10)
         {
-            var query = _context.CouponTypes.AsQueryable();
+            // 只查詢未刪除的優惠券類型
+            var query = _context.CouponTypes.Where(ct => !ct.IsDeleted).AsQueryable();
 
             // 搜尋功能
             if (!string.IsNullOrEmpty(searchTerm))
@@ -368,13 +369,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 query = query.Where(ct => ct.DiscountType == discountType);
             }
 
-            // 排序
+            // 排序 (預設按 ID 升序排列)
             query = sortBy switch
             {
+                "name" => query.OrderBy(ct => ct.Name),
                 "points" => query.OrderBy(ct => ct.PointsCost),
                 "discount" => query.OrderByDescending(ct => ct.DiscountValue),
                 "validfrom" => query.OrderBy(ct => ct.ValidFrom),
-                _ => query.OrderBy(ct => ct.Name)
+                _ => query.OrderBy(ct => ct.CouponTypeId) // 預設按 ID 升序
             };
 
             var totalCount = await query.CountAsync();
@@ -394,8 +396,12 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 SortBy = sortBy
             };
 
+            ViewBag.TotalCount = totalCount; // 提供給頁面統計卡片使用
             ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
             ViewBag.CurrentPage = page;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.DiscountType = discountType;
+            ViewBag.SortBy = sortBy;
 
             return View(viewModel);
         }
@@ -588,15 +594,13 @@ namespace GameSpace.Areas.MiniGame.Controllers
         }
 
         // POST: AdminCoupon/DeleteCouponType/5
+        // 軟刪除優惠券類型 (設定 IsDeleted = true)
         [HttpPost, ActionName("DeleteCouponType")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteCouponTypeConfirmed(int id)
         {
             try
             {
-                // 檢查是否有相關的優惠券
-                var relatedCouponsCount = await _context.Coupons.CountAsync(c => c.CouponTypeId == id);
-                
                 var couponType = await _context.CouponTypes.FindAsync(id);
                 if (couponType == null)
                 {
@@ -604,34 +608,50 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     return RedirectToAction(nameof(CouponTypes));
                 }
 
-                using var transaction = await _context.Database.BeginTransactionAsync();
-                try
-                {
-                    // 如果有相關優惠券，先刪除相關的優惠券
-                    if (relatedCouponsCount > 0)
-                    {
-                        var relatedCoupons = await _context.Coupons.Where(c => c.CouponTypeId == id).ToListAsync();
-                        _context.Coupons.RemoveRange(relatedCoupons);
-                        
-                        TempData["WarningMessage"] = $"已刪除 {relatedCouponsCount} 個相關優惠券";
-                    }
+                // 軟刪除：設定 IsDeleted = true
+                couponType.IsDeleted = true;
+                couponType.DeletedAt = _appClock.UtcNow;
+                couponType.DeleteReason = "管理員透過後台刪除";
 
-                    // 刪除優惠券類型
-                    _context.CouponTypes.Remove(couponType);
-                    await _context.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                await _context.SaveChangesAsync();
 
-                    TempData["SuccessMessage"] = "優惠券類型刪除成功";
-                }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    TempData["ErrorMessage"] = $"刪除失敗：{ex.Message}";
-                }
+                TempData["SuccessMessage"] = $"優惠券類型「{couponType.Name}」已刪除（軟刪除）";
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"刪除失敗：{ex.Message}";
+            }
+
+            return RedirectToAction(nameof(CouponTypes));
+        }
+
+        // POST: AdminCoupon/DisableCouponType
+        // 停用優惠券類型 (軟刪除，與 DeleteCouponType 相同，但訊息不同)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisableCouponType(int id)
+        {
+            try
+            {
+                var couponType = await _context.CouponTypes.FindAsync(id);
+                if (couponType == null)
+                {
+                    TempData["ErrorMessage"] = "找不到要停用的優惠券類型";
+                    return RedirectToAction(nameof(CouponTypes));
+                }
+
+                // 軟刪除：設定 IsDeleted = true
+                couponType.IsDeleted = true;
+                couponType.DeletedAt = _appClock.UtcNow;
+                couponType.DeleteReason = "管理員停用";
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"優惠券類型「{couponType.Name}」已停用";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"停用失敗：{ex.Message}";
             }
 
             return RedirectToAction(nameof(CouponTypes));

@@ -312,29 +312,95 @@ namespace GameSpace.Areas.MiniGame.Controllers
         // POST: AdminEVoucher/CreateType
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateType(AdminEVoucherTypeCreateViewModel model)
+        public async Task<IActionResult> CreateType([Bind("Name,Description,ValueAmount,ValidFrom,ValidTo,PointsCost,TotalAvailable")] EvoucherType eVoucherType)
         {
             if (ModelState.IsValid)
             {
-                var eVoucherType = new EvoucherType
+                // 驗證：截止日必須晚於起始日
+                if (eVoucherType.ValidFrom >= eVoucherType.ValidTo)
                 {
-                    Name = model.Name,
-                    Description = model.Description,
-                    ValueAmount = model.ValueAmount,
-                    ValidFrom = model.ValidFrom,
-                    ValidTo = model.ValidTo,
-                    PointsCost = model.PointsCost,
-                    TotalAvailable = model.TotalAvailable
-                };
+                    ModelState.AddModelError("ValidTo", "有效截止日必須晚於有效起始日");
+                    return View(eVoucherType);
+                }
+
+                // 設定預設值
+                eVoucherType.IsDeleted = false;
+                eVoucherType.DeletedAt = null;
+                eVoucherType.DeletedBy = null;
+                eVoucherType.DeleteReason = null;
 
                 _context.Add(eVoucherType);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = "禮券類型建立成功";
-                return RedirectToAction(nameof(EvoucherTypes));
+                TempData["SuccessMessage"] = $"電子禮券類型「{eVoucherType.Name}」建立成功";
+                return RedirectToAction("AdjustEVoucher", "WalletAdmin");
             }
 
-            return View(model);
+            return View(eVoucherType);
+        }
+
+        // POST: AdminEVoucher/DisableEVoucherType
+        // 停用電子禮券類型 (軟刪除)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DisableEVoucherType(int id)
+        {
+            try
+            {
+                var evoucherType = await _context.EvoucherTypes.FindAsync(id);
+                if (evoucherType == null)
+                {
+                    TempData["ErrorMessage"] = "找不到要停用的電子禮券類型";
+                    return RedirectToAction("AdjustEVoucher", "WalletAdmin");
+                }
+
+                // 軟刪除：設定 IsDeleted = true
+                evoucherType.IsDeleted = true;
+                evoucherType.DeletedAt = _appClock.UtcNow;
+                evoucherType.DeleteReason = "管理員停用";
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"電子禮券類型「{evoucherType.Name}」已停用";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"停用失敗：{ex.Message}";
+            }
+
+            return RedirectToAction("AdjustEVoucher", "WalletAdmin");
+        }
+
+        // POST: AdminEVoucher/DeleteEVoucherType
+        // 刪除電子禮券類型 (軟刪除)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteEVoucherType(int id)
+        {
+            try
+            {
+                var evoucherType = await _context.EvoucherTypes.FindAsync(id);
+                if (evoucherType == null)
+                {
+                    TempData["ErrorMessage"] = "找不到要刪除的電子禮券類型";
+                    return RedirectToAction("AdjustEVoucher", "WalletAdmin");
+                }
+
+                // 軟刪除：設定 IsDeleted = true
+                evoucherType.IsDeleted = true;
+                evoucherType.DeletedAt = _appClock.UtcNow;
+                evoucherType.DeleteReason = "管理員透過後台刪除";
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"電子禮券類型「{evoucherType.Name}」已刪除（軟刪除）";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"刪除失敗：{ex.Message}";
+            }
+
+            return RedirectToAction("AdjustEVoucher", "WalletAdmin");
         }
 
         // GET: AdminEVoucher/Edit/5
