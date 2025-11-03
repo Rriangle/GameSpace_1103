@@ -203,15 +203,34 @@ namespace GameSpace.Areas.MiniGame.Controllers
 
             // 計算統計數據 - 從 SQL Server 讀取所有優惠券資料
             var nowTime = _appClock.UtcNow;
-            var allCouponsQuery = from c in _context.Coupons.AsNoTracking()
-                                  join ct in _context.CouponTypes.AsNoTracking() on c.CouponTypeId equals ct.CouponTypeId into ctj
-                                  from ct in ctj.DefaultIfEmpty()
-                                  select new { c, ct };
 
-            var totalCoupons = await allCouponsQuery.CountAsync();
-            var unusedCount = await allCouponsQuery.CountAsync(x => !x.c.IsUsed && (x.ct == null || x.ct.ValidTo >= nowTime));
-            var usedCount = await allCouponsQuery.CountAsync(x => x.c.IsUsed);
-            var expiredCount = await allCouponsQuery.CountAsync(x => !x.c.IsUsed && x.ct != null && x.ct.ValidTo < nowTime);
+            // 直接從 Coupon 表讀取統計數據
+            var totalCoupons = await _context.Coupons
+                .AsNoTracking()
+                .CountAsync();
+
+            // 已使用的優惠券
+            var usedCount = await _context.Coupons
+                .AsNoTracking()
+                .CountAsync(c => c.IsUsed);
+
+            // 未使用的優惠券
+            var unusedButNotExpiredCount = await (from c in _context.Coupons.AsNoTracking()
+                                                   join ct in _context.CouponTypes.AsNoTracking()
+                                                      on c.CouponTypeId equals ct.CouponTypeId
+                                                   where !c.IsUsed && ct.ValidTo >= nowTime
+                                                   select c)
+                .CountAsync();
+
+            // 已過期的未使用優惠券
+            var expiredCount = await (from c in _context.Coupons.AsNoTracking()
+                                       join ct in _context.CouponTypes.AsNoTracking()
+                                           on c.CouponTypeId equals ct.CouponTypeId
+                                       where !c.IsUsed && ct.ValidTo < nowTime
+                                       select c)
+                .CountAsync();
+
+            var unusedCount = unusedButNotExpiredCount + expiredCount;
 
             var model = new WalletCouponsQueryViewModel
             {
