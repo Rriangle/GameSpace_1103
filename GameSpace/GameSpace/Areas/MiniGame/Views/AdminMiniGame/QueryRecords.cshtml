@@ -33,16 +33,6 @@
                                 <label for="userName" class="form-label">會員名稱</label>
                                 <input type="text" class="form-control" id="userName" name="userName" placeholder="輸入會員名稱">
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="gameType" class="form-label">遊戲類型</label>
-                                <select class="form-control" id="gameType" name="gameType">
-                                    <option value="">全部類型</option>
-                                    <option value="adventure">冒險遊戲</option>
-                                    <option value="puzzle">益智遊戲</option>
-                                    <option value="action">動作遊戲</option>
-                                    <option value="strategy">策略遊戲</option>
-                                </select>
-                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-3 mb-3">
@@ -192,8 +182,6 @@
                                 <tr>
                                     <th>會員ID</th>
                                     <th>會員名稱</th>
-                                    <th>遊戲名稱</th>
-                                    <th>遊戲類型</th>
                                     <th>分數</th>
                                     <th>狀態</th>
                                     <th>難度</th>
@@ -229,8 +217,6 @@
                         <table class="table table-sm">
                             <tr><td>會員ID:</td><td id="detailUserId"></td></tr>
                             <tr><td>會員名稱:</td><td id="detailUserName"></td></tr>
-                            <tr><td>遊戲名稱:</td><td id="detailGameName"></td></tr>
-                            <tr><td>遊戲類型:</td><td id="detailGameType"></td></tr>
                             <tr><td>難度等級:</td><td id="detailDifficulty"></td></tr>
                         </table>
                     </div>
@@ -336,8 +322,6 @@
                 table.row.add([
                     row.userId,
                     row.userName,
-                    row.gameName,
-                    row.gameType,
                     row.score.toLocaleString(),
                     "<span class=\"badge " + statusClass + "\">" + row.status + "</span>",
                     row.difficulty,
@@ -367,8 +351,6 @@
                     if (response.success) {
                         $("#detailUserId").text(response.data.userId);
                         $("#detailUserName").text(response.data.userName);
-                        $("#detailGameName").text(response.data.gameName);
-                        $("#detailGameType").text(response.data.gameType);
                         $("#detailDifficulty").text(response.data.difficulty);
                         $("#detailScore").text(response.data.score.toLocaleString());
                         $("#detailStatus").text(response.data.status);
