@@ -669,7 +669,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 ViewBag.PetId = query.PetId;
                 ViewBag.StartDate = query.StartDate?.ToString("yyyy-MM-dd");
                 ViewBag.EndDate = query.EndDate?.ToString("yyyy-MM-dd");
-                ViewBag.SortOrder = query.SortOrder;
                 ViewBag.PageNumber = query.PageNumber;
                 ViewBag.PageSize = query.PageSize;
 
@@ -723,7 +722,6 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 ViewBag.PetId = query.PetId;
                 ViewBag.StartDate = query.StartDate?.ToString("yyyy-MM-dd");
                 ViewBag.EndDate = query.EndDate?.ToString("yyyy-MM-dd");
-                ViewBag.SortOrder = query.SortOrder;
                 ViewBag.PageNumber = query.PageNumber;
                 ViewBag.PageSize = query.PageSize;
 
@@ -763,53 +761,10 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     query.PageSize = 20;
                 }
 
-                // 驗證等級範圍
-                if (query.MinLevel.HasValue && query.MinLevel.Value < 1)
-                {
-                    query.MinLevel = 1;
-                }
-
-                if (query.MaxLevel.HasValue && query.MaxLevel.Value > 100)
-                {
-                    query.MaxLevel = 100;
-                }
-
-                // 確保最小等級不大於最大等級
-                if (query.MinLevel.HasValue && query.MaxLevel.HasValue && query.MinLevel > query.MaxLevel)
-                {
-                    var temp = query.MinLevel;
-                    query.MinLevel = query.MaxLevel;
-                    query.MaxLevel = temp;
-                }
-
-                // 驗證經驗值範圍
-                if (query.MinExperience.HasValue && query.MinExperience.Value < 0)
-                {
-                    query.MinExperience = 0;
-                }
-
-                if (query.MaxExperience.HasValue && query.MaxExperience.Value < 0)
-                {
-                    query.MaxExperience = 0;
-                }
-
-                // 確保最小經驗值不大於最大經驗值
-                if (query.MinExperience.HasValue && query.MaxExperience.HasValue && query.MinExperience > query.MaxExperience)
-                {
-                    var temp = query.MinExperience;
-                    query.MinExperience = query.MaxExperience;
-                    query.MaxExperience = temp;
-                }
-
                 // 標準化排序參數
                 if (string.IsNullOrWhiteSpace(query.SortBy))
                 {
-                    query.SortBy = "name";
-                }
-
-                if (string.IsNullOrWhiteSpace(query.SortOrder))
-                {
-                    query.SortOrder = "asc";
+                    query.SortBy = "level_desc";
                 }
 
                 // 呼叫服務層執行查詢
@@ -818,15 +773,10 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 // 將查詢參數傳遞到 ViewBag 以便視圖使用
                 ViewBag.UserId = query.UserId;
                 ViewBag.PetName = query.PetName;
-                ViewBag.MinLevel = query.MinLevel;
-                ViewBag.MaxLevel = query.MaxLevel;
-                ViewBag.MinExperience = query.MinExperience;
-                ViewBag.MaxExperience = query.MaxExperience;
                 ViewBag.SkinColor = query.SkinColor;
                 ViewBag.BackgroundColor = query.BackgroundColor;
                 ViewBag.SearchTerm = query.SearchTerm;
                 ViewBag.SortBy = query.SortBy;
-                ViewBag.SortOrder = query.SortOrder;
                 ViewBag.PageNumber = query.PageNumber;
                 ViewBag.PageSize = query.PageSize;
 
@@ -1168,11 +1118,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     UserId = userId,
                     SearchTerm = userName,
                     PetName = petName,
-                    MinLevel = minLevel,
-                    MaxLevel = maxLevel,
                     SkinColor = color,
-                    SortBy = sortBy ?? "level",
-                    SortOrder = sortOrder ?? "desc",
+                    SortBy = sortBy ?? "level_desc",
                     PageNumber = 1,
                     PageSize = 100  // AJAX 搜尋返回更多結果
                 };

@@ -43,27 +43,6 @@ namespace GameSpace.Areas.MiniGame.Services
                 );
             }
 
-            // 篩選條件：等級範圍
-            if (query.MinLevel.HasValue)
-            {
-                dbQuery = dbQuery.Where(p => p.Level >= query.MinLevel.Value);
-            }
-
-            if (query.MaxLevel.HasValue)
-            {
-                dbQuery = dbQuery.Where(p => p.Level <= query.MaxLevel.Value);
-            }
-
-            // 篩選條件：經驗值範圍
-            if (query.MinExperience.HasValue)
-            {
-                dbQuery = dbQuery.Where(p => p.Experience >= query.MinExperience.Value);
-            }
-
-            if (query.MaxExperience.HasValue)
-            {
-                dbQuery = dbQuery.Where(p => p.Experience <= query.MaxExperience.Value);
-            }
 
             // 篩選條件：膚色（修改為模糊查詢）
             if (!string.IsNullOrWhiteSpace(query.SkinColor))
@@ -78,62 +57,49 @@ namespace GameSpace.Areas.MiniGame.Services
             }
 
             // === 排序：實現優先順序（會員ID > 搜尋關鍵字(用戶名/寵物名稱) > 額外寵物名稱條件）===
+            // 支援新的組合型排序方式如 "level_asc", "level_desc" 等
             // 當有搜尋條件時，優先顯示符合優先順序高的結果
             if (hasUserId || hasSearchTerm || hasExtraPetName)
             {
                 // 優先順序排序：先按符合條件的優先級排序
-                IOrderedQueryable<Pet> orderedQuery = dbQuery.OrderBy(p =>
+                IOrderedQueryable<Pet> priorityOrdered = dbQuery.OrderBy(p =>
                     hasUserId && p.UserId == query.UserId.Value ? 1 :
                     hasSearchTerm && (p.User.UserName.Contains(query.SearchTerm.Trim()) || p.PetName.Contains(query.SearchTerm.Trim())) ? 2 :
                     hasExtraPetName && p.PetName.Contains(query.PetName.Trim()) ? 3 : 4
                 );
 
-                // 接著按使用者指定的排序欄位進行次要排序
-                dbQuery = (query.SortBy ?? "petid").ToLower() switch
+                // 接著按使用者指定的排序方式進行次要排序（支援組合型格式如 "level_asc"）
+                dbQuery = (query.SortBy ?? "level_desc").ToLower() switch
                 {
-                    "petname" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? orderedQuery.ThenByDescending(p => p.PetName)
-                        : orderedQuery.ThenBy(p => p.PetName),
-                    "level" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? orderedQuery.ThenByDescending(p => p.Level)
-                        : orderedQuery.ThenBy(p => p.Level),
-                    "experience" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? orderedQuery.ThenByDescending(p => p.Experience)
-                        : orderedQuery.ThenBy(p => p.Experience),
-                    "health" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? orderedQuery.ThenByDescending(p => p.Health)
-                        : orderedQuery.ThenBy(p => p.Health),
-                    "userid" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? orderedQuery.ThenByDescending(p => p.UserId)
-                        : orderedQuery.ThenBy(p => p.UserId),
-                    _ => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? orderedQuery.ThenByDescending(p => p.PetId)
-                        : orderedQuery.ThenBy(p => p.PetId)
+                    "level_asc" => priorityOrdered.ThenBy(p => p.Level),
+                    "level_desc" => priorityOrdered.ThenByDescending(p => p.Level),
+                    "exp_asc" => priorityOrdered.ThenBy(p => p.Experience),
+                    "exp_desc" => priorityOrdered.ThenByDescending(p => p.Experience),
+                    "health_asc" => priorityOrdered.ThenBy(p => p.Health),
+                    "health_desc" => priorityOrdered.ThenByDescending(p => p.Health),
+                    "petname_asc" => priorityOrdered.ThenBy(p => p.PetName),
+                    "petname_desc" => priorityOrdered.ThenByDescending(p => p.PetName),
+                    "userid_asc" => priorityOrdered.ThenBy(p => p.UserId),
+                    "userid_desc" => priorityOrdered.ThenByDescending(p => p.UserId),
+                    _ => priorityOrdered.ThenByDescending(p => p.Level)
                 };
             }
             else
             {
-                // 沒有搜尋條件時，使用一般排序
-                dbQuery = (query.SortBy ?? "petid").ToLower() switch
+                // 沒有搜尋條件時，使用一般排序（支援組合型格式如 "level_asc"）
+                dbQuery = (query.SortBy ?? "level_desc").ToLower() switch
                 {
-                    "petname" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? dbQuery.OrderByDescending(p => p.PetName)
-                        : dbQuery.OrderBy(p => p.PetName),
-                    "level" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? dbQuery.OrderByDescending(p => p.Level)
-                        : dbQuery.OrderBy(p => p.Level),
-                    "experience" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? dbQuery.OrderByDescending(p => p.Experience)
-                        : dbQuery.OrderBy(p => p.Experience),
-                    "health" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? dbQuery.OrderByDescending(p => p.Health)
-                        : dbQuery.OrderBy(p => p.Health),
-                    "userid" => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? dbQuery.OrderByDescending(p => p.UserId)
-                        : dbQuery.OrderBy(p => p.UserId),
-                    _ => (query.SortOrder ?? "asc").ToLower() == "desc"
-                        ? dbQuery.OrderByDescending(p => p.PetId)
-                        : dbQuery.OrderBy(p => p.PetId)
+                    "level_asc" => dbQuery.OrderBy(p => p.Level),
+                    "level_desc" => dbQuery.OrderByDescending(p => p.Level),
+                    "exp_asc" => dbQuery.OrderBy(p => p.Experience),
+                    "exp_desc" => dbQuery.OrderByDescending(p => p.Experience),
+                    "health_asc" => dbQuery.OrderBy(p => p.Health),
+                    "health_desc" => dbQuery.OrderByDescending(p => p.Health),
+                    "petname_asc" => dbQuery.OrderBy(p => p.PetName),
+                    "petname_desc" => dbQuery.OrderByDescending(p => p.PetName),
+                    "userid_asc" => dbQuery.OrderBy(p => p.UserId),
+                    "userid_desc" => dbQuery.OrderByDescending(p => p.UserId),
+                    _ => dbQuery.OrderByDescending(p => p.Level)
                 };
             }
 

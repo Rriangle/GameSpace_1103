@@ -112,19 +112,8 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <input type="number" class="form-control rounded" id="MinLevel" name="MinLevel" placeholder="1" min="1">
-                            <label for="MinLevel"><i class="fas fa-arrow-up me-1"></i>最小等級</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="form-floating">
-                            <input type="number" class="form-control rounded" id="MaxLevel" name="MaxLevel" placeholder="100" max="100">
-                            <label for="MaxLevel"><i class="fas fa-arrow-down me-1"></i>最大等級</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="form-floating">
                             <select class="form-control rounded" id="SkinColor" name="SkinColor">
+                                <option value="">全部膚色</option>
                                 <option value="red">紅色</option>
                                 <option value="blue">藍色</option>
                                 <option value="green">綠色</option>
@@ -136,23 +125,19 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="form-floating">
-                            <select class="form-control rounded" id="sortBy" name="sortBy">
-                                <option value="level">等級</option>
-                                <option value="experience">經驗值</option>
-                                <option value="health">健康度</option>
-                                <option value="petname">寵物名稱</option>
-                                <option value="userid">會員ID</option>
+                            <select class="form-control rounded" id="SortBy" name="SortBy">
+                                <option value="level_desc" selected>等級（高 → 低）</option>
+                                <option value="level_asc">等級（低 → 高）</option>
+                                <option value="exp_desc">經驗值（高 → 低）</option>
+                                <option value="exp_asc">經驗值（低 → 高）</option>
+                                <option value="health_desc">健康度（高 → 低）</option>
+                                <option value="health_asc">健康度（低 → 高）</option>
+                                <option value="petname_asc">寵物名稱（A → Z）</option>
+                                <option value="petname_desc">寵物名稱（Z → A）</option>
+                                <option value="userid_asc">會員ID（低 → 高）</option>
+                                <option value="userid_desc">會員ID（高 → 低）</option>
                             </select>
-                            <label for="sortBy"><i class="fas fa-sort me-1"></i>排序欄位</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="form-floating">
-                            <select class="form-control rounded" id="sortOrder" name="sortOrder">
-                                <option value="desc">最大 (Ｚ→Ａ，９→１)</option>
-                                <option value="asc">最小 (Ａ→Ｚ，１→９)</option>
-                            </select>
-                            <label for="sortOrder"><i class="fas fa-sort-amount-down me-1"></i>排序方式</label>
+                            <label for="SortBy"><i class="fas fa-sort me-1"></i>排序方式</label>
                         </div>
                     </div>
                 </div>
