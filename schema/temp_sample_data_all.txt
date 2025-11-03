@@ -1,0 +1,676 @@
+﻿TABLE_NAME|ROW_COUNT|SAMPLE_DATA
+=== banned_words (0 rows) ===
+word_id|word|created_at
+-------|----|----------
+=== bookmarks (23 rows) ===
+id|User_ID|target_type|target_id|created_at
+--|-------|-----------|---------|----------
+1|10000134|thread_post|1|2025-09-05 07:51:59.1167211
+2|10000134|thread_post|2|2025-09-05 07:51:59.1167211
+3|10000134|thread_post|3|2025-09-05 07:51:59.1167211
+4|10000134|thread_post|4|2025-09-05 07:51:59.1167211
+5|10000134|thread_post|5|2025-09-05 07:51:59.1167211
+=== Coupon (4587 rows) ===
+CouponID|CouponCode|CouponTypeID|UserID|IsUsed|AcquiredTime|UsedTime|UsedInOrderID|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+--------|----------|------------|------|------|------------|--------|-------------|---------|---------|---------|------------
+1|CPN-2310-NCW491|1|10000148|0|2023-10-06 18:52:28.0000000|NULL|NULL|0|NULL|NULL|NULL
+5|CPN-2302-MRH896|1|10000013|0|2023-02-04 07:25:30.0000000|NULL|NULL|0|NULL|NULL|NULL
+18|CPN-2410-YYW366|3|10000178|0|2024-10-22 11:32:12.0000000|NULL|NULL|0|NULL|NULL|NULL
+20|CPN-2501-MTQ878|3|10000079|0|2025-01-25 05:16:18.0000000|NULL|NULL|0|NULL|NULL|NULL
+39|CPN-2410-AUK161|2|10000001|0|2024-10-19 23:07:46.0000000|NULL|NULL|0|NULL|NULL|NULL
+=== CouponType (3 rows) ===
+CouponTypeID|Name|DiscountType|DiscountValue|MinSpend|ValidFrom|ValidTo|PointsCost|Description|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+------------|----|------------|-------------|--------|---------|-------|----------|-----------|---------|---------|---------|------------
+1|免運券|Amount|NULL|NULL|2023-10-26 02:09:44.0000000|2026-06-30 23:59:59.0000000|10000|官網商城限定|0|NULL|NULL|NULL
+2|全站85折|Percent|.15|1500.00|2023-01-25 14:06:52.0000000|2026-06-30 23:59:59.0000000|1000|官網商城限定|0|NULL|NULL|NULL
+3|滿$500折$50|Amount|50.00|500.00|2024-11-13 10:37:53.0000000|2026-06-30 23:59:59.0000000|5000|官網商城限定|0|NULL|NULL|NULL
+=== CS_Agent (3 rows) ===
+agent_id|manager_id|is_active|max_concurrent|created_at|created_by_manager|updated_at|updated_by_manager
+--------|----------|---------|--------------|----------|------------------|----------|------------------
+1|30000001|1|5|2025-09-22 01:01:27.3154352|NULL|NULL|NULL
+2|30000099|1|5|2025-09-22 01:01:27.3240423|30000001|NULL|NULL
+3|30000100|1|5|2025-09-22 01:01:27.3240423|30000001|NULL|NULL
+=== CS_Agent_Permission (3 rows) ===
+agent_permission_id|agent_id|can_assign|can_transfer|can_accept|can_edit_mute_all
+-------------------|--------|----------|------------|----------|-----------------
+1|1|1|1|1|1
+2|2|1|1|1|0
+3|3|0|1|1|0
+=== DM_Conversations (20 rows) ===
+conversation_id|is_manager_dm|party1_id|party2_id|created_at|last_message_at
+---------------|-------------|---------|---------|----------|---------------
+1|0|10000001|10000002|2025-08-01 12:00:00.0000000|2025-09-15 00:39:49.9554149
+2|0|10000003|10000004|2025-08-01 12:05:00.0000000|2025-08-02 09:02:02.0000000
+3|0|10000005|10000006|2025-08-01 12:10:00.0000000|2025-08-02 09:04:03.0000000
+4|0|10000007|10000008|2025-08-01 12:15:00.0000000|2025-08-02 09:06:04.0000000
+5|0|10000009|10000010|2025-08-01 12:20:00.0000000|2025-08-02 09:08:05.0000000
+=== DM_Messages (28 rows) ===
+message_id|conversation_id|sender_is_party1|message_text|is_read|read_at|edited_at
+----------|---------------|----------------|------------|-------|-------|---------
+1|1|1|DM 測試訊息 #1|1|2025-09-12 04:59:28.9318694|2025-08-02 09:00:01.0000000
+2|2|0|DM 測試訊息 #2|0|NULL|2025-08-02 09:02:02.0000000
+3|3|1|DM 測試訊息 #3|0|NULL|2025-08-02 09:04:03.0000000
+4|4|0|DM 測試訊息 #4|0|NULL|2025-08-02 09:06:04.0000000
+5|5|1|DM 測試訊息 #5|0|NULL|2025-08-02 09:08:05.0000000
+=== EVoucher (355 rows) ===
+EVoucherID|EVoucherCode|EVoucherTypeID|UserID|IsUsed|AcquiredTime|UsedTime|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+----------|------------|--------------|------|------|------------|--------|---------|---------|---------|------------
+1|EV-MOVIE-8JDW-064877|3|10000001|1|2024-10-29 15:17:44.0000000|2025-05-30 23:53:14.0000000|0|NULL|NULL|NULL
+2|EV-CASH-VR2G-969669|12|10000001|0|2025-01-14 07:58:55.0000000|NULL|0|NULL|NULL|NULL
+3|EV-STORE-BNXR-252844|4|10000001|0|2024-11-18 08:13:38.0000000|NULL|0|NULL|NULL|NULL
+4|EV-CASH-G7HA-253496|15|10000002|1|2023-08-07 16:08:59.0000000|2023-11-24 09:25:43.0000000|0|NULL|NULL|NULL
+5|EV-CASH-JE6Z-035950|5|10000003|0|2024-05-20 17:31:58.0000000|NULL|0|NULL|NULL|NULL
+=== EVoucherRedeemLog (800 rows) ===
+RedeemID|EVoucherID|TokenID|UserID|ScannedAt|Status|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+--------|----------|-------|------|---------|------|---------|---------|---------|------------
+1|1|1|10000042|2025-05-30 23:53:14.0000000|Approved|0|NULL|NULL|NULL
+2|1|1|10000030|2025-01-28 16:20:55.0000000|AlreadyUsed|0|NULL|NULL|NULL
+3|2|2|10000185|2024-06-07 03:53:06.0000000|Revoked|0|NULL|NULL|NULL
+4|4|4|10000073|2024-08-13 14:38:26.0000000|Approved|0|NULL|NULL|NULL
+5|5|5|10000056|2024-05-23 11:32:50.0000000|Rejected|0|NULL|NULL|NULL
+=== EVoucherToken (355 rows) ===
+TokenID|EVoucherID|Token|ExpiresAt|IsRevoked|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+-------|----------|-----|---------|---------|---------|---------|---------|------------
+1|1|TKN-GFWZIUGU-7603|2024-12-09 15:17:44.0000000|0|0|NULL|NULL|NULL
+2|2|TKN-0AFNJ3IW-7410|2025-04-08 07:58:55.0000000|0|0|NULL|NULL|NULL
+3|3|TKN-QBHYOJ30-9972|2025-08-05 09:01:17.0000000|0|0|NULL|NULL|NULL
+4|4|TKN-L62G3NV4-9235|2025-05-21 15:30:47.0000000|1|0|NULL|NULL|NULL
+5|5|TKN-86JLK23E-7006|2024-08-03 17:31:58.0000000|0|0|NULL|NULL|NULL
+=== EVoucherType (20 rows) ===
+EVoucherTypeID|Name|ValueAmount|ValidFrom|ValidTo|PointsCost|TotalAvailable|Description|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+--------------|----|-----------|---------|-------|----------|--------------|-----------|---------|---------|---------|------------
+1|7-11禮券$100|100.00|2024-07-24 08:01:15.0000000|9999-12-31 06:10:00.0000000|10000|468|無期限|0|NULL|NULL|NULL
+2|7-11禮券$200|200.00|2025-01-08 20:24:24.0000000|9999-12-31 06:10:00.0000000|20000|437|無期限|0|NULL|NULL|NULL
+3|全家禮券$100|100.00|2024-03-05 01:55:47.0000000|9999-12-31 06:10:00.0000000|10000|194|無期限|0|NULL|NULL|NULL
+4|全家禮券$200|200.00|2024-03-30 16:44:49.0000000|9999-12-31 06:10:00.0000000|20000|438|無期限|0|NULL|NULL|NULL
+5|7-11特選美式咖啡商品卡|65.00|2024-05-06 09:52:59.0000000|9999-12-31 06:10:00.0000000|6500|433|無期限/冷熱任選|0|NULL|NULL|NULL
+=== forums (23 rows) ===
+forum_id|game_id|name|description|created_at
+--------|-------|----|-----------|----------
+1|1|刀塔2 論壇|本版僅討論：刀塔2。社群守則：友善、標題清楚、標註劇透。|2025-09-05 07:51:59.0898311
+2|2|英雄聯盟 論壇|本版僅討論：英雄聯盟。社群守則：友善、標題清楚、標註劇透。|2025-09-05 07:51:59.0898311
+3|3|瓦羅蘭特 論壇|本版僅討論：瓦羅蘭特。社群守則：友善、標題清楚、標註劇透。|2025-09-05 07:51:59.0898311
+4|4|傳說對決 論壇|本版僅討論：傳說對決。社群守則：友善、標題清楚、標註劇透。|2025-09-05 07:51:59.0898311
+5|5|王者榮耀 論壇|本版僅討論：王者榮耀。社群守則：友善、標題清楚、標註劇透。|2025-09-05 07:51:59.0898311
+=== game_metric_daily (5616 rows) ===
+id|game_id|metric_id|date|value|agg_method|quality|created_at|updated_at
+--|-------|---------|----|-----|----------|-------|----------|----------
+1|1|1|2025-09-10|767545.0000|raw|seed|2025-09-26 14:00:01.8633333|2025-09-10 06:45:11.3492340
+2|1|1|2025-09-09|22968.0000|raw|seed|2025-09-10 06:45:11.3492340|2025-09-10 06:45:11.3492340
+3|1|1|2025-09-08|127827.0000|raw|seed|2025-09-10 06:45:11.3492340|2025-09-10 06:45:11.3492340
+4|1|1|2025-09-07|151835.0000|raw|seed|2025-09-10 06:45:11.3492340|2025-09-10 06:45:11.3492340
+5|1|1|2025-09-06|185916.0000|raw|seed|2025-09-10 06:45:11.3492340|2025-09-10 06:45:11.3492340
+=== game_source_map (72 rows) ===
+id|game_id|source_id|external_key|CreatedAt
+--|-------|---------|------------|---------
+1|1|1|dota-2-steam|2025-09-10 06:45:11.3492340
+2|2|1|league-of-legends-steam|2025-09-10 06:45:11.3492340
+3|3|1|valorant-steam|2025-09-10 06:45:11.3492340
+4|4|1|arena-of-valor-steam|2025-09-10 06:45:11.3492340
+5|5|1|honor-of-kings-steam|2025-09-10 06:45:11.3492340
+=== games (24 rows) ===
+game_id|name|genre|created_at|name_zh
+-------|----|-----|----------|-------
+1|Dota 2|MOBA|2025-09-05 14:20:34.1966667|刀塔2
+2|League of Legends|MOBA|2025-09-05 14:20:34.1966667|英雄聯盟
+3|VALORANT|FPS|2025-09-05 14:20:34.1966667|瓦羅蘭特
+4|Arena of Valor|MOBA|2025-09-05 14:20:34.1966667|傳說對決
+5|Honor of Kings|MOBA|2025-09-05 14:20:34.1966667|王者榮耀
+=== Group_Block (0 rows) ===
+block_id|group_id|user_id|blocked_by_user_id|reason|blocked_at|unblocked_at
+--------|--------|-------|------------------|------|----------|------------
+=== Group_Chat (0 rows) ===
+message_id|group_id|sender_user_id|message_text|sent_at
+----------|--------|--------------|------------|-------
+=== Group_Member (0 rows) ===
+group_member_id|group_id|user_id|role_name|joined_at|left_at
+---------------|--------|-------|---------|---------|-------
+=== Group_Read_States (0 rows) ===
+state_id|group_id|user_id|last_read_at
+--------|--------|-------|------------
+=== Groups (2 rows) ===
+group_id|owner_user_id|group_name|description|is_private|created_at|updated_at
+--------|-------------|----------|-----------|----------|----------|----------
+1|10000001|遊戲開發交流社|分享開發心得、工具與作品展示|0|2025-08-01 10:00:00.0000000|NULL
+2|10000002|休閒玩家夜聊群|每天 21:00 後閒聊、開房揪團|0|2025-08-02 21:00:00.0000000|NULL
+=== leaderboard_snapshots (0 rows) ===
+snapshot_id|period|ts|rank|game_id|index_value|created_at
+-----------|------|--|----|-------|-----------|----------
+=== ManagerData (102 rows) ===
+Manager_Id|Manager_Name|Manager_Account|Manager_Password|Administrator_registration_date|Manager_Email|Manager_EmailConfirmed|Manager_AccessFailedCount|Manager_LockoutEnabled|Manager_LockoutEnd
+----------|------------|---------------|----------------|-------------------------------|-------------|----------------------|-------------------------|----------------------|------------------
+30000001|Milk Hung|zhang_zhiming_01|AdminPass001@|2019-01-15 08:30:00.0000000|zhang.zhiming@company.com|1|0|0|NULL
+30000002|李小華|li_xiaohua_02|SecurePass002#|2019-01-16 09:15:00.0000000|li.xiaohua@company.com|1|0|1|NULL
+30000003|王美玲|wang_meiling_03|StrongPwd003!|2019-01-17 10:45:00.0000000|wang.meiling@company.com|1|0|0|NULL
+30000004|陳大偉|chen_dawei_04|SafeLogin004$|2019-01-18 11:20:00.0000000|chen.dawei@company.com|1|0|1|NULL
+30000005|林雅婷|lin_yating_05|Manager005%|2019-01-19 14:30:00.0000000|lin.yating@company.com|1|2|1|NULL
+=== ManagerRole (102 rows) ===
+Manager_Id|ManagerRole_Id
+----------|--------------
+30000001|1
+30000002|2
+30000003|3
+30000004|4
+30000005|5
+=== ManagerRolePermission (8 rows) ===
+ManagerRole_Id|role_name|AdministratorPrivilegesManagement|UserStatusManagement|ShoppingPermissionManagement|MessagePermissionManagement|Pet_Rights_Management|customer_service
+--------------|---------|---------------------------------|--------------------|----------------------------|---------------------------|---------------------|----------------
+1|管理者平台管理人員|1|1|1|1|1|1
+2|使用者與論壇管理精理|0|1|0|1|0|1
+3|商城與寵物管理經理|0|0|1|0|1|0
+4|使用者平台管理人員|0|1|0|0|0|0
+5|購物平台管理人員|0|0|1|0|0|0
+=== MemberSalesProfile (200 rows) ===
+User_Id|BankCode|BankAccountNumber|AccountCoverPhoto
+-------|--------|-----------------|-----------------
+10000001|12|012-34567-89012|NULL
+10000002|822|822-54321-09876|NULL
+10000003|7|007-98765-43210|NULL
+10000004|13|013-45678-90123|NULL
+10000005|808|808-11223-34455|NULL
+=== metric_sources (3 rows) ===
+source_id|name|note|created_at
+---------|----|----|----------
+1|Steam|Steam source|2025-09-10 06:45:11.3492340
+2|巴哈姆特|Bahamut source|2025-09-10 06:45:11.3492340
+3|YouTube|YouTube source|2025-09-10 06:45:11.3492340
+=== metrics (6 rows) ===
+metric_id|source_id|code|unit|description|is_active|created_at
+---------|---------|----|----|-----------|---------|----------
+1|1|ccu|users|同時在線|1|2025-09-10 06:45:11.3492340
+2|1|peak_ccu|users|最高同時在線|1|2025-09-10 06:45:11.3492340
+3|2|topic_count|count|討論串數量|1|2025-09-10 06:45:11.3492340
+4|2|reply_count|count|回覆數量|1|2025-09-10 06:45:11.3492340
+5|3|views_24h|views|近24小時觀看數|1|2025-09-10 06:45:11.3492340
+=== MiniGame (2000 rows) ===
+PlayID|UserID|PetID|Level|MonsterCount|SpeedMultiplier|Result|ExpGained|ExpGainedTime|PointsGained|PointsGainedTime|CouponGained|CouponGainedTime|HungerDelta|MoodDelta|StaminaDelta|CleanlinessDelta|StartTime|EndTime|Aborted|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+------|------|-----|-----|------------|---------------|------|---------|-------------|------------|----------------|------------|----------------|-----------|---------|------------|----------------|---------|-------|-------|---------|---------|---------|------------
+1|10000001|1|3|10|2.00|Lose|0|2024-03-03 03:59:29.0000000|0|2024-03-03 05:55:29.0000000|CPN-5553-121B690001|2024-09-23 21:49:53.0000000|-7|-3|6|5|2024-09-03 09:36:58.0000000|2024-09-03 09:52:58.0000000|0|0|NULL|NULL|NULL
+2|10000001|1|2|8|1.50|Win|200|2024-06-20 15:45:47.0000000|20|2024-06-20 16:26:47.0000000|CPN-1603-9C4A620002|2023-08-04 04:17:43.0000000|4|8|-8|-2|2025-06-30 10:46:31.0000000|2025-06-30 10:59:31.0000000|0|0|NULL|NULL|NULL
+3|10000001|1|3|10|2.00|Win|300|2023-12-08 01:49:50.0000000|30|2023-12-08 03:34:50.0000000|CPN-4809-7519BC0003|2025-05-10 06:08:02.0000000|-2|3|-1|-4|2023-07-01 13:44:35.0000000|2023-07-01 13:49:35.0000000|0|0|NULL|NULL|NULL
+4|10000001|1|3|10|2.00|Lose|0|2024-06-03 22:28:40.0000000|0|2024-06-04 00:13:40.0000000|CPN-3231-6365550004|2023-05-13 15:20:51.0000000|-5|0|0|-4|2023-12-10 03:41:43.0000000|2023-12-10 03:52:43.0000000|0|0|NULL|NULL|NULL
+5|10000001|1|2|8|1.50|Lose|0|2023-08-09 21:58:22.0000000|0|2023-08-09 22:00:22.0000000|CPN-6286-72F0BD0005|2024-10-07 00:48:42.0000000|0|8|-6|3|2025-06-22 23:39:35.0000000|2025-06-23 00:04:35.0000000|0|0|NULL|NULL|NULL
+=== Mutes (21 rows) ===
+mute_id|word|replacement|is_active|manager_id|created_at
+-------|----|-----------|---------|----------|----------
+1|狗屁|＊＊|1|30000100|2025-07-25 12:20:11.0000000
+2|去死|＊＊|1|30000099|2025-07-26 09:45:32.0000000
+3|混蛋|＊＊|1|30000099|2025-07-27 17:15:48.0000000
+4|垃圾|＊＊|1|30000100|2025-07-29 21:05:07.0000000
+5|王八蛋|＊＊|1|30000100|2025-07-30 10:30:55.0000000
+=== Notification_Actions (6 rows) ===
+action_id|action_name|created_at
+---------|-----------|----------
+1|公告|2025-09-11 03:58:14.4070114
+2|交易完成|2025-09-11 03:58:14.4070114
+3|交易失敗|2025-09-11 03:58:14.4070114
+4|新留言|2025-09-11 03:58:14.4079843
+5|新回覆|2025-09-11 03:58:14.4079843
+=== Notification_Recipients (22 rows) ===
+recipient_id|notification_id|user_id|manager_id|read_at
+------------|---------------|-------|----------|-------
+1|1|10000051|NULL|NULL
+2|2|10000052|NULL|NULL
+3|3|10000053|NULL|NULL
+4|4|10000054|NULL|NULL
+5|5|10000055|NULL|NULL
+=== Notification_Sources (6 rows) ===
+source_id|source_name|created_at
+---------|-----------|----------
+1|交友|2025-09-11 03:58:14.4049928
+2|論壇|2025-09-11 03:58:14.4059905
+3|商城|2025-09-11 03:58:14.4059905
+4|群組|2025-09-11 03:58:14.4059905
+5|系統|2025-09-11 03:58:14.4059905
+=== Notifications (22 rows) ===
+notification_id|source_id|action_id|group_id|sender_user_id|sender_manager_id|title|message|created_at
+---------------|---------|---------|--------|--------------|-----------------|-----|-------|----------
+1|5|1|NULL|NULL|30000099|Seed 通知 #001|系統維護公告 001|2025-08-03 10:00:00.0000000
+2|5|1|NULL|NULL|30000100|Seed 通知 #002|系統維護公告 002|2025-08-03 10:10:00.0000000
+3|1|6|NULL|10000001|NULL|Seed 通知 #003|好友邀請 10000001 → 10000051|2025-08-03 10:20:00.0000000
+4|1|6|NULL|10000002|NULL|Seed 通知 #004|好友邀請 10000002 → 10000052|2025-08-03 10:30:00.0000000
+5|5|1|NULL|NULL|30000099|Seed 通知 #005|功能更新公告 005|2025-08-03 10:40:00.0000000
+=== Pet (200 rows) ===
+PetID|UserID|PetName|Level|LevelUpTime|Experience|Hunger|Mood|Stamina|Cleanliness|Health|SkinColor|SkinColorChangedTime|BackgroundColor|BackgroundColorChangedTime|PointsChanged_SkinColor|PointsChanged_BackgroundColor|PointsGained_LevelUp|PointsGainedTime_LevelUp|IsDeleted|DeletedAt|DeletedBy|DeleteReason|CurrentExperience|ExperienceToNextLevel|TotalPointsGained_LevelUp
+-----|------|-------|-----|-----------|----------|------|----|-------|-----------|------|---------|--------------------|---------------|--------------------------|-----------------------|-----------------------------|--------------------|------------------------|---------|---------|---------|------------|-----------------|---------------------|-------------------------
+1|10000001|多多|4|2024-04-11 07:10:55.0000000|656|14|58|89|25|100|#FFFF00|2023-02-22 09:10:06.0000000|BG005|2025-04-09 17:03:40.0000000|2000|2500|10|2023-07-11 20:53:18.0000000|0|NULL|NULL|NULL|53|220|40
+2|10000002|喵喵|38|2023-08-08 23:34:25.0000000|4019|55|15|57|14|94|#800080|2024-12-11 04:53:18.0000000|BG008|2024-08-25 17:19:48.0000000|3500|4000|40|2023-07-03 10:24:44.0000000|0|NULL|NULL|NULL|649|1535|920
+3|10000003|球球|19|2024-07-28 14:56:34.0000000|2947|58|51|76|70|78|#800080|2024-07-04 14:18:35.0000000|BG002|2023-10-07 12:09:25.0000000|3500|0|20|2024-02-28 22:27:22.0000000|0|NULL|NULL|NULL|28|668|280
+4|10000004|熊大|39|2023-12-06 01:39:38.0000000|4377|76|44|67|56|89|#FFFFFF|2024-07-07 16:31:08.0000000|BG003|2023-10-05 16:34:06.0000000|0|0|40|2024-10-12 14:50:22.0000000|0|NULL|NULL|NULL|427|1596|960
+5|10000005|Milo|44|2025-06-14 15:10:14.0000000|7209|55|33|61|31|83|#6F4E37|2024-02-18 08:31:12.0000000|BG009|2023-08-08 00:35:23.0000000|3500|4500|50|2024-01-11 07:55:38.0000000|0|NULL|NULL|NULL|317|1928|1200
+=== PetBackgroundCostSettings (11 rows) ===
+SettingId|BackgroundCode|BackgroundName|PointsCost|Description|PreviewImagePath|IsActive|DisplayOrder|IsDeleted|DeletedAt|DeletedBy|DeleteReason|CreatedAt|UpdatedAt|UpdatedBy|Rarity
+---------|--------------|--------------|----------|-----------|----------------|--------|------------|---------|---------|---------|------------|---------|---------|---------|------
+19|BG001|萬聖南瓜|0|充滿萬聖節氣氛的南瓜場景，神秘又可愛|/images/backgrounds/halloween-pumpkin.jpg|1|1|0|NULL|NULL|NULL|2025-10-23 10:33:39.0282975|NULL|NULL|普通
+20|BG002|彩窗教堂|0|神聖莊嚴的彩繪玻璃教堂，光影交錯如夢似幻|/images/backgrounds/stained-glass-church.jpg|1|2|0|NULL|NULL|NULL|2025-10-23 10:33:39.0282975|NULL|NULL|普通
+21|BG003|珊瑚海灘|0|熱帶珊瑚海灘，碧海藍天令人心曠神怡|/images/backgrounds/coral-beach.jpg|1|3|0|NULL|NULL|NULL|2025-10-23 10:33:39.0282975|NULL|NULL|普通
+22|BG004|清新森林|2000|陽光灑落的清新森林，鳥語花香|/images/backgrounds/fresh-forest.jpg|1|4|0|NULL|NULL|NULL|2025-10-23 10:33:39.0282975|NULL|NULL|普通
+23|BG005|雨林瀑布|2500|熱帶雨林深處的壯觀瀑布，生機盎然|/images/backgrounds/rainforest-waterfall.jpg|1|5|0|NULL|NULL|NULL|2025-10-23 10:33:39.0282975|NULL|NULL|普通
+=== PetLevelRewardSettings (25 rows) ===
+SettingId|LevelRangeStart|LevelRangeEnd|PointsReward|Description|IsActive|DisplayOrder|IsDeleted|DeletedAt|DeletedBy|DeleteReason|CreatedAt|UpdatedAt|UpdatedBy
+---------|---------------|-------------|------------|-----------|--------|------------|---------|---------|---------|------------|---------|---------|---------
+1|1|10|10|初級獎勵（Level 1-10）|1|1|0|NULL|NULL|NULL|2025-10-23 10:33:38.9298482|NULL|NULL
+2|11|20|20|進階獎勵（Level 11-20）|1|2|0|NULL|NULL|NULL|2025-10-23 10:33:38.9298482|NULL|NULL
+3|21|30|30|中級獎勵（Level 21-30）|1|3|0|NULL|NULL|NULL|2025-10-23 10:33:38.9298482|NULL|NULL
+4|31|40|40|高級獎勵（Level 31-40）|1|4|0|NULL|NULL|NULL|2025-10-23 10:33:38.9298482|NULL|NULL
+5|41|50|50|精英獎勵（Level 41-50）|1|5|0|NULL|NULL|NULL|2025-10-23 10:33:38.9298482|NULL|NULL
+=== PetSkinColorCostSettings (11 rows) ===
+SettingId|ColorCode|ColorName|PointsCost|Rarity|Description|PreviewImagePath|ColorHex|IsActive|DisplayOrder|IsFree|IsLimitedEdition|AvailableFrom|AvailableUntil|IsDeleted|DeletedAt|DeletedBy|DeleteReason|CreatedAt|UpdatedAt|UpdatedBy
+---------|---------|---------|----------|------|-----------|----------------|--------|--------|------------|------|----------------|-------------|--------------|---------|---------|---------|------------|---------|---------|---------
+1|#FFFFFF|白色|0|普通|純淨的白色，經典基礎色|NULL|NULL|1|1|1|0|NULL|NULL|0|NULL|NULL|NULL|2025-10-23 10:33:38.9110023|NULL|NULL
+2|#000000|黑色|0|普通|神秘的黑色，經典基礎色|NULL|NULL|1|2|1|0|NULL|NULL|0|NULL|NULL|NULL|2025-10-23 10:33:38.9110023|NULL|NULL
+3|#FF0000|紅色|0|普通|熱情的紅色，經典基礎色|NULL|NULL|1|3|1|0|NULL|NULL|0|NULL|NULL|NULL|2025-10-23 10:33:38.9110023|NULL|NULL
+4|#FFA500|橙色|2000|普通|溫暖活潑的橙色|NULL|NULL|1|10|0|0|NULL|NULL|0|NULL|NULL|NULL|2025-10-23 10:33:38.9110023|NULL|NULL
+5|#FFFF00|黃色|2000|普通|明亮開朗的黃色|NULL|NULL|1|11|0|0|NULL|NULL|0|NULL|NULL|NULL|2025-10-23 10:33:38.9110023|NULL|NULL
+=== PlayerMarketOrderInfo (0 rows) ===
+p_order_id|p_product_id|seller_id|buyer_id|p_order_date|p_order_status|p_payment_status|p_unit_price|p_quantity|p_order_total|p_order_created_at|p_order_updated_at
+----------|------------|---------|--------|------------|--------------|----------------|------------|----------|-------------|------------------|------------------
+=== PlayerMarketOrderTradepage (0 rows) ===
+p_order_tradepage_id|p_order_id|p_product_id|p_order_platform_fee|seller_transferred_at|buyer_received_at|completed_at
+--------------------|----------|------------|--------------------|---------------------|-----------------|------------
+=== PlayerMarketProductImgs (0 rows) ===
+p_product_img_id|p_product_id|p_product_img_url
+----------------|------------|-----------------
+=== PlayerMarketProductInfo (0 rows) ===
+p_product_id|p_product_type|p_product_title|p_product_name|p_product_description|product_id|seller_id|p_status|price|p_product_img_id|created_at|updated_at
+------------|--------------|---------------|--------------|---------------------|----------|---------|--------|-----|----------------|----------|----------
+=== PlayerMarketRanking (0 rows) ===
+p_ranking_id|p_period_type|p_ranking_date|p_product_id|p_ranking_metric|p_ranking_position|p_trading_amount|p_trading_volume|updated_at
+------------|-------------|--------------|------------|----------------|------------------|----------------|----------------|----------
+=== PlayerMarketTradeMsg (0 rows) ===
+trade_msg_id|p_order_tradepage_id|msg_from|message_text|created_at
+------------|--------------------|--------|------------|----------
+=== popularity_index_daily (0 rows) ===
+id|game_id|date|index_value|created_at
+--|-------|----|-----------|----------
+=== post_metric_snapshot (2 rows) ===
+post_id|game_id|date|index_value|details_json|created_at
+-------|-------|----|-----------|------------|----------
+1|12|2025-09-05|.0000|{"game":"{\"game_id\":12,\"game_name_en\":\"Black Myth: Wukong\",\"game_name_zh\":\"黑神話：悟空\"}","date":"2025-09-05"}|2025-09-05 07:49:29.7395516
+2|7|2025-09-05|.0000|{"game":"{\"game_id\":7,\"game_name_en\":\"Assetto Corsa Competizione\",\"game_name_zh\":\"神力科莎 競爭版\"}","date":"2025-09-05"}|2025-09-05 07:49:54.7854381
+=== post_sources (4 rows) ===
+id|post_id|source_name|url|created_at
+--|-------|-----------|---|----------
+1|1|Steam|https://example.com/steam|2025-09-05 07:49:29.7405533
+2|1|Bahamut|https://example.com/bahamut|2025-09-05 07:49:29.7405533
+3|2|Steam|https://example.com/steam|2025-09-05 07:49:54.7863709
+4|2|Bahamut|https://example.com/bahamut|2025-09-05 07:49:54.7863709
+=== posts (2 rows) ===
+post_id|type|game_id|title|tldr|body_md|status|pinned|created_by|published_at|created_at|updated_at
+-------|----|-------|-----|----|-------|------|------|----------|------------|----------|----------
+1|insight|12|本日熱度觀察：黑神話：悟空 焦點|CU/社群/追蹤/觀看齊升，動能健康。|要點：1) 線上高檔穩定；2) 論壇貼文與追蹤齊升，社群供需良性；3) 影片觀看有一波峰值，推測與實況或宣傳節點重疊。
+
+建議：觀察週末前追蹤是否再創新高，必要時搭配小幅活動刺激內容產出。|published|1|10000038|2025-09-05 12:00:00.0000000|2025-09-05 07:49:29.7275514|2025-09-05 07:49:29.7275514
+2|insight|7|本日熱度觀察：神力科莎 競爭版 焦點|CU/社群/追蹤/觀看齊升，動能健康。|要點：1) 線上高檔穩定；2) 論壇貼文與追蹤齊升，社群供需良性；3) 影片觀看有一波峰值，推測與實況或宣傳節點重疊。
+
+建議：觀察週末前追蹤是否再創新高，必要時搭配小幅活動刺激內容產出。|published|1|10000033|2025-09-05 12:00:00.0000000|2025-09-05 07:49:54.7723921|2025-09-05 07:49:54.7723921
+=== reactions (69 rows) ===
+id|User_ID|target_type|target_id|kind|created_at
+--|-------|-----------|---------|----|----------
+1|10000022|thread_post|1|like|2025-09-05 07:51:59.1117170
+2|10000022|thread_post|2|like|2025-09-05 07:51:59.1117170
+3|10000022|thread_post|3|like|2025-09-05 07:51:59.1117170
+4|10000022|thread_post|4|like|2025-09-05 07:51:59.1117170
+5|10000022|thread_post|5|like|2025-09-05 07:51:59.1117170
+=== Relation (21 rows) ===
+relation_id|user_id_small|user_id_large|status_id|requested_by|friend_nickname|created_at|updated_at
+-----------|-------------|-------------|---------|------------|---------------|----------|----------
+1|10000041|10000042|2|10000041|麻吉|2025-08-05 08:01:00.0000000|NULL
+2|10000043|10000044|1|10000043|NULL|2025-08-05 08:02:00.0000000|NULL
+3|10000045|10000046|3|10000045|NULL|2025-08-05 08:03:00.0000000|NULL
+4|10000047|10000048|2|10000047|學長|2025-08-05 08:04:00.0000000|NULL
+5|10000049|10000050|1|10000049|NULL|2025-08-05 08:05:00.0000000|NULL
+=== Relation_Status (6 rows) ===
+status_id|status_code|status_name|created_at
+---------|-----------|-----------|----------
+1|PENDING|待回應|2025-09-11 03:58:14.4079843
+2|ACCEPTED|已成為好友|2025-09-11 03:58:14.4089821
+3|BLOCKED|已封鎖|2025-09-11 03:58:14.4089821
+4|REMOVED|已解除|2025-09-11 03:58:14.4089821
+5|REJECTED|已拒絕|2025-10-16 06:26:26.2310426
+=== RemoteZipcodes (13 rows) ===
+zipcode
+-------
+209
+880
+881
+882
+883
+=== S_GameGenre (6 rows) ===
+genre_id|genre_name
+--------|----------
+6|PVP
+1|角色扮演
+4|冒險
+2|射擊
+3|策略模擬
+=== S_GameProductDetails (25 rows) ===
+product_id|product_name|product_description|supplier_id|platform_id|download_link|is_deleted
+----------|------------|-------------------|-----------|-----------|-------------|----------
+1|新楓之谷 MapleStory|由 Nexon 開發的經典 2D 橫向卷軸 MMORPG，玩家可以探索冒險世界並挑戰各種副本。|2|1|https://store.steampowered.com/app/123456|0
+2|博德之門3 Baldur's Gate 3|由 Larian Studios 開發的經典 D&D 規則 RPG，玩家可自由探索與戰術戰鬥。|3|1|https://store.steampowered.com/app/1086940|0
+3|原神 Genshin Impact|miHoYo 米哈遊開發的開放世界動作 RPG，探索提瓦特大陸，體驗多角色元素戰鬥。|5|2|https://genshin.hoyoverse.com|0
+4|異度神劍3 Xenoblade Chronicles 3|任天堂開發的 Switch 獨占 JRPG，以龐大劇情與戰鬥系統聞名。|6|3|https://www.nintendo.com/store/products/xenoblade-chronicles-3-switch|0
+5|最終幻想16 Final Fantasy XVI|Square Enix 推出的動作 RPG，以中世紀奇幻與召喚獸戰鬥為主題。|9|4|https://www.playstation.com/games/final-fantasy-xvi|0
+=== S_GameProductGenre (25 rows) ===
+product_id|genre_id
+----------|--------
+1|1
+2|1
+3|1
+4|1
+5|1
+=== S_MerchType (7 rows) ===
+merch_type_id|merch_type_name
+-------------|---------------
+4|吊飾
+5|服飾類
+7|杯子
+2|娃娃
+3|畫冊或設定集
+=== S_Official_Store_Ranking (0 rows) ===
+ranking_id|period_type|ranking_date|product_id|ranking_metric|ranking_position|metric_value_num|trading_amount|trading_volume|ranking_updated_at|metric_note
+----------|-----------|------------|----------|--------------|----------------|----------------|--------------|--------------|------------------|-----------
+=== S_OtherProductDetails (170 rows) ===
+product_id|product_name|product_description|supplier_id|merch_type_id|digital_code|size|color|weight|dimensions|material|is_deleted
+----------|------------|-------------------|-----------|-------------|------------|----|-----|------|----------|--------|----------
+26|MyCard 50 點|數位儲值卡，可用於多款遊戲商城儲值。|1|1|3X1G6KZ8Q4R9T2B7M5C|Digital|N/A|0kg|N/A|Digital Code|0
+27|MyCard 150 點|數位儲值卡，150 點面額，序號一次性使用。|1|1|9QW8ER7TY6UI5OP4AS3|Digital|N/A|0kg|N/A|Digital Code|0
+28|MyCard 300 點|數位儲值卡，支援常見台灣遊戲與平台。|1|1|Z8X7C6V5B4N3M2L1K0J|Digital|N/A|0kg|N/A|Digital Code|0
+29|MyCard 500 點|官方通路序號，快速到帳。|1|1|1A2S3D4F5G6H7J8K9L0|Digital|N/A|0kg|N/A|Digital Code|0
+30|MyCard 1000 點|1000點面額，適合大型內容解鎖。|1|1|MNBVCXZLKJHGFDSA1234|Digital|N/A|0kg|N/A|Digital Code|0
+=== S_PeriodType (5 rows) ===
+period_code|period_name
+-----------|-----------
+1|DAILY
+3|MONTHLY
+4|QUARTERLY
+2|WEEKLY
+5|YEARLY
+=== S_Platform (4 rows) ===
+platform_id|platform_name
+-----------|-------------
+2|Mobile
+4|PS5
+1|Steam
+3|Switch
+=== S_ProductCode (195 rows) ===
+product_code|product_id
+------------|----------
+GM0000000001|1
+GM0000000002|2
+GM0000000003|3
+GM0000000004|4
+GM0000000005|5
+=== S_ProductCodeRule (2 rows) ===
+rule_id|product_type|prefix|pad_length
+-------|------------|------|----------
+1|game|GM|10
+2|notgame|OT|10
+=== S_ProductImages (0 rows) ===
+productimg_id|product_id|productimg_url|productimg_updated_at|is_primary|sort_order
+-------------|----------|--------------|---------------------|----------|----------
+=== S_ProductInfo (195 rows) ===
+product_id|product_name|product_type|price|currency_code|created_by|created_at|updated_by|updated_at|publish_at|unpublish_at|is_preorder_enabled|preorder_start_at|preorder_end_at|safety_stock|is_deleted|deleted_at|deleted_by|is_physical
+----------|------------|------------|-----|-------------|----------|----------|----------|----------|----------|------------|-------------------|-----------------|---------------|------------|----------|----------|----------|-----------
+1|	新楓之谷 MapleStory	|	game	|.00|	TWD	|30000041|2024-05-12 14:23:00.0000000|30000053|2024-11-08 09:15:22.0000000|NULL|NULL|0|NULL|NULL|NULL|0|NULL|NULL|0
+2|	博德之門3 Baldurs Gate 3	|	game	|1890.00|	TWD	|30000045|2024-03-18 09:12:44.0000000|30000058|2025-01-09 21:33:10.0000000|NULL|NULL|0|NULL|NULL|NULL|0|NULL|NULL|0
+3|	原神 Genshin Impact	|	game	|.00|	TWD	|30000059|2024-07-25 20:19:31.0000000|30000047|2025-02-14 11:08:05.0000000|NULL|NULL|0|NULL|NULL|NULL|0|NULL|NULL|0
+4|	異度神劍3 Xenoblade Chronicles 3	|	game	|1790.00|	TWD	|30000043|2024-06-11 16:42:55.0000000|30000055|2025-03-01 19:24:33.0000000|NULL|NULL|0|NULL|NULL|NULL|0|NULL|NULL|0
+5|	最終幻想16 Final Fantasy XVI	|	game	|1990.00|	TWD	|30000051|2024-02-02 11:15:12.0000000|30000060|2025-05-20 09:55:11.0000000|NULL|NULL|0|NULL|NULL|NULL|0|NULL|NULL|0
+=== S_ProductRatings (0 rows) ===
+rating_id|product_id|user_id|rating|review_text|status|created_at|approved_at|approved_by
+---------|----------|-------|------|-----------|------|----------|-----------|-----------
+=== S_Supplier (34 rows) ===
+supplier_id|supplier_name|status_code|is_active|note|contract_end_at|is_deleted|deleted_at|deleted_by
+-----------|-------------|-----------|---------|----|---------------|----------|----------|----------
+1|遊戲空間GameSpace|1|1|NULL|NULL|0|NULL|NULL
+2|Nexon 樂軒|1|1|NULL|NULL|0|NULL|NULL
+3|Larian Studios|1|1|NULL|NULL|0|NULL|NULL
+4|CD PROJEKT RED|1|1|NULL|NULL|0|NULL|NULL
+5|miHoYo 米哈遊|1|1|NULL|NULL|0|NULL|NULL
+=== S_SupplierStatus (3 rows) ===
+status_code|status_name
+-----------|-----------
+1|ACTIVE
+2|SUSPENDED
+3|TERMINATED
+=== S_UserFavorites (0 rows) ===
+user_id|product_id|created_at
+-------|----------|----------
+=== ShipMethods (2 rows) ===
+ship_method_id|method_name|base_fee|free_threshold|for_store_pickup|allow_remote_surcharge
+--------------|-----------|--------|--------------|----------------|----------------------
+1|超商取貨|60.00|999.00|1|0
+2|宅配|100.00|1500.00|0|1
+=== SignInRule (10 rows) ===
+Id|SignInDay|Points|Experience|HasCoupon|CouponTypeCode|IsActive|CreatedAt|UpdatedAt|Description|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+--|---------|------|----------|---------|--------------|--------|---------|---------|-----------|---------|---------|---------|------------
+1|1|20|0|0|NULL|1|2025-10-23 10:32:52.0961026|2025-10-23 10:33:23.4080208|第 1 天簽到獎勵|0|NULL|NULL|NULL
+2|2|20|0|0|NULL|1|2025-10-23 10:32:52.0961026|2025-10-23 10:33:23.4080208|第 2 天簽到獎勵|0|NULL|NULL|NULL
+3|3|20|0|0|NULL|1|2025-10-23 10:32:52.0961026|2025-10-23 10:33:23.4080208|第 3 天簽到獎勵|0|NULL|NULL|NULL
+4|4|20|0|0|NULL|1|2025-10-23 10:32:52.0961026|2025-10-23 10:33:23.4080208|第 4 天簽到獎勵|0|NULL|NULL|NULL
+5|5|20|0|0|NULL|1|2025-10-23 10:32:52.0961026|2025-10-23 10:33:23.4080208|第 5 天簽到獎勵|0|NULL|NULL|NULL
+=== SO_CartItems (1 rows) ===
+cart_item_id|cart_id|product_id|product_name|platform_id|variant_sku|option_snapshot|image_thumb|unit_price|qty|line_subtotal|is_selected|item_status|is_deleted|created_at|updated_at
+------------|-------|----------|------------|-----------|-----------|---------------|-----------|----------|---|-------------|-----------|-----------|----------|----------|----------
+1|83A35AA5-D1BD-49F7-A461-D268F6A4EE43|76|	新楓之谷 史萊姆絨毛娃娃（經典款）	|NULL|NULL|NULL||890.00|2|1780.00|1|NORMAL|0|2025-10-23 08:11:19.621|2025-10-23 08:11:19.621
+=== SO_Carts (4 rows) ===
+cart_id|user_id|anonymous_token|currency_code|subtotal_amount|discount_amount|shipping_fee|grand_total|coupon_code|coupon_snapshot|is_locked|locked_at|created_at|updated_at|row_version
+-------|-------|---------------|-------------|---------------|---------------|------------|-----------|-----------|---------------|---------|---------|----------|----------|-----------
+AFF3CCD6-FEBB-4C0A-8CC0-6CBDCDA99B78|10000002|NULL|TWD|.00|.00|.00|.00|NULL|NULL|0|NULL|2025-10-29 10:44:48.706|2025-10-30 05:59:34.692|0x0000000000042E51
+99528BA6-319A-4E0C-9859-81E9E6403EC9|NULL|F6E5D2AF-8841-4A90-9AA5-D8EB8187E0CD|TWD|.00|.00|.00|.00|NULL|NULL|0|NULL|2025-10-30 05:30:24.341|2025-10-31 03:00:19.553|0x0000000000046CD1
+83A35AA5-D1BD-49F7-A461-D268F6A4EE43|NULL|A37E31E4-A38B-4BF9-8728-9357A2FBE202|TWD|.00|.00|.00|.00|NULL|NULL|0|NULL|2025-10-23 08:11:19.621|2025-10-23 08:11:19.628|0x00000000000372E8
+3BFC9965-368F-420B-8455-D898378A19FA|10000001|NULL|TWD|.00|.00|.00|.00|NULL|NULL|0|NULL|2025-10-29 07:04:46.247|2025-10-30 06:55:45.901|0x0000000000044D92
+=== SO_Coupons (2 rows) ===
+coupon_code|is_active|discount_type|amount|percent_rate|max_discount|min_order_amt|valid_from|valid_to|note
+-----------|---------|-------------|------|------------|------------|-------------|----------|--------|----
+F100|1|F|100.00|NULL|NULL|500.00|2025-10-22 08:11:04.1859828|2026-10-23 08:11:04.1859828|滿500折100
+P10MAX200|1|P|NULL|10.00|200.00|300.00|2025-10-22 08:11:04.2016379|2026-10-23 08:11:04.2016379|滿300打9折，上限200
+=== SO_OrderAddresses (200 rows) ===
+order_id|recipient|phone|email|country|city|district|zipcode|address1|address2|created_at
+--------|---------|-----|-----|-------|----|--------|-------|--------|--------|----------
+1|黃湘婷|0969100873|黃湘婷bwu@gmail.com|Taiwan|台北市|大安區|106|大安區信義路59號|NULL|2025-10-23 08:09:56.7496319
+2|李柏翰|0985362654|李柏翰sql@gmail.com|Taiwan|新北市|板橋區|220|板橋區中山路10號|NULL|2025-10-23 08:09:56.7496319
+3|周冠宇|0937102702|周冠宇lis@gmail.com|Taiwan|台中市|西屯區|407|西屯區福科路170號|NULL|2025-10-23 08:09:56.7654023
+4|周冠宇|0933657262|周冠宇qou@gmail.com|Taiwan|桃園市|中壢區|320|中壢區延平路163號|NULL|2025-10-23 08:09:56.7654023
+5|王小明|0915809301|王小明gvr@gmail.com|Taiwan|桃園市|中壢區|320|中壢區延平路195號|NULL|2025-10-23 08:09:56.7782016
+=== SO_OrderInfoes (200 rows) ===
+order_id|order_code|user_id|order_date|order_status|payment_status|order_total|payment_at|shipped_at|completed_at|subtotal|discount_total|shipping_fee|grand_total|pay_method_id
+--------|----------|-------|----------|------------|--------------|-----------|----------|----------|------------|--------|--------------|------------|-----------|-------------
+1|OR100000000001|10000132|2025-10-23 08:09:56.7335309|未出貨|已付款|23880.00|2025-10-23 08:15:56.7335309|NULL|NULL|23880.00|.00|.00|23880.00|NULL
+2|OR100000000002|10000070|2025-10-23 08:09:56.7496319|未出貨|已付款|40560.00|2025-10-23 08:15:56.7496319|NULL|NULL|40560.00|.00|.00|40560.00|NULL
+3|OR100000000003|10000112|2025-10-23 08:09:56.7654023|未出貨|已付款|62600.00|2025-10-23 08:15:56.7654023|NULL|NULL|62600.00|.00|.00|62600.00|NULL
+4|OR100000000004|10000063|2025-10-23 08:09:56.7654023|未出貨|已付款|64560.00|2025-10-23 08:15:56.7654023|NULL|NULL|64560.00|.00|.00|64560.00|NULL
+5|OR100000000005|10000079|2025-10-23 08:09:56.7654023|未出貨|已付款|87360.00|2025-10-23 08:15:56.7654023|NULL|NULL|87360.00|.00|.00|87360.00|NULL
+=== SO_OrderItems (187122 rows) ===
+item_id|order_id|product_id|line_no|unit_price|quantity|subtotal|created_at|updated_at|is_deleted|delete_reason
+-------|--------|----------|-------|----------|--------|--------|----------|----------|----------|-------------
+1|1|144|1|890.00|4|3560.00|2025-10-23 08:09:57|2025-10-23 08:09:57|0|NULL
+2|1|111|2|1490.00|4|5960.00|2025-10-23 08:09:57|2025-10-23 08:09:57|0|NULL
+3|1|113|3|890.00|1|890.00|2025-10-23 08:09:57|2025-10-23 08:09:57|0|NULL
+4|1|116|4|220.00|3|660.00|2025-10-23 08:09:57|2025-10-23 08:09:57|0|NULL
+5|1|151|5|990.00|1|990.00|2025-10-23 08:09:57|2025-10-23 08:09:57|0|NULL
+=== SO_OrderStatusHistory (200 rows) ===
+history_id|order_id|from_status|to_status|changed_by|changed_at|note
+----------|--------|-----------|---------|----------|----------|----
+1|1|NULL|未出貨|NULL|2025-10-23 08:09:56.734|初始化
+2|2|NULL|未出貨|NULL|2025-10-23 08:09:56.750|初始化
+3|3|NULL|未出貨|NULL|2025-10-23 08:09:56.765|初始化
+4|4|NULL|未出貨|NULL|2025-10-23 08:09:56.765|初始化
+5|5|NULL|未出貨|NULL|2025-10-23 08:09:56.765|初始化
+=== SO_PaymentTransactions (200 rows) ===
+payment_id|payment_code|order_id|txn_type|amount|provider|provider_txn|status|created_at|confirmed_at|note|meta
+----------|------------|--------|--------|------|--------|------------|------|----------|------------|----|----
+1|PT100000000001|1|PAY|23880.00|綠界|ECP1|SUCCESS|2025-10-23 08:14:56.7335309|2025-10-23 08:15:56.7335309|自動產生付款|NULL
+2|PT100000000002|2|PAY|40560.00|綠界|ECP2|SUCCESS|2025-10-23 08:14:56.7496319|2025-10-23 08:15:56.7496319|自動產生付款|NULL
+3|PT100000000003|3|PAY|62600.00|綠界|ECP3|SUCCESS|2025-10-23 08:14:56.7654023|2025-10-23 08:15:56.7654023|自動產生付款|NULL
+4|PT100000000004|4|PAY|64560.00|綠界|ECP4|SUCCESS|2025-10-23 08:14:56.7654023|2025-10-23 08:15:56.7654023|自動產生付款|NULL
+5|PT100000000005|5|PAY|87360.00|綠界|ECP5|SUCCESS|2025-10-23 08:14:56.7654023|2025-10-23 08:15:56.7654023|自動產生付款|NULL
+=== SO_PayMethods (4 rows) ===
+pay_method_id|method_code|method_name|is_enabled|sort_order|created_at|updated_at
+-------------|-----------|-----------|----------|----------|----------|----------
+1|CREDIT|信用卡|1|10|2025-10-23 08:09:30.1635076|NULL
+2|ATM|ATM 轉帳|1|20|2025-10-23 08:09:30.1655102|NULL
+3|CVS_BARCODE|超商條碼|1|30|2025-10-23 08:09:30.1675125|NULL
+4|COD|貨到付款|1|40|2025-10-23 08:09:30.1675125|NULL
+=== SO_RemoteZip (12 rows) ===
+zipcode|note
+-------|----
+209|連江/馬祖
+210|連江/馬祖
+211|連江/馬祖
+880|澎湖
+881|澎湖
+=== SO_RemoteZipcodes (14 rows) ===
+zipcode|note
+-------|----
+209|連江縣南竿
+880|澎湖縣馬公
+881|澎湖縣西嶼
+882|澎湖縣望安
+883|澎湖縣七美
+=== SO_Shipments (200 rows) ===
+shipment_id|shipment_seq|shipment_code|order_id|ship_method_id|carrier|tracking_no|shipped_at|delivered_at|status|note|created_at|updated_at
+-----------|------------|-------------|--------|--------------|-------|-----------|----------|------------|------|----|----------|----------
+1|10000000000106|SH000000000106|1|2|黑貓|NULL|NULL|NULL|READY|NULL|2025-10-23 09:09:56.7335309|2025-10-23 08:09:56.7496319
+2|10000000000107|SH000000000107|2|2|黑貓|NULL|NULL|NULL|READY|NULL|2025-10-23 09:09:56.7496319|2025-10-23 08:09:56.7496319
+3|10000000000108|SH000000000108|3|2|黑貓|NULL|NULL|NULL|READY|NULL|2025-10-23 09:09:56.7654023|2025-10-23 08:09:56.7654023
+4|10000000000109|SH000000000109|4|2|黑貓|NULL|NULL|NULL|READY|NULL|2025-10-23 09:09:56.7654023|2025-10-23 08:09:56.7654023
+5|10000000000110|SH000000000110|5|1|黑貓|NULL|NULL|NULL|READY|NULL|2025-10-23 09:09:56.7654023|2025-10-23 08:09:56.7782016
+=== SO_ShipMethods (2 rows) ===
+ship_method_id|method_name|base_fee|free_threshold|for_store_pickup|allow_remote_surcharge|is_active|created_at|updated_at
+--------------|-----------|--------|--------------|----------------|----------------------|---------|----------|----------
+1|宅配|160.00|999999.00|0|1|1|2025-10-14 08:19:50.7862387|2025-10-14 08:19:50.7862387
+2|超商取貨|60.00|1200.00|1|0|1|2025-10-14 08:19:50.7862387|2025-10-14 08:19:50.7862387
+=== SO_ShipPieceRules (1 rows) ===
+rule_id|ship_method_id|min_qty|add_fee|note
+-------|--------------|-------|-------|----
+1|1|5|30.00|>=5件 +30
+=== SO_ShippingConfig (1 rows) ===
+cfg_key|cfg_value
+-------|---------
+remote_surcharge|90.00
+=== SO_ShipWeightRules (2 rows) ===
+rule_id|ship_method_id|min_weight|add_fee|note
+-------|--------------|----------|-------|----
+1|2|5.000|50.00|>=5kg +50
+2|2|10.000|70.00|>=10kg +70
+=== SO_StockMovements (187122 rows) ===
+movement_id|product_id|order_id|change_qty|reason|created_at|note
+-----------|----------|--------|----------|------|----------|----
+1|144|1|-4|ORDER_ALLOCATE|2025-10-23 08:09:56.7335309|批次自動建立
+2|111|1|-4|ORDER_ALLOCATE|2025-10-23 08:09:56.7335309|批次自動建立
+3|113|1|-1|ORDER_ALLOCATE|2025-10-23 08:09:56.7335309|批次自動建立
+4|116|1|-3|ORDER_ALLOCATE|2025-10-23 08:09:56.7335309|批次自動建立
+5|151|1|-1|ORDER_ALLOCATE|2025-10-23 08:09:56.7335309|批次自動建立
+=== Support_Ticket_Assignments (28 rows) ===
+assignment_id|ticket_id|from_manager_id|to_manager_id|assigned_by_manager_id|assigned_at|note
+-------------|---------|---------------|-------------|----------------------|-----------|----
+1|1|NULL|30000099|30000100|2025-08-04 09:02:00.0000000|首次派單
+2|2|NULL|30000100|30000099|2025-08-04 09:07:00.0000000|首次派單
+3|3|NULL|30000099|30000100|2025-08-04 09:12:00.0000000|首次派單
+4|4|NULL|30000100|30000099|2025-08-04 09:17:00.0000000|首次派單
+5|7|NULL|30000099|30000100|2025-08-04 09:32:00.0000000|首次派單
+=== Support_Ticket_Messages (28 rows) ===
+message_id|ticket_id|sender_user_id|sender_manager_id|message_text|sent_at|read_by_user_at|read_by_manager_at
+----------|---------|--------------|-----------------|------------|-------|---------------|------------------
+1|1|10000071|NULL|工單訊息—Seed 工單 #001|2025-08-04 09:01:00.0000000|NULL|2025-09-12 08:13:15.9563999
+2|2|NULL|30000100|工單訊息—Seed 工單 #002|2025-08-04 09:07:00.0000000|NULL|NULL
+3|3|10000073|NULL|工單訊息—Seed 工單 #003|2025-08-04 09:13:00.0000000|NULL|2025-09-12 08:13:17.6990659
+4|4|NULL|30000100|工單訊息—Seed 工單 #004|2025-08-04 09:19:00.0000000|NULL|NULL
+5|5|10000075|NULL|工單訊息—Seed 工單 #005(含轉單)|2025-08-04 09:25:00.0000000|NULL|NULL
+=== Support_Tickets (23 rows) ===
+ticket_id|user_id|assigned_manager_id|subject|is_closed|created_at|closed_at|closed_by_manager_id|last_message_at|close_note
+---------|-------|-------------------|-------|---------|----------|---------|--------------------|---------------|----------
+1|10000071|30000100|Seed 工單 #001|0|2025-08-04 09:00:00.0000000|NULL|NULL|NULL|NULL
+2|10000072|30000100|Seed 工單 #002|0|2025-08-04 09:05:00.0000000|NULL|NULL|NULL|NULL
+3|10000073|30000099|Seed 工單 #003|0|2025-08-04 09:10:00.0000000|NULL|NULL|NULL|NULL
+4|10000074|30000100|Seed 工單 #004|0|2025-08-04 09:15:00.0000000|NULL|NULL|NULL|NULL
+5|10000075|30000096|Seed 工單 #005(含轉單)|0|2025-08-04 09:20:00.0000000|NULL|NULL|NULL|NULL
+=== SystemSettings (56 rows) ===
+SettingId|SettingKey|SettingValue|Description|Category|SettingType|IsReadOnly|IsActive|IsDeleted|DeletedAt|DeletedBy|DeleteReason|CreatedAt|UpdatedAt|UpdatedBy
+---------|----------|------------|-----------|--------|-----------|----------|--------|---------|---------|---------|------------|---------|---------|---------
+1|Game.DefaultDailyLimit|3|Default daily game limit|Game|Number|0|1|0|NULL|NULL|NULL|2025-10-23 10:33:23.3218456|NULL|NULL
+2|Game.Levels.Configuration|{"levels":[{"level":1,"monsterCount":6,"speedMultiplier":1.0,"experienceReward":100,"pointsReward":10,"hasCoupon":false},{"level":2,"monsterCount":8,"speedMultiplier":1.5,"experienceReward":200,"pointsReward":20,"hasCoupon":false},{"level":3,"monsterCount"|Game level configuration (3 levels)|Game|JSON|0|1|0|NULL|NULL|NULL|2025-10-23 10:33:23.3218456|NULL|NULL
+3|Game.Level1.MonsterCount|6|Level 1 monster count|Game|Number|0|1|0|NULL|NULL|NULL|2025-10-23 10:33:23.3218456|NULL|NULL
+4|Game.Level2.MonsterCount|8|Level 2 monster count|Game|Number|0|1|0|NULL|NULL|NULL|2025-10-23 10:33:23.3218456|NULL|NULL
+5|Game.Level3.MonsterCount|10|Level 3 monster count|Game|Number|0|1|0|NULL|NULL|NULL|2025-10-23 10:33:23.3218456|NULL|NULL
+=== thread_posts (69 rows) ===
+id|thread_id|author_User_ID|content_md|parent_post_id|status|created_at|updated_at
+--|---------|--------------|----------|--------------|------|----------|----------
+1|1|10000098|歡迎新人！這串會持續更新：安裝、基本設定、鍵位、FAQ，都放在 1F。|NULL|normal|2025-09-05 07:52:09.0998330|2025-09-05 07:52:09.0998330
+2|2|10000098|歡迎新人！這串會持續更新：安裝、基本設定、鍵位、FAQ，都放在 1F。|NULL|normal|2025-09-05 07:52:09.0998330|2025-09-05 07:52:09.0998330
+3|3|10000098|歡迎新人！這串會持續更新：安裝、基本設定、鍵位、FAQ，都放在 1F。|NULL|normal|2025-09-05 07:52:09.0998330|2025-09-05 07:52:09.0998330
+4|4|10000098|歡迎新人！這串會持續更新：安裝、基本設定、鍵位、FAQ，都放在 1F。|NULL|normal|2025-09-05 07:52:09.0998330|2025-09-05 07:52:09.0998330
+5|5|10000098|歡迎新人！這串會持續更新：安裝、基本設定、鍵位、FAQ，都放在 1F。|NULL|normal|2025-09-05 07:52:09.0998330|2025-09-05 07:52:09.0998330
+=== threads (23 rows) ===
+thread_id|forum_id|author_User_ID|title|status|created_at|updated_at
+---------|--------|--------------|-----|------|----------|----------
+1|1|10000178|[精華] 新手入門：安裝、設定、常見問題總整理|normal|2025-09-05 07:51:59.0968343|2025-09-05 07:51:59.0968343
+2|2|10000178|[精華] 新手入門：安裝、設定、常見問題總整理|normal|2025-09-05 07:51:59.0968343|2025-09-05 07:51:59.0968343
+3|3|10000178|[精華] 新手入門：安裝、設定、常見問題總整理|normal|2025-09-05 07:51:59.0968343|2025-09-05 07:51:59.0968343
+4|4|10000178|[精華] 新手入門：安裝、設定、常見問題總整理|normal|2025-09-05 07:51:59.0968343|2025-09-05 07:51:59.0968343
+5|5|10000178|[精華] 新手入門：安裝、設定、常見問題總整理|normal|2025-09-05 07:51:59.0968343|2025-09-05 07:51:59.0968343
+=== User_Introduce (200 rows) ===
+User_ID|User_NickName|Gender|IdNumber|Cellphone|Email|Address|DateOfBirth|Create_Account|User_Picture|User_Introduce
+-------|-------------|------|--------|---------|-----|-------|-----------|--------------|------------|--------------
+10000001|DragonKnight88|M|A123456789|0912345001|dragon388@email.com|台北市信義區松高路101號|1988-03-15|2021-01-15 09:30:00.0000000|NULL|喜歡騎重機和攝影的工程師
+10000002|TechGuru92|F|B234567890|0923456002|techguru92@email.com|新北市板橋區文化路202號|1992-07-22|2021-01-16 10:15:30.0000000|NULL|科技達人，專精AI與機器學習
+10000003|CoffeeAddict|M|C345678901|0934567003|coffee12@email.com|台中市西區民生路303號|1988-11-30|2021-01-17 11:20:45.0000000|NULL|咖啡愛好者，開設連鎖咖啡店
+10000004|YogaMaster|F|D456789012|0945678004|yoga31@email.com|高雄市鼓山區美術館路404號|1995-03-18|2021-01-18 12:45:00.0000000|NULL|瑜伽教練，追求身心靈平衡
+10000005|CodeWarrior|M|E567890123|0956789005|coder31112@email.com|台南市東區林森路505號|1985-09-27|2021-01-19 13:30:15.0000000|NULL|資深軟體開發者，熱愛開源專案
+=== User_Rights (200 rows) ===
+User_Id|User_Status|ShoppingPermission|MessagePermission|SalesAuthority
+-------|-----------|------------------|-----------------|--------------
+10000001|1|1|1|0
+10000002|1|1|1|0
+10000003|1|1|1|0
+10000004|1|1|1|0
+10000005|1|1|1|0
+=== User_Sales_Information (0 rows) ===
+User_Id|UserSales_Wallet
+-------|----------------
+=== User_Wallet (200 rows) ===
+User_Id|User_Point|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+-------|----------|---------|---------|---------|------------
+10000001|60030|0|NULL|NULL|NULL
+10000002|21666|0|NULL|NULL|NULL
+10000003|93043|0|NULL|NULL|NULL
+10000004|52743|0|NULL|NULL|NULL
+10000005|37320|0|NULL|NULL|NULL
+=== UserHome (200 rows) ===
+User_ID|Title|Theme|IsPublic|HomeCode|VisitCount|CreatedAt|UpdatedAt
+-------|-----|-----|--------|--------|----------|---------|---------
+10000001|歡迎來到我的小窩 #001|NULL|0|uhadc5cee2fe|2931|2022-12-21 20:03:38|2023-01-28 23:12:15
+10000002|玩家 10000002 的小窩|NULL|1|uh411fdf618c|180|2022-02-01 13:19:25|2022-02-23 19:56:52
+10000003|冒險者 #0003 之家|NULL|1|uhab4d4f00d1|4421|2023-02-06 23:04:46|2023-04-19 16:50:26
+10000004|歡迎來到我的小窩 #004|NULL|1|uhd027a8e9f5|698|2023-01-02 11:09:29|2023-02-21 00:46:43
+10000005|玩家 10000005 的小窩|NULL|1|uhcd7c709c29|835|2022-08-17 07:59:15|2022-11-17 08:59:09
+=== Users (200 rows) ===
+User_ID|User_name|User_Account|User_Password|User_EmailConfirmed|User_PhoneNumberConfirmed|User_TwoFactorEnabled|User_AccessFailedCount|User_LockoutEnabled|User_LockoutEnd|Create_Account
+-------|---------|------------|-------------|-------------------|-------------------------|---------------------|----------------------|-------------------|---------------|--------------
+10000001|DragonKnight88|dragonknight88|AQAAAAIAAYagAAAAEBQzmmebk9Q0dlggNxtikWG7lsXmm85tgaNZ15gLW5OY7sIS6CWTNLtZdM2wfippnQ==|1|1|1|1|1|NULL|2025-10-23 16:14:43
+10000002|TechGuru92|tech_guru_92|AQAAAAIAAYagAAAAEEfji0DAJ0v0/OkQ53fTUvms/UV3hPRRfu0jfjCix9LjmBWdV9tZhR7ohP/wqHMPJQ==|1|1|1|1|1|NULL|2025-10-23 16:14:43
+10000003|CoffeeAddict|coffee_addict|CoffeePwd003!|1|1|1|1|1|NULL|2025-10-23 16:14:43
+10000004|YogaMaster|yoga_master|YogaLife004$|1|1|1|1|1|NULL|2025-10-23 16:14:43
+10000005|BookLover|book_lover_95|ReadMore005%|1|1|1|1|1|NULL|2025-10-23 16:14:43
+=== UserSignInStats (2400 rows) ===
+LogID|SignTime|UserID|PointsGained|PointsGainedTime|ExpGained|ExpGainedTime|CouponGained|CouponGainedTime|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+-----|--------|------|------------|----------------|---------|-------------|------------|----------------|---------|---------|---------|------------
+1|2023-04-13 10:56:22.0000000|10000001|15|2023-04-13 10:56:22.0000000|0|2023-04-13 10:56:22.0000000|AUTO-SIGN-000000000001|2023-04-13 10:56:22.0000000|0|NULL|NULL|NULL
+2|2023-06-02 08:24:29.0000000|10000001|15|2023-06-02 08:24:29.0000000|20|2023-06-02 08:24:29.0000000|AUTO-SIGN-000000000002|2023-06-02 08:24:29.0000000|0|NULL|NULL|NULL
+3|2023-06-21 10:03:48.0000000|10000001|20|2023-06-21 10:03:48.0000000|5|2023-06-21 10:03:48.0000000|AUTO-SIGN-000000000003|2023-06-21 10:03:48.0000000|0|NULL|NULL|NULL
+4|2023-07-18 10:44:32.0000000|10000001|10|2023-07-18 10:44:32.0000000|5|2023-07-18 10:44:32.0000000|AUTO-SIGN-000000000004|2023-07-18 10:44:32.0000000|0|NULL|NULL|NULL
+5|2023-08-10 09:36:22.0000000|10000001|5|2023-08-10 09:36:22.0000000|10|2023-08-10 09:36:22.0000000|AUTO-SIGN-000000000005|2023-08-10 09:36:22.0000000|0|NULL|NULL|NULL
+=== UserTokens (0 rows) ===
+Token_ID|User_ID|Provider|Name|Value|ExpireAt
+--------|-------|--------|----|-----|--------
+=== WalletHistory (1928 rows) ===
+LogID|UserID|ChangeType|PointsChanged|ItemCode|Description|ChangeTime|IsDeleted|DeletedAt|DeletedBy|DeleteReason
+-----|------|----------|-------------|--------|-----------|----------|---------|---------|---------|------------
+1|10000001|Coupon|0|CPN-2301-HRT805|小遊戲勝利獲得商城優惠券|2023-12-08 03:34:50.0000000|0|NULL|NULL|NULL
+2|10000001|Point|-10000|CPN-2310-NCW491|會員點數兌換商城優惠券|2023-10-06 18:52:28.0000000|0|NULL|NULL|NULL
+3|10000001|Point|-30000|EV-MOVIE-8JDW-064877|會員點數兌換電子禮券|2024-10-29 15:17:44.0000000|0|NULL|NULL|NULL
+4|10000001|Coupon|0|CPN-2301-HRT805|活動送商城優惠券|2025-09-06 18:34:01.4389762|0|NULL|NULL|NULL
+5|10000001|Coupon|0|CPN-2301-HRT805|每日簽到獲得商城優惠券|2025-08-24 07:26:36.0000000|0|NULL|NULL|NULL

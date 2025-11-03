@@ -1,0 +1,931 @@
+# GameSpacedatabase 完整結構參考 (AI優化版)
+
+**生成日期:** 2025-11-03
+**資料庫:** GameSpacedatabase
+**SQL Server:** 2022 Express
+**總表數:** 102
+**連線字串:** `Server=DESKTOP-8HQIS1S\SQLEXPRESS;Database=GameSpacedatabase;Trusted_Connection=True;TrustServerCertificate=True;`
+
+---
+
+## 快速索引
+
+### MiniGame Area 核心表 (20個)
+1. **User_Wallet** - 用戶點數錢包
+2. **WalletHistory** - 點數交易歷史
+3. **CouponType** - 優惠券類型定義
+4. **Coupon** - 優惠券實例
+5. **EVoucherType** - 電子券類型
+6. **EVoucher** - 電子券實例
+7. **EVoucherToken** - 兌換Token
+8. **EVoucherRedeemLog** - 兌換記錄
+9. **SignInRule** - 簽到規則配置
+10. **UserSignInStats** - 用戶簽到記錄
+11. **Pet** - 寵物數據
+12. **PetSkinColorCostSettings** - 膚色定價
+13. **PetBackgroundCostSettings** - 背景定價
+14. **PetLevelRewardSettings** - 升級獎勵
+15. **MiniGame** - 遊戲對局記錄
+16. **SystemSettings** - 系統配置
+17. **Users** - 用戶基礎數據
+18. **ManagerData** - 管理員數據
+19. **ManagerRole** - 角色分配
+20. **ManagerRolePermission** - 權限定義
+
+### 論壇系統 (10個)
+21. forums, games, posts, threads, thread_posts
+22. game_metric_daily, game_source_map, metrics, metric_sources
+23. leaderboard_snapshots, popularity_index_daily, post_metric_snapshot, post_sources
+
+### 社交系統 (15個)
+24. DM_Conversations, DM_Messages, Group_Chat, Group_Member, Groups
+25. Group_Block, Group_Read_States, Relation, Relation_Status
+26. Support_Tickets, Support_Ticket_Messages, Support_Ticket_Assignments
+27. CS_Agent, CS_Agent_Permission, Mutes
+
+### 通知系統 (5個)
+28. Notifications, Notification_Recipients, Notification_Sources, Notification_Actions
+29. bookmarks, reactions
+
+### 線上商店系統 (26個)
+30. **訂單:** SO_OrderInfoes, SO_OrderItems, SO_OrderStatusHistory, SO_OrderAddresses
+31. **購物車:** SO_Carts, SO_CartItems
+32. **付款:** SO_PaymentTransactions, SO_PayMethods, SO_Coupons
+33. **物流:** SO_Shipments, SO_ShipMethods, SO_ShippingConfig, SO_ShipPieceRules, SO_ShipWeightRules
+34. **庫存:** SO_StockMovements
+35. **商品:** S_ProductInfo, S_ProductImages, S_ProductRatings, S_ProductCode, S_ProductCodeRule
+36. **遊戲商品:** S_GameProductDetails, S_GameProductGenre, S_GameGenre, S_Platform
+37. **其他商品:** S_OtherProductDetails, S_MerchType, S_PeriodType
+38. **供應商:** S_Supplier, S_SupplierStatus, S_Official_Store_Ranking
+39. **用戶收藏:** S_UserFavorites
+40. **偏遠地區:** SO_RemoteZip, SO_RemoteZipcodes, RemoteZipcodes
+
+### 用戶系統 (8個)
+41. Users (主表), User_Introduce, User_Rights, User_Sales_Information
+42. UserHome, UserTokens
+43. MemberSalesProfile
+44. banned_words
+
+### 玩家市場系統 (6個)
+45. PlayerMarketProductInfo, PlayerMarketProductImgs
+46. PlayerMarketOrderInfo, PlayerMarketOrderTradepage, PlayerMarketTradeMsg
+47. PlayerMarketRanking
+
+### 其他 (12個)
+48. ShipMethods (棄用，使用SO_ShipMethods)
+
+---
+
+## 表格結構速查 (緊湊格式)
+
+### 格式說明
+- **PK:** Primary Key | **FK:** Foreign Key | **UK:** Unique Key | **IDN:** Identity | **SD:** Soft Delete
+
+---
+
+### 1. User_Wallet (用戶錢包)
+**PK:** User_Id | **FK:** Users.User_ID | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| User_Id | int | NO | - | PK, FK→Users |
+| User_Point | int | NO | 0 | 點數餘額 |
+| IsDeleted | bit | NO | 0 | 軟刪除標記 |
+| DeletedAt | datetime2 | YES | NULL | 刪除時間 |
+| DeletedBy | int | YES | NULL | 刪除者ID |
+| DeleteReason | nvarchar(500) | YES | NULL | 刪除原因 |
+
+**索引:** PK_User_Wallet (CLUSTERED)
+
+---
+
+### 2. WalletHistory (錢包歷史)
+**PK:** LogID (IDN) | **FK:** Users.User_ID | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| LogID | int | NO | IDENTITY | PK |
+| UserID | int | NO | - | FK→Users |
+| ChangeType | nvarchar(20) | NO | - | 類型: Admin_Add, Game_Reward, SignIn_Reward等 |
+| PointsChanged | int | NO | - | 變動點數(可正負) |
+| ItemCode | nvarchar(50) | YES | NULL | 關聯項目代碼 |
+| Description | nvarchar(255) | YES | NULL | 描述 |
+| ChangeTime | datetime2 | NO | sysutcdatetime() | 變動時間 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**索引:** PK_WalletHistory, IX_WalletHistory_user_time (UserID, ChangeTime)
+
+---
+
+### 3. CouponType (優惠券類型)
+**PK:** CouponTypeID (IDN) | **UK:** Name | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| CouponTypeID | int | NO | IDENTITY | PK |
+| Name | nvarchar(50) | NO | - | UNIQUE 名稱 |
+| DiscountType | nvarchar(20) | NO | - | PERCENT/AMOUNT |
+| DiscountValue | decimal(18,2) | YES | NULL | 折扣值 |
+| MinSpend | decimal(18,2) | YES | NULL | 最低消費 |
+| ValidFrom | datetime2 | NO | - | 有效起始 |
+| ValidTo | datetime2 | NO | - | 有效結束 |
+| PointsCost | int | NO | - | 兌換點數成本 |
+| Description | nvarchar(600) | YES | NULL | 描述 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**CHECK約束:**
+- CK_CouponType_DiscountType: DiscountType IN ('PERCENT', 'AMOUNT')
+- CK_CouponType_ValidRange: ValidFrom <= ValidTo
+
+---
+
+### 4. Coupon (優惠券)
+**PK:** CouponID (IDN) | **UK:** CouponCode | **FK:** CouponType, Users | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| CouponID | int | NO | IDENTITY | PK |
+| CouponCode | nvarchar(50) | NO | - | UNIQUE 券碼 |
+| CouponTypeID | int | NO | - | FK→CouponType |
+| UserID | int | NO | - | FK→Users |
+| IsUsed | bit | NO | - | 是否已使用 |
+| AcquiredTime | datetime2 | NO | sysutcdatetime() | 獲得時間 |
+| UsedTime | datetime2 | YES | sysutcdatetime() | 使用時間 |
+| UsedInOrderID | int | YES | NULL | 使用於訂單ID |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**CHECK約束:**
+- CK_Coupon_IsUsed: IsUsed IN (0, 1)
+- CK_Coupon_UsedFields: 確保IsUsed=0時UsedTime和UsedInOrderID為NULL
+
+**索引:**
+- UQ_Coupon_CouponCode (UNIQUE)
+- IX_Coupon_user_used (UserID, IsUsed, AcquiredTime)
+
+---
+
+### 5. EVoucherType (電子券類型)
+**PK:** EVoucherTypeID (IDN) | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| EVoucherTypeID | int | NO | IDENTITY | PK |
+| Name | nvarchar(50) | NO | - | 名稱 |
+| ValueAmount | decimal(18,2) | NO | - | 面額 |
+| ValidFrom | datetime2 | NO | - | 有效起始 |
+| ValidTo | datetime2 | NO | - | 有效結束 |
+| PointsCost | int | NO | - | 兌換點數 |
+| TotalAvailable | int | NO | - | 總可用數量 |
+| Description | nvarchar(600) | YES | NULL | 描述 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+---
+
+### 6. EVoucher (電子券)
+**PK:** EVoucherID (IDN) | **UK:** EVoucherCode | **FK:** EVoucherType, Users | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| EVoucherID | int | NO | IDENTITY | PK |
+| EVoucherCode | nvarchar(50) | NO | - | UNIQUE 券碼 |
+| EVoucherTypeID | int | NO | - | FK→EVoucherType |
+| UserID | int | NO | - | FK→Users |
+| IsUsed | bit | NO | - | 是否已使用 |
+| AcquiredTime | datetime2 | NO | sysutcdatetime() | 獲得時間 |
+| UsedTime | datetime2 | YES | sysutcdatetime() | 使用時間 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**索引:**
+- UQ_EVoucher_EVoucherCode (UNIQUE)
+- IX_EVoucher_user_used (UserID, IsUsed, AcquiredTime)
+
+---
+
+### 7. EVoucherToken (兌換Token)
+**PK:** TokenID (IDN) | **UK:** Token | **FK:** EVoucher | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| TokenID | int | NO | IDENTITY | PK |
+| EVoucherID | int | NO | - | FK→EVoucher |
+| Token | varchar(64) | NO | - | UNIQUE 兌換Token |
+| ExpiresAt | datetime2 | NO | - | 過期時間 |
+| IsRevoked | bit | NO | - | 是否已撤銷 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**索引:** UQ_EVoucherToken_Token (UNIQUE)
+
+---
+
+### 8. EVoucherRedeemLog (兌換記錄)
+**PK:** RedeemID (IDN) | **FK:** EVoucher, EVoucherToken, Users | **SD:** ✓ | **CASCADE DELETE on EVoucher**
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| RedeemID | int | NO | IDENTITY | PK |
+| EVoucherID | int | NO | - | FK→EVoucher (CASCADE) |
+| TokenID | int | YES | NULL | FK→EVoucherToken |
+| UserID | int | NO | - | FK→Users |
+| ScannedAt | datetime2 | NO | sysutcdatetime() | 掃描時間 |
+| Status | nvarchar(20) | NO | - | REVOKED/REJECTED/EXPIRED/ALREADYUSED/APPROVED |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**CHECK約束:** CK_EVoucherRedeemLog_Status: Status IN ('REVOKED', 'REJECTED', 'EXPIRED', 'ALREADYUSED', 'APPROVED')
+
+---
+
+### 9. SignInRule (簽到規則)
+**PK:** Id (IDN) | **UK:** SignInDay | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| Id | int | NO | IDENTITY | PK |
+| SignInDay | int | NO | - | UNIQUE 第幾天(1-365) |
+| Points | int | NO | - | 獎勵點數 |
+| Experience | int | NO | - | 獎勵經驗值 |
+| HasCoupon | bit | NO | 0 | 是否有優惠券 |
+| CouponTypeCode | nvarchar(50) | YES | NULL | 優惠券類型代碼 |
+| IsActive | bit | NO | 1 | 是否啟用 |
+| CreatedAt | datetime2 | NO | sysutcdatetime() | 創建時間 |
+| UpdatedAt | datetime2 | YES | NULL | 更新時間 |
+| Description | nvarchar(255) | YES | NULL | 描述 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**CHECK約束:**
+- CK_SignInRule_DayRange: SignInDay BETWEEN 1 AND 365
+- CK_SignInRule_Positive: Points >= 0 AND Experience >= 0
+- CK_SignInRule_CouponFlag: HasCoupon=1時CouponTypeCode必須不為NULL
+
+**索引:** UQ_SignInRule_SignInDay (UNIQUE)
+
+---
+
+### 10. UserSignInStats (簽到記錄)
+**PK:** LogID (IDN) | **FK:** Users | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| LogID | int | NO | IDENTITY | PK |
+| SignTime | datetime2 | NO | sysutcdatetime() | 簽到時間 |
+| UserID | int | NO | - | FK→Users |
+| PointsGained | int | NO | - | 獲得點數 |
+| PointsGainedTime | datetime2 | NO | sysutcdatetime() | 點數發放時間 |
+| ExpGained | int | NO | - | 獲得經驗 |
+| ExpGainedTime | datetime2 | NO | sysutcdatetime() | 經驗發放時間 |
+| CouponGained | nvarchar(50) | NO | - | 獲得優惠券代碼 |
+| CouponGainedTime | datetime2 | NO | sysutcdatetime() | 優惠券發放時間 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**索引:** PK_UserSignInStats, IX_UserSignInStats_user_time (UserID, SignTime)
+
+---
+
+### 11. Pet (寵物)
+**PK:** PetID (IDN) | **FK:** Users | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| PetID | int | NO | IDENTITY | PK |
+| UserID | int | NO | - | FK→Users |
+| PetName | nvarchar(50) | NO | - | 寵物名稱 |
+| Level | int | NO | 1 | 等級 |
+| Experience | int | NO | 0 | 總經驗值 |
+| CurrentExperience | int | NO | 0 | 當前等級經驗 |
+| ExperienceToNextLevel | int | NO | - | 升級所需經驗 |
+| Hunger | int | NO | 50 | 飽食度(0-100) |
+| Mood | int | NO | 50 | 心情(0-100) |
+| Stamina | int | NO | 50 | 體力(0-100) |
+| Cleanliness | int | NO | 50 | 清潔度(0-100) |
+| Health | int | NO | 50 | 健康值(0-100) |
+| SkinColor | varchar(7) | NO | '#FFFFFF' | 膚色(#RRGGBB) |
+| SkinColorChangedAt | datetime2 | YES | NULL | 膚色變更時間 |
+| SkinColorChangedCount | int | NO | 0 | 膚色變更次數 |
+| BackgroundColor | nvarchar(20) | NO | 'default' | 背景顏色 |
+| BackgroundChangedAt | datetime2 | YES | NULL | 背景變更時間 |
+| BackgroundChangedCount | int | NO | 0 | 背景變更次數 |
+| LastInteractionTime | datetime2 | YES | NULL | 最後互動時間 |
+| LastLevelUpTime | datetime2 | YES | NULL | 最後升級時間 |
+| LastLevelUpRewardClaimed | bit | NO | 0 | 升級獎勵是否已領取 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**CHECK約束:**
+- CK_Pet_Hunger: Hunger BETWEEN 0 AND 100
+- CK_Pet_Mood: Mood BETWEEN 0 AND 100
+- CK_Pet_Stamina: Stamina BETWEEN 0 AND 100
+- CK_Pet_Cleanliness: Cleanliness BETWEEN 0 AND 100
+- CK_Pet_Health: Health BETWEEN 0 AND 100
+
+**索引:** IX_Pet_user (UserID)
+
+---
+
+### 12. PetSkinColorCostSettings (膚色定價)
+**PK:** SettingId (IDN) | **UK:** ColorCode | **CHECK:** ColorCode格式
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| SettingId | int | NO | IDENTITY | PK |
+| ColorCode | varchar(7) | NO | - | UNIQUE #RRGGBB格式 |
+| ColorName | nvarchar(50) | NO | - | 顏色名稱 |
+| PointsCost | int | NO | - | 點數成本(>=0) |
+| Rarity | nvarchar(20) | NO | - | 稀有度: 普通/稀有/史詩/傳說/限定 |
+| IsFree | bit | NO | 0 | 是否免費 |
+| IsLimitedEdition | bit | NO | 0 | 是否限定版 |
+| AvailableFrom | datetime2 | YES | NULL | 可用起始時間 |
+| AvailableUntil | datetime2 | YES | NULL | 可用結束時間 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+| CreatedAt | datetime2 | NO | sysutcdatetime() | - |
+| UpdatedAt | datetime2 | YES | NULL | - |
+| UpdatedBy | int | YES | NULL | FK→ManagerData |
+
+**CHECK約束:**
+- CK_PetSkinColorCostSettings_PointsCost: PointsCost >= 0
+- CK_PetSkinColorCostSettings_ColorCode: ColorCode LIKE '#%' AND LEN(ColorCode) >= 4
+- CK_PetSkinColorCostSettings_Rarity: Rarity IN ('普通', '稀有', '史詩', '傳說', '限定')
+
+---
+
+### 13. PetBackgroundCostSettings (背景定價)
+**PK:** SettingId (IDN) | **UK:** BackgroundCode
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| SettingId | int | NO | IDENTITY | PK |
+| BackgroundCode | nvarchar(20) | NO | - | UNIQUE 背景代碼 |
+| BackgroundName | nvarchar(50) | NO | - | 背景名稱 |
+| PointsCost | int | NO | - | 點數成本(>=0) |
+| Description | nvarchar(255) | YES | NULL | 描述 |
+| PreviewImagePath | nvarchar(255) | YES | NULL | 預覽圖路徑 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+| CreatedAt | datetime2 | NO | sysutcdatetime() | - |
+| UpdatedAt | datetime2 | YES | NULL | - |
+| UpdatedBy | int | YES | NULL | FK→ManagerData |
+
+**CHECK約束:** CK_PetBackgroundCostSettings_PointsCost: PointsCost >= 0
+
+---
+
+### 14. PetLevelRewardSettings (升級獎勵)
+**PK:** SettingId (IDN) | **UK:** (LevelRangeStart, LevelRangeEnd)
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| SettingId | int | NO | IDENTITY | PK |
+| LevelRangeStart | int | NO | - | 等級範圍起始 |
+| LevelRangeEnd | int | NO | - | 等級範圍結束 |
+| PointsReward | int | NO | - | 獎勵點數(0-999999) |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+| CreatedAt | datetime2 | NO | sysutcdatetime() | - |
+| UpdatedAt | datetime2 | YES | NULL | - |
+| UpdatedBy | int | YES | NULL | - |
+
+**CHECK約束:**
+- CK_PetLevelRewardSettings_LevelRange: LevelRangeStart > 0 AND LevelRangeEnd >= LevelRangeStart
+- CK_PetLevelRewardSettings_PointsReward: PointsReward BETWEEN 0 AND 999999
+
+**索引:** UQ_PetLevelRewardSettings_LevelRange (UNIQUE: LevelRangeStart, LevelRangeEnd)
+
+---
+
+### 15. MiniGame (遊戲對局)
+**PK:** PlayID (IDN) | **FK:** Users, Pet | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| PlayID | int | NO | IDENTITY | PK |
+| UserID | int | NO | - | FK→Users |
+| PetID | int | NO | - | FK→Pet |
+| StartTime | datetime2 | NO | sysutcdatetime() | 開始時間 |
+| EndTime | datetime2 | YES | NULL | 結束時間 |
+| Level | int | NO | - | 難度等級 |
+| MonsterCount | int | NO | - | 怪物數量 |
+| SpeedMultiplier | decimal(5,2) | NO | - | 速度倍率 |
+| Result | nvarchar(20) | YES | NULL | Win/Lose/Abort |
+| Aborted | bit | NO | 0 | 是否中斷 |
+| ExpGained | int | YES | NULL | 獲得經驗 |
+| ExpGainedTime | datetime2 | YES | NULL | 經驗發放時間 |
+| PointsGained | int | YES | NULL | 獲得點數 |
+| PointsGainedTime | datetime2 | YES | NULL | 點數發放時間 |
+| CouponGained | nvarchar(50) | YES | NULL | 獲得優惠券 |
+| CouponGainedTime | datetime2 | YES | NULL | 優惠券發放時間 |
+| HungerDelta | int | YES | NULL | 飽食度變化 |
+| MoodDelta | int | YES | NULL | 心情變化 |
+| StaminaDelta | int | YES | NULL | 體力變化 |
+| CleanlinessDelta | int | YES | NULL | 清潔度變化 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+
+**索引:** IX_MiniGame_user_time (UserID, StartTime)
+
+---
+
+### 16. SystemSettings (系統配置)
+**PK:** SettingId (IDN) | **UK:** SettingKey | **SD:** ✓
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| SettingId | int | NO | IDENTITY | PK |
+| SettingKey | nvarchar(200) | NO | - | UNIQUE 配置鍵 |
+| SettingValue | nvarchar(MAX) | YES | NULL | 配置值 |
+| Description | nvarchar(500) | YES | NULL | 描述 |
+| Category | nvarchar(100) | NO | 'General' | 分類 |
+| SettingType | nvarchar(50) | NO | 'String' | String/Boolean/Number/JSON |
+| IsReadOnly | bit | NO | 0 | 是否只讀 |
+| IsActive | bit | NO | 1 | 是否啟用 |
+| IsDeleted | bit | NO | 0 | 軟刪除 |
+| DeletedAt | datetime2 | YES | NULL | - |
+| DeletedBy | int | YES | NULL | - |
+| DeleteReason | nvarchar(500) | YES | NULL | - |
+| CreatedAt | datetime2 | NO | sysutcdatetime() | - |
+| UpdatedAt | datetime2 | YES | NULL | - |
+| UpdatedBy | int | YES | NULL | - |
+
+**CHECK約束:** CHK_SystemSettings_SettingType: SettingType IN ('String', 'Boolean', 'Number', 'JSON')
+
+**索引:** UQ_SystemSettings_SettingKey (UNIQUE)
+
+---
+
+### 17. Users (用戶)
+**PK:** User_ID (IDN) | **UK:** User_Account, User_Email
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| User_ID | int | NO | IDENTITY | PK |
+| User_name | nvarchar(30) | NO | - | 用戶名稱 |
+| User_Account | nvarchar(30) | NO | - | UNIQUE 帳號 |
+| User_Password | nvarchar(255) | NO | - | 密碼(hash) |
+| User_EmailConfirmed | bit | NO | 0 | 郵箱已確認 |
+| User_PhoneNumberConfirmed | bit | NO | 0 | 手機已確認 |
+| User_TwoFactorEnabled | bit | NO | 0 | 雙因素認證 |
+| User_AccessFailedCount | int | NO | 0 | 登入失敗次數 |
+| User_LockoutEnabled | bit | NO | 1 | 啟用鎖定 |
+| User_LockoutEnd | datetime2 | YES | NULL | 鎖定結束時間 |
+| Create_Account | datetime2 | NO | sysdatetime() | 創建時間 |
+
+**索引:**
+- PK_Users (CLUSTERED)
+- UQ_Users_Account (UNIQUE: User_Account)
+
+---
+
+### 18. ManagerData (管理員)
+**PK:** Manager_Id (IDN) | **UK:** Manager_Account, Manager_Email
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| Manager_Id | int | NO | IDENTITY | PK |
+| Manager_Name | nvarchar(100) | NO | - | 管理員姓名 |
+| Manager_Account | nvarchar(50) | NO | - | UNIQUE 帳號 |
+| Manager_Password | nvarchar(255) | NO | - | 密碼(hash) |
+| Manager_Email | nvarchar(100) | NO | - | UNIQUE 郵箱 |
+| Manager_EmailConfirmed | bit | NO | 0 | 郵箱已確認 |
+| Manager_AccessFailedCount | int | NO | 0 | 登入失敗次數 |
+| Manager_LockoutEnabled | bit | NO | 1 | 啟用鎖定 |
+| Manager_LockoutEnd | datetime2 | YES | NULL | 鎖定結束時間 |
+
+**索引:**
+- PK_ManagerData (CLUSTERED)
+- UQ_Manager_Account (UNIQUE)
+- UQ_Manager_Email (UNIQUE)
+
+---
+
+### 19. ManagerRole (角色分配)
+**PK:** (Manager_Id, ManagerRole_Id) | **FK:** ManagerData, ManagerRolePermission
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| Manager_Id | int | NO | - | FK→ManagerData |
+| ManagerRole_Id | int | NO | - | FK→ManagerRolePermission |
+
+**複合主鍵:** PK_ManagerRole (Manager_Id, ManagerRole_Id)
+
+---
+
+### 20. ManagerRolePermission (權限定義)
+**PK:** ManagerRole_Id (IDN)
+
+| Column | Type | Null | Default | Note |
+|--------|------|------|---------|------|
+| ManagerRole_Id | int | NO | IDENTITY | PK |
+| role_name | nvarchar(50) | NO | - | 角色名稱 |
+| AdministratorPrivilegesManagement | bit | NO | 0 | 管理員權限管理 |
+| UserStatusManagement | bit | NO | 0 | 用戶狀態管理 |
+| ShoppingPermissionManagement | bit | NO | 0 | 購物權限管理(對應Wallet) |
+| MessagePermissionManagement | bit | NO | 0 | 訊息權限管理 |
+| Pet_Rights_Management | bit | NO | 0 | 寵物權限管理 |
+| customer_service | bit | NO | 0 | 客服權限 |
+
+---
+
+## 其他重要表格速查
+
+### 論壇系統
+
+**forums** - 論壇區塊
+PK: forum_id (IDN) | FK: games.game_id | UK: game_id
+
+**games** - 遊戲列表
+PK: game_id (IDN)
+
+**threads** - 討論串
+PK: thread_id (IDN) | FK: forums.forum_id, Users.User_ID
+
+**posts** - 文章
+PK: post_id (IDN) | FK: games.game_id, Users.User_ID(created_by)
+
+**thread_posts** - 討論串回覆
+PK: id (IDN) | FK: threads.thread_id, Users.User_ID, thread_posts.parent_post_id
+
+### 社交系統
+
+**DM_Conversations** - 私訊對話
+PK: conversation_id (IDN) | UK: (is_manager_dm, party1_id, party2_id)
+CHECK: party1_id < party2_id (確保唯一性)
+
+**DM_Messages** - 私訊內容
+PK: message_id (IDN) | FK: DM_Conversations.conversation_id (CASCADE)
+
+**Groups** - 群組
+PK: group_id (IDN) | FK: Users.User_ID(owner)
+
+**Group_Chat** - 群組聊天
+PK: message_id (IDN) | FK: Groups.group_id (CASCADE), Users.User_ID(sender)
+
+**Group_Member** - 群組成員
+PK: group_member_id (IDN) | UK: (group_id, user_id) | FK: Groups (CASCADE), Users
+
+**Support_Tickets** - 客服工單
+PK: ticket_id (IDN) | FK: Users, ManagerData(assigned_manager_id)
+
+**Support_Ticket_Messages** - 工單訊息
+PK: message_id (IDN) | FK: Support_Tickets (CASCADE)
+CHECK: 只能有一個sender (user_id XOR manager_id)
+
+### 線上商店系統
+
+**SO_OrderInfoes** - 訂單主檔
+PK: order_id (IDN) | order_code: OR + 12位數字(SEQUENCE)
+狀態: 未出貨/已出貨/已完成 | 付款狀態: 未付款/已付款
+
+**SO_OrderItems** - 訂單明細
+PK: item_id (IDN) | FK: SO_OrderInfoes.order_id, S_ProductInfo.product_id
+
+**SO_Carts** - 購物車
+PK: cart_id (GUID) | FK: Users.User_ID (可為NULL，支援匿名購物車)
+
+**SO_CartItems** - 購物車項目
+PK: cart_item_id (IDN) | FK: SO_Carts.cart_id
+item_status: NORMAL/PREORDER/DISCONTINUED/OUT_OF_STOCK
+
+**SO_PaymentTransactions** - 付款交易
+PK: payment_id (IDN) | payment_code: PT + 12位數字(SEQUENCE)
+txn_type: PAY/REFUND | status: INIT/PENDING/SUCCESS/FAIL
+
+**SO_Shipments** - 出貨單
+PK: shipment_id (IDN) | shipment_code: 自動生成
+status: READY/SHIPPED/DELIVERED/LOST/RETURNED
+
+**S_ProductInfo** - 商品資訊
+PK: product_id (IDN) | FK: S_Supplier.supplier_id
+
+### 玩家市場系統
+
+**PlayerMarketProductInfo** - 玩家商品
+PK: p_product_id (IDN) | FK: Users.User_ID(seller_id)
+
+**PlayerMarketOrderInfo** - 玩家訂單
+PK: p_order_id (IDN) | FK: PlayerMarketProductInfo, Users(buyer_id), Users(seller_id)
+
+**PlayerMarketOrderTradepage** - 交易頁面
+PK: p_order_tradepage_id (IDN) | FK: PlayerMarketOrderInfo, PlayerMarketProductInfo
+
+---
+
+## 資料庫統計摘要
+
+| 指標 | 數量 |
+|------|------|
+| 總表數 | 102 |
+| 總欄位數 | ~810 |
+| 主鍵(PK) | 102 |
+| 外鍵(FK) | ~150 |
+| 唯一約束(UK) | ~80 |
+| CHECK約束 | 69 |
+| 索引總數 | ~200 |
+| IDENTITY欄位 | ~95 |
+| 軟刪除表 | ~25 (MiniGame相關) |
+
+---
+
+## 關鍵設計模式
+
+### 1. 軟刪除模式
+所有MiniGame相關表格實作軟刪除：
+- IsDeleted (bit, default 0)
+- DeletedAt (datetime2, nullable)
+- DeletedBy (int, nullable)
+- DeleteReason (nvarchar(500), nullable)
+
+**查詢時必須過濾:** `WHERE IsDeleted = 0`
+
+### 2. 審計追蹤
+SystemSettings及Pet設定表包含：
+- CreatedAt (datetime2, default sysutcdatetime())
+- UpdatedAt (datetime2, nullable)
+- UpdatedBy (int, nullable, FK→ManagerData)
+
+### 3. UTC時間戳
+所有時間欄位預設值使用 `sysutcdatetime()`，確保時區一致性
+
+### 4. 級聯刪除
+- EVoucherRedeemLog.EVoucherID → EVoucher (CASCADE DELETE)
+- DM_Messages → DM_Conversations (CASCADE DELETE)
+- Group相關表 → Groups (CASCADE DELETE)
+- Support_Ticket_Messages → Support_Tickets (CASCADE DELETE)
+
+### 5. 唯一性約束
+- CouponType.Name, Coupon.CouponCode (防止重複)
+- SignInRule.SignInDay (確保每天只有一筆規則)
+- Users.User_Account, ManagerData.Manager_Account (防止帳號重複)
+
+---
+
+## 常用查詢模式
+
+### 獲取用戶點數餘額
+```sql
+SELECT User_Point
+FROM User_Wallet
+WHERE User_Id = @userId AND IsDeleted = 0
+```
+
+### 獲取用戶今日是否已簽到 (Asia/Taipei時區)
+```sql
+DECLARE @today DATE = CONVERT(DATE, GETUTCDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Taipei Standard Time');
+
+SELECT COUNT(*)
+FROM UserSignInStats
+WHERE UserID = @userId
+  AND CONVERT(DATE, SignTime AT TIME ZONE 'UTC' AT TIME ZONE 'Taipei Standard Time') = @today
+  AND IsDeleted = 0
+```
+
+### 獲取用戶今日遊戲次數
+```sql
+DECLARE @today DATE = CONVERT(DATE, GETUTCDATE() AT TIME ZONE 'UTC' AT TIME ZONE 'Taipei Standard Time');
+
+SELECT COUNT(*)
+FROM MiniGame
+WHERE UserID = @userId
+  AND CONVERT(DATE, StartTime AT TIME ZONE 'UTC' AT TIME ZONE 'Taipei Standard Time') = @today
+  AND IsDeleted = 0
+```
+
+### 獲取寵物完整資訊（含用戶）
+```sql
+SELECT p.*, u.User_name
+FROM Pet p
+JOIN Users u ON p.UserID = u.User_ID
+WHERE p.UserID = @userId AND p.IsDeleted = 0
+```
+
+---
+
+## 重要業務規則
+
+### 錢包系統
+- 點數不可為負數（應用層強制）
+- 所有點數變動必須記錄到WalletHistory
+- 點數扣除/增加必須使用資料庫事務
+
+### 簽到系統
+- 每日僅能簽到一次（Asia/Taipei時區）
+- 簽到規則以SignInRule.SignInDay為準
+- 連續簽到天數計算需考慮時區
+
+### 寵物系統
+- 屬性值範圍：0-100（CHECK約束強制）
+- 變更膚色固定消耗2000點數
+- 升級獎勵依PetLevelRewardSettings發放
+- 每日自動衰減：Hunger -20, Mood -30, Stamina -10, Cleanliness -20
+
+### 遊戲系統
+- 預設每日遊戲次數限制：3次（可由SystemSettings調整）
+- 難度等級：1-3
+- 遊戲結果：Win/Lose/Abort
+- 只有Win才發放獎勵（點數、經驗、優惠券）
+
+---
+
+## 索引策略
+
+### 覆蓋索引 (Covering Index)
+- `IX_Coupon_user_used (UserID, IsUsed, AcquiredTime)` - 快速查詢用戶可用優惠券
+- `IX_MiniGame_user_time (UserID, StartTime)` - 快速查詢遊戲記錄
+
+### 唯一索引 (Unique Index)
+- 所有UNIQUE約束自動建立唯一索引
+- 例：`UQ_Coupon_CouponCode`, `UQ_SignInRule_SignInDay`
+
+### 外鍵索引
+- 所有外鍵欄位建議建立索引（大部分已存在）
+- 提升JOIN查詢效能
+
+---
+
+## 資料庫維護建議
+
+### 定期任務
+1. **重建索引** (每月)：提升查詢效能
+2. **更新統計資訊** (每週)：確保查詢計畫最佳化
+3. **清理軟刪除資料** (每季)：永久刪除超過90天的軟刪除記錄
+4. **備份資料庫** (每日)：完整備份+交易日誌備份
+
+### 效能監控
+- 監控慢查詢（>1秒）
+- 監控鎖定與死結
+- 監控資料庫大小成長
+
+### 安全性
+- 定期更新密碼雜湊演算法
+- 審計敏感表格的變更（WalletHistory, SO_PaymentTransactions）
+- 限制外部連線IP
+
+---
+
+## 連線資訊
+
+**完整連線字串:**
+```
+Server=DESKTOP-8HQIS1S\SQLEXPRESS;Database=GameSpacedatabase;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False;
+```
+
+**sqlcmd連線:**
+```powershell
+sqlcmd -S "tcp:DESKTOP-8HQIS1S\SQLEXPRESS,1433" -d GameSpacedatabase -E
+```
+
+**Entity Framework Core (appsettings.json):**
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=DESKTOP-8HQIS1S\\SQLEXPRESS;Database=GameSpacedatabase;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}
+```
+
+---
+
+## 附錄：表格完整列表
+
+1-20: [MiniGame Area核心表 - 見上方詳細說明]
+
+21. banned_words - 禁用詞列表
+22. bookmarks - 用戶書籤
+23. CS_Agent - 客服人員
+24. CS_Agent_Permission - 客服權限
+25. DM_Conversations - 私訊對話
+26. DM_Messages - 私訊訊息
+27. EVoucher - 電子券 [已詳述]
+28. EVoucherRedeemLog - 兌換記錄 [已詳述]
+29. EVoucherToken - 兌換Token [已詳述]
+30. EVoucherType - 電子券類型 [已詳述]
+31. forums - 論壇
+32. game_metric_daily - 遊戲每日指標
+33. game_source_map - 遊戲來源對應
+34. games - 遊戲列表
+35. Group_Block - 群組封鎖
+36. Group_Chat - 群組聊天
+37. Group_Member - 群組成員
+38. Group_Read_States - 群組已讀狀態
+39. Groups - 群組
+40. leaderboard_snapshots - 排行榜快照
+41. ManagerData - 管理員 [已詳述]
+42. ManagerRole - 角色分配 [已詳述]
+43. ManagerRolePermission - 權限定義 [已詳述]
+44. MemberSalesProfile - 會員銷售資料
+45. metric_sources - 指標來源
+46. metrics - 指標定義
+47. MiniGame - 遊戲對局 [已詳述]
+48. Mutes - 禁言詞庫
+49. Notification_Actions - 通知動作
+50. Notification_Recipients - 通知接收者
+51. Notification_Sources - 通知來源
+52. Notifications - 通知
+53. Pet - 寵物 [已詳述]
+54. PetBackgroundCostSettings - 背景定價 [已詳述]
+55. PetLevelRewardSettings - 升級獎勵 [已詳述]
+56. PetSkinColorCostSettings - 膚色定價 [已詳述]
+57. PlayerMarketOrderInfo - 玩家市場訂單
+58. PlayerMarketOrderTradepage - 交易頁面
+59. PlayerMarketProductImgs - 商品圖片
+60. PlayerMarketProductInfo - 商品資訊
+61. PlayerMarketRanking - 排行榜
+62. PlayerMarketTradeMsg - 交易訊息
+63. popularity_index_daily - 每日人氣指數
+64. post_metric_snapshot - 文章指標快照
+65. post_sources - 文章來源
+66. posts - 文章
+67. reactions - 反應/表情
+68. Relation - 好友關係
+69. Relation_Status - 關係狀態
+70. RemoteZipcodes - 偏遠地區郵遞區號
+71. S_GameGenre - 遊戲類型
+72. S_GameProductDetails - 遊戲商品詳情
+73. S_GameProductGenre - 遊戲商品類型對應
+74. S_MerchType - 商品類型
+75. S_Official_Store_Ranking - 官方商店排行
+76. S_OtherProductDetails - 其他商品詳情
+77. S_PeriodType - 期間類型
+78. S_Platform - 平台
+79. S_ProductCode - 商品代碼
+80. S_ProductCodeRule - 商品代碼規則
+81. S_ProductImages - 商品圖片
+82. S_ProductInfo - 商品資訊
+83. S_ProductRatings - 商品評分
+84. S_Supplier - 供應商
+85. S_SupplierStatus - 供應商狀態
+86. S_UserFavorites - 用戶收藏
+87. ShipMethods - 運送方式(舊)
+88. SignInRule - 簽到規則 [已詳述]
+89. SO_CartItems - 購物車項目
+90. SO_Carts - 購物車
+91. SO_Coupons - 商店優惠券
+92. SO_OrderAddresses - 訂單地址
+93. SO_OrderInfoes - 訂單主檔
+94. SO_OrderItems - 訂單明細
+95. SO_OrderStatusHistory - 訂單狀態歷史
+96. SO_PaymentTransactions - 付款交易
+97. SO_PayMethods - 付款方式
+98. SO_RemoteZip - 偏遠郵遞區號
+99. SO_RemoteZipcodes - 偏遠郵遞區號(新)
+100. SO_Shipments - 出貨單
+101. SO_ShipMethods - 運送方式
+102. SO_ShipPieceRules - 計件運費規則
+103. SO_ShippingConfig - 運送配置
+104. SO_ShipWeightRules - 計重運費規則
+105. SO_StockMovements - 庫存異動
+106. Support_Ticket_Assignments - 工單指派
+107. Support_Ticket_Messages - 工單訊息
+108. Support_Tickets - 客服工單
+109. SystemSettings - 系統配置 [已詳述]
+110. thread_posts - 討論串回覆
+111. threads - 討論串
+112. User_Introduce - 用戶介紹
+113. User_Rights - 用戶權限
+114. User_Sales_Information - 用戶銷售資訊
+115. User_Wallet - 用戶錢包 [已詳述]
+116. UserHome - 用戶首頁
+117. Users - 用戶 [已詳述]
+118. UserSignInStats - 簽到記錄 [已詳述]
+119. UserTokens - 用戶Token
+120. WalletHistory - 錢包歷史 [已詳述]
+
+**實際總數:** 102個基礎表 (BASE TABLE)
+
+---
+
+*文件結束 - 本文件為AI優化的緊湊格式，適合快速查詢與AI理解。詳細表格結構請參閱 MINIGAME_AREA_DB_SCHEMA_COMPLETE.md 或直接連線資料庫查詢。*
