@@ -898,11 +898,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 return RedirectToAction(nameof(GrantCoupon));
             }
 
-            // 使用台灣時間 (Asia/Taipei)
+            // 使用 UTC 時間儲存到資料庫
             var nowUtc = _appClock.UtcNow;
             var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
 
-            // 生成優惠券序號 CPN-YYYYMM-XXXXXX
+            // 生成優惠券序號 CPN-YYYYMM-XXXXXX（使用台灣時間格式化）
             var random = new Random();
             var randomCode = new string(Enumerable.Range(0, 6)
                 .Select(_ => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[random.Next(36)])
@@ -913,20 +913,20 @@ namespace GameSpace.Areas.MiniGame.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 創建優惠券
+                // 創建優惠券（資料庫時間使用 UTC）
                 var coupon = new Coupon
                 {
                     CouponCode = couponCode,
                     CouponTypeId = couponTypeId,
                     UserId = userId,
                     IsUsed = false,
-                    AcquiredTime = nowTaiwanTime,  // 使用台灣時間
+                    AcquiredTime = nowUtc,  // 使用 UTC 時間
                     UsedTime = null,  // 明確設為 null (剛發放時未使用)
                     IsDeleted = false  // 必填字段：未刪除
                 };
                 _context.Coupons.Add(coupon);
 
-                // 記錄異動歷史
+                // 記錄異動歷史（資料庫時間使用 UTC）
                 var history = new WalletHistory
                 {
                     UserId = userId,
@@ -934,7 +934,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     PointsChanged = 0,
                     ItemCode = couponCode,
                     Description = $"發放商城優惠券：{couponType.Name}",
-                    ChangeTime = nowTaiwanTime  // 使用台灣時間
+                    ChangeTime = nowUtc  // 使用 UTC 時間
                 };
                 _context.WalletHistories.Add(history);
 

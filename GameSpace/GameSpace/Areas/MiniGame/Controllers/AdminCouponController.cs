@@ -450,6 +450,18 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     return View(couponType);
                 }
 
+                // 檢查優惠券類型名稱是否重複
+                var existingCouponType = await _context.CouponTypes
+                    .Where(ct => ct.Name == couponType.Name && !ct.IsDeleted)
+                    .FirstOrDefaultAsync();
+
+                if (existingCouponType != null)
+                {
+                    ModelState.AddModelError("Name", $"優惠券類型名稱「{couponType.Name}」已存在，請使用其他名稱");
+                    ViewBag.DiscountTypes = new List<string> { "Percentage", "FixedAmount" };
+                    return View(couponType);
+                }
+
                 _context.Add(couponType);
                 await _context.SaveChangesAsync();
 

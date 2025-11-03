@@ -110,6 +110,12 @@ namespace GameSpace.Areas.MiniGame.config
 
             // 註冊遊戲規則管理服務
             services.AddScoped<IGameRulesService, GameRulesService>();
+
+            // 註冊遊戲規則配置服務（讀取 SystemSettings）
+            services.AddScoped<IGameRulesConfigService, GameRulesConfigService>();
+
+            // 註冊系統設定變更服務（寫入 SystemSettings）
+            services.AddScoped<ISystemSettingsMutationService, SystemSettingsMutationService>();
             // =========================================================================
 
             // ==================== Phase 2: 新增額外服務 ====================
