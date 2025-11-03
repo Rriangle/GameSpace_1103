@@ -340,7 +340,8 @@ namespace GameSpace.Areas.MiniGame.Services
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 發放點數
+                // 發放點數 - 使用台灣時間
+                var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
                 var wallet = await _context.UserWallets.FirstOrDefaultAsync(w => w.UserId == userId);
                 if (wallet != null)
                 {
@@ -353,7 +354,7 @@ namespace GameSpace.Areas.MiniGame.Services
                         PointsChanged = reward.Points,
                         ItemCode = "SIGNIN_REWARD",
                         Description = $"簽到獎勵 (連續 {(reward.ConsecutiveDayBonus > 0 ? "+" + reward.ConsecutiveDayBonus : "")}天加成)",
-                        ChangeTime = nowUtc
+                        ChangeTime = nowTaiwanTime  // 使用台灣時間
                     };
                     _context.WalletHistories.Add(history);
                 }
@@ -393,8 +394,10 @@ namespace GameSpace.Areas.MiniGame.Services
                             UserId = userId,
                             CouponTypeId = couponType.CouponTypeId,
                             CouponCode = $"{reward.CouponCode}_{Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper()}",
-                            AcquiredTime = nowUtc,
-                            IsUsed = false
+                            AcquiredTime = nowTaiwanTime,  // 使用台灣時間
+                            UsedTime = null,  // 明確設為 null (剛發放時未使用)
+                            IsUsed = false,
+                            IsDeleted = false  // 必填字段：未刪除
                         };
                         _context.Coupons.Add(coupon);
 
@@ -406,7 +409,7 @@ namespace GameSpace.Areas.MiniGame.Services
                             PointsChanged = 0,
                             ItemCode = coupon.CouponCode,
                             Description = $"全勤獎勵優惠券：{couponType.Name}",
-                            ChangeTime = nowUtc
+                            ChangeTime = nowTaiwanTime  // 使用台灣時間
                         };
                         _context.WalletHistories.Add(history);
                     }

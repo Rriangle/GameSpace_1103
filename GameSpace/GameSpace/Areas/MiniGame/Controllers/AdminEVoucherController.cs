@@ -5,6 +5,7 @@ using GameSpace.Areas.MiniGame.Models;
 using GameSpace.Models;
 using GameSpace.Areas.MiniGame.Models.ViewModels;
 using GameSpace.Areas.social_hub.Auth;
+using GameSpace.Infrastructure.Time;
 using EVoucherCreateModel = GameSpace.Areas.MiniGame.Models.EVoucherCreateModel;
 
 namespace GameSpace.Areas.MiniGame.Controllers
@@ -13,8 +14,8 @@ namespace GameSpace.Areas.MiniGame.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.AdminCookieScheme, Policy = "AdminOnly")]
     public class AdminEVoucherController : MiniGameBaseController
     {
-        public AdminEVoucherController(GameSpacedatabaseContext context)
-            : base(context)
+        public AdminEVoucherController(GameSpacedatabaseContext context, IAppClock appClock)
+            : base(context, appClock)
         {
         }
 
@@ -34,10 +35,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                                        e.EvoucherType.Name.Contains(searchTerm));
             }
 
-            // 狀態篩選
+            // 狀態篩選 - 使用台灣時間
             if (!string.IsNullOrEmpty(status))
             {
-                var now = DateTime.Now;
+                var nowUtc = _appClock.UtcNow;
+                var now = _appClock.ToAppTime(nowUtc);
                 query = status switch
                 {
                     "unused" => query.Where(e => !e.IsUsed && e.EvoucherType.ValidTo >= now),
@@ -140,14 +142,19 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     return View(model);
                 }
 
+                // 使用台灣時間
+                var nowUtc = _appClock.UtcNow;
+                var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
+
                 var eVoucher = new Evoucher
                 {
                     EvoucherTypeId = model.EvoucherTypeId,
                     UserId = model.UserId,
                     EvoucherCode = model.EvoucherCode,
-                    AcquiredTime = model.AcquiredTime ?? DateTime.Now,
-                    UsedTime = null,
-                    IsUsed = false
+                    AcquiredTime = model.AcquiredTime ?? nowTaiwanTime,  // 使用台灣時間
+                    UsedTime = null,  // 明確設為 null
+                    IsUsed = false,
+                    IsDeleted = false  // 必填字段：未刪除
                 };
 
                 _context.Add(eVoucher);
@@ -328,11 +335,13 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 eVoucher.IsUsed = !eVoucher.IsUsed;
                 if (eVoucher.IsUsed && !eVoucher.UsedTime.HasValue)
                 {
-                    eVoucher.UsedTime = DateTime.Now;
+                    // 使用台灣時間
+                    var nowUtc = _appClock.UtcNow;
+                    eVoucher.UsedTime = _appClock.ToAppTime(nowUtc);
                 }
                 else if (!eVoucher.IsUsed)
                 {
-                    eVoucher.UsedTime = null;
+                    eVoucher.UsedTime = null;  // 明確設為 null
                 }
 
                 _context.Update(eVoucher);
@@ -348,7 +357,9 @@ namespace GameSpace.Areas.MiniGame.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEVoucherStats()
         {
-            var now = DateTime.Now;
+            // 使用台灣時間
+            var nowUtc = _appClock.UtcNow;
+            var now = _appClock.ToAppTime(nowUtc);
             var stats = new
             {
                 total = await _context.Evouchers.CountAsync(),
@@ -417,10 +428,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 query = query.Where(et => et.Name.Contains(searchTerm) || et.Description.Contains(searchTerm));
             }
 
-            // 狀態篩選
+            // 狀態篩選 - 使用台灣時間
             if (!string.IsNullOrEmpty(status))
             {
-                var now = DateTime.Now;
+                var nowUtc = _appClock.UtcNow;
+                var now = _appClock.ToAppTime(nowUtc);
                 query = status switch
                 {
                     "active" => query.Where(et => et.ValidFrom <= now && et.ValidTo >= now),
@@ -674,13 +686,14 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 return NotFound();
             }
 
-            // 取得使用此類型的電子禮券統計
+            // 取得使用此類型的電子禮券統計 - 使用台灣時間
             var relatedVouchers = await _context.Evouchers
                 .Include(e => e.User)
                 .Where(e => e.EvoucherTypeId == id)
                 .ToListAsync();
 
-            var now = DateTime.Now;
+            var nowUtc = _appClock.UtcNow;
+            var now = _appClock.ToAppTime(nowUtc);
 
             ViewBag.TotalVouchers = relatedVouchers.Count;
             ViewBag.UsedVouchers = relatedVouchers.Count(e => e.IsUsed);
@@ -726,7 +739,9 @@ namespace GameSpace.Areas.MiniGame.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEvoucherTypeStats()
         {
-            var now = DateTime.Now;
+            // 使用台灣時間
+            var nowUtc = _appClock.UtcNow;
+            var now = _appClock.ToAppTime(nowUtc);
             var stats = new
             {
                 totalTypes = await _context.EvoucherTypes.CountAsync(),
@@ -809,13 +824,19 @@ namespace GameSpace.Areas.MiniGame.Controllers
                         code = $"EV-{eVoucherType.Name.Substring(0, Math.Min(4, eVoucherType.Name.Length)).ToUpper()}-{random.Next(1000, 9999)}-{random.Next(100000, 999999)}";
                     }
 
+                    // 使用台灣時間
+                    var nowUtc = _appClock.UtcNow;
+                    var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
+
                     var voucher = new Evoucher
                     {
                         EvoucherTypeId = typeId,
                         UserId = userId,
                         EvoucherCode = code,
-                        AcquiredTime = DateTime.Now,
-                        IsUsed = false
+                        AcquiredTime = nowTaiwanTime,  // 使用台灣時間
+                        UsedTime = null,  // 明確設為 null (剛發放時未使用)
+                        IsUsed = false,
+                        IsDeleted = false  // 必填字段：未刪除
                     };
 
                     _context.Add(voucher);

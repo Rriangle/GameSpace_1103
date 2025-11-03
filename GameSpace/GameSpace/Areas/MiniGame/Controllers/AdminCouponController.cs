@@ -5,6 +5,7 @@ using GameSpace.Areas.MiniGame.Models;
 using GameSpace.Models;
 using GameSpace.Areas.social_hub.Auth;
 using GameSpace.Areas.MiniGame.Models.ViewModels;
+using GameSpace.Infrastructure.Time;
 
 namespace GameSpace.Areas.MiniGame.Controllers
 {
@@ -12,7 +13,7 @@ namespace GameSpace.Areas.MiniGame.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.AdminCookieScheme, Policy = "AdminOnly")]
     public class AdminCouponController : MiniGameBaseController
     {
-        public AdminCouponController(GameSpacedatabaseContext context) : base(context)
+        public AdminCouponController(GameSpacedatabaseContext context, IAppClock appClock) : base(context, appClock)
         {
         }
 
@@ -116,15 +117,20 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     return View(model);
                 }
 
+                // 使用台灣時間
+                var nowUtc = _appClock.UtcNow;
+                var nowTaiwanTime = _appClock.ToAppTime(nowUtc);
+
                 var coupon = new Coupon
                 {
                     CouponCode = model.CouponCode,
                     UserId = model.UserId,
                     CouponTypeId = model.CouponTypeId,
                     IsUsed = false,
-                    AcquiredTime = DateTime.Now,
-                    UsedTime = null,
-                    UsedInOrderId = null
+                    AcquiredTime = nowTaiwanTime,  // 使用台灣時間
+                    UsedTime = null,  // 明確設為 null (剛發放時未使用)
+                    UsedInOrderId = null,
+                    IsDeleted = false  // 必填字段：未刪除
                 };
 
                 _context.Add(coupon);

@@ -4,6 +4,7 @@ using GameSpace.Areas.MiniGame.Services;
 using GameSpace.Areas.MiniGame.Models;
 using GameSpace.Models;
 using GameSpace.Areas.MiniGame.Models.ViewModels;
+using GameSpace.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -15,13 +16,15 @@ namespace GameSpace.Areas.MiniGame.Controllers
     {
         protected readonly GameSpacedatabaseContext _context;
         protected readonly IMiniGameAdminService _adminService;
+        protected readonly IAppClock _appClock;
 
-        protected MiniGameBaseController(GameSpacedatabaseContext context)
+        protected MiniGameBaseController(GameSpacedatabaseContext context, IAppClock appClock = null)
         {
             _context = context;
+            _appClock = appClock;
         }
 
-        protected MiniGameBaseController(GameSpacedatabaseContext context, IMiniGameAdminService adminService) : this(context)
+        protected MiniGameBaseController(GameSpacedatabaseContext context, IMiniGameAdminService adminService, IAppClock appClock = null) : this(context, appClock)
         {
             _adminService = adminService;
         }
