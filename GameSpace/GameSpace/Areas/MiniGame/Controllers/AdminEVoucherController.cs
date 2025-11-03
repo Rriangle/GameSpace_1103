@@ -6,6 +6,7 @@ using GameSpace.Models;
 using GameSpace.Areas.MiniGame.Models.ViewModels;
 using GameSpace.Areas.social_hub.Auth;
 using GameSpace.Infrastructure.Time;
+using GameSpace.Areas.MiniGame.Services;
 using EVoucherCreateModel = GameSpace.Areas.MiniGame.Models.EVoucherCreateModel;
 
 namespace GameSpace.Areas.MiniGame.Controllers
@@ -14,9 +15,12 @@ namespace GameSpace.Areas.MiniGame.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.AdminCookieScheme, Policy = "AdminOnly")]
     public class AdminEVoucherController : MiniGameBaseController
     {
-        public AdminEVoucherController(GameSpacedatabaseContext context, IAppClock appClock)
+        private readonly IFuzzySearchService _fuzzySearchService;
+
+        public AdminEVoucherController(GameSpacedatabaseContext context, IAppClock appClock, IFuzzySearchService fuzzySearchService)
             : base(context, appClock)
         {
+            _fuzzySearchService = fuzzySearchService;
         }
 
         // GET: AdminEVoucher
@@ -27,12 +31,80 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .Include(e => e.EvoucherType)
                 .AsQueryable();
 
-            // 搜尋功能
-            if (!string.IsNullOrEmpty(searchTerm))
+            // 模糊搜尋：SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(searchTerm);
+
+            List<int> matchedEVoucherIds = new List<int>();
+            Dictionary<int, int> evoucherPriority = new Dictionary<int, int>();
+
+            if (hasSearchTerm)
             {
-                query = query.Where(e => e.EvoucherCode.Contains(searchTerm) || 
-                                       e.User.UserName.Contains(searchTerm) || 
-                                       e.EvoucherType.Name.Contains(searchTerm));
+                var term = searchTerm.Trim();
+
+                // 查詢所有電子禮券並使用 FuzzySearchService 計算優先順序
+                var allEVouchers = await _context.Evouchers
+                    .Include(e => e.User)
+                    .Include(e => e.EvoucherType)
+                    .AsNoTracking()
+                    .Select(e => new {
+                        e.EvoucherId,
+                        e.EvoucherCode,
+                        UserName = e.User != null ? e.User.UserName : "",
+                        UserAccount = e.User != null ? e.User.UserAccount : "",
+                        TypeName = e.EvoucherType != null ? e.EvoucherType.Name : ""
+                    })
+                    .ToListAsync();
+
+                foreach (var evoucher in allEVouchers)
+                {
+                    int priority = 0;
+
+                    // 電子禮券代碼精確匹配優先
+                    if (evoucher.EvoucherCode.Equals(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 1; // 完全匹配 EvoucherCode
+                    }
+                    else if (evoucher.EvoucherCode.StartsWith(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 2; // 開頭匹配
+                    }
+                    else if (evoucher.EvoucherCode.Contains(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 3; // 包含匹配
+                    }
+
+                    // 如果代碼沒有匹配，嘗試類型名稱匹配
+                    if (priority == 0 && !string.IsNullOrEmpty(evoucher.TypeName))
+                    {
+                        if (evoucher.TypeName.Equals(term, StringComparison.OrdinalIgnoreCase))
+                        {
+                            priority = 1;
+                        }
+                        else if (evoucher.TypeName.Contains(term, StringComparison.OrdinalIgnoreCase))
+                        {
+                            priority = 3;
+                        }
+                    }
+
+                    // 如果還沒匹配，嘗試用戶名模糊搜尋
+                    if (priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            term,
+                            evoucher.UserAccount,
+                            evoucher.UserName
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedEVoucherIds.Add(evoucher.EvoucherId);
+                        evoucherPriority[evoucher.EvoucherId] = priority;
+                    }
+                }
+
+                query = query.Where(e => matchedEVoucherIds.Contains(e.EvoucherId));
             }
 
             // 狀態篩選 - 使用台灣時間
@@ -55,22 +127,52 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 query = query.Where(e => e.EvoucherTypeId == typeId);
             }
 
-            // 排序
-            query = sortBy switch
-            {
-                "type" => query.OrderBy(e => e.EvoucherType.Name),
-                "user" => query.OrderBy(e => e.User.UserName),
-                "acquired" => query.OrderByDescending(e => e.AcquiredTime),
-                "used" => query.OrderByDescending(e => e.UsedTime),
-                _ => query.OrderBy(e => e.EvoucherCode)
-            };
-
-            // 分頁
+            // 計算統計數據（從篩選後的查詢）
             var totalCount = await query.CountAsync();
-            var evouchers = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+
+            // 優先順序排序：先取資料再排序
+            var allItems = await query.ToListAsync();
+            var evouchers = allItems;
+
+            if (hasSearchTerm)
+            {
+                // 在記憶體中進行優先順序排序
+                var ordered = allItems.OrderBy(e =>
+                {
+                    // 如果電子禮券匹配，返回對應優先順序
+                    if (evoucherPriority.ContainsKey(e.EvoucherId))
+                    {
+                        return evoucherPriority[e.EvoucherId];
+                    }
+                    return 99;
+                });
+
+                // 次要排序
+                var sorted = sortBy switch
+                {
+                    "type" => ordered.ThenBy(e => e.EvoucherType.Name),
+                    "user" => ordered.ThenBy(e => e.User.UserName),
+                    "acquired" => ordered.ThenByDescending(e => e.AcquiredTime),
+                    "used" => ordered.ThenByDescending(e => e.UsedTime),
+                    _ => ordered.ThenBy(e => e.EvoucherCode)
+                };
+
+                evouchers = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
+            else
+            {
+                // 沒有搜尋條件時使用資料庫排序
+                var sorted = sortBy switch
+                {
+                    "type" => allItems.OrderBy(e => e.EvoucherType.Name),
+                    "user" => allItems.OrderBy(e => e.User.UserName),
+                    "acquired" => allItems.OrderByDescending(e => e.AcquiredTime),
+                    "used" => allItems.OrderByDescending(e => e.UsedTime),
+                    _ => allItems.OrderBy(e => e.EvoucherCode)
+                };
+
+                evouchers = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
 
             var viewModel = new AdminEVoucherIndexViewModel
             {

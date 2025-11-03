@@ -6,6 +6,7 @@ using GameSpace.Models;
 using GameSpace.Areas.social_hub.Auth;
 using GameSpace.Areas.MiniGame.Models.ViewModels;
 using GameSpace.Infrastructure.Time;
+using GameSpace.Areas.MiniGame.Services;
 
 namespace GameSpace.Areas.MiniGame.Controllers
 {
@@ -13,8 +14,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
     [Authorize(AuthenticationSchemes = AuthConstants.AdminCookieScheme, Policy = "AdminOnly")]
     public class AdminCouponController : MiniGameBaseController
     {
-        public AdminCouponController(GameSpacedatabaseContext context, IAppClock appClock) : base(context, appClock)
+        private readonly IFuzzySearchService _fuzzySearchService;
+
+        public AdminCouponController(GameSpacedatabaseContext context, IAppClock appClock, IFuzzySearchService fuzzySearchService) : base(context, appClock)
         {
+            _fuzzySearchService = fuzzySearchService;
         }
 
         // GET: AdminCoupon
@@ -25,9 +29,60 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 .Include(c => c.User)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            // 模糊搜尋：SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(searchTerm);
+
+            List<int> matchedCouponIds = new List<int>();
+            Dictionary<int, int> couponPriority = new Dictionary<int, int>();
+
+            if (hasSearchTerm)
             {
-                query = query.Where(c => c.CouponCode.Contains(searchTerm) || c.User.UserName.Contains(searchTerm));
+                var term = searchTerm.Trim();
+
+                // 查詢所有優惠券並使用 FuzzySearchService 計算優先順序
+                var allCoupons = await _context.Coupons
+                    .Include(c => c.User)
+                    .AsNoTracking()
+                    .Select(c => new { c.CouponId, c.CouponCode, UserName = c.User != null ? c.User.UserName : "", UserAccount = c.User != null ? c.User.UserAccount : "" })
+                    .ToListAsync();
+
+                foreach (var coupon in allCoupons)
+                {
+                    int priority = 0;
+
+                    // 優惠券代碼精確匹配優先
+                    if (coupon.CouponCode.Equals(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 1; // 完全匹配 CouponCode
+                    }
+                    else if (coupon.CouponCode.StartsWith(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 2; // 開頭匹配
+                    }
+                    else if (coupon.CouponCode.Contains(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 3; // 包含匹配
+                    }
+
+                    // 如果優惠券代碼沒有匹配，嘗試用戶名模糊搜尋
+                    if (priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            term,
+                            coupon.UserAccount,
+                            coupon.UserName
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedCouponIds.Add(coupon.CouponId);
+                        couponPriority[coupon.CouponId] = priority;
+                    }
+                }
+
+                query = query.Where(c => matchedCouponIds.Contains(c.CouponId));
             }
 
             if (!string.IsNullOrEmpty(status))
@@ -38,11 +93,34 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     query = query.Where(c => !c.IsUsed);
             }
 
-            var totalCount = await query.CountAsync();
-            var items = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            // 計算統計數據（從篩選後的查詢）
+            var statsQuery = query;
+            var totalCount = await statsQuery.CountAsync();
+
+            // 優先順序排序：先取資料再排序
+            var allItems = await query.ToListAsync();
+            var items = allItems;
+
+            if (hasSearchTerm)
+            {
+                // 在記憶體中進行優先順序排序
+                var ordered = allItems.OrderBy(c =>
+                {
+                    // 如果優惠券匹配，返回對應優先順序
+                    if (couponPriority.ContainsKey(c.CouponId))
+                    {
+                        return couponPriority[c.CouponId];
+                    }
+                    return 99;
+                });
+
+                items = ordered.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
+            else
+            {
+                // 沒有搜尋條件時使用預設排序
+                items = allItems.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
 
             var viewModel = new AdminWalletIndexViewModel
             {

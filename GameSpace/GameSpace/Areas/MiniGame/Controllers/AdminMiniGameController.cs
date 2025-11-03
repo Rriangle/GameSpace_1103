@@ -15,15 +15,18 @@ namespace GameSpace.Areas.MiniGame.Controllers
     {
         private readonly IGameQueryService _gameQueryService;
         private readonly IGameMutationService _gameMutationService;
+        private readonly IFuzzySearchService _fuzzySearchService;
 
         public AdminMiniGameController(
             GameSpacedatabaseContext context,
             IGameQueryService gameQueryService,
-            IGameMutationService gameMutationService)
+            IGameMutationService gameMutationService,
+            IFuzzySearchService fuzzySearchService)
             : base(context)
         {
             _gameQueryService = gameQueryService;
             _gameMutationService = gameMutationService;
+            _fuzzySearchService = fuzzySearchService;
         }
 
         // GET: AdminMiniGame
@@ -32,11 +35,74 @@ namespace GameSpace.Areas.MiniGame.Controllers
         {
             var query = _context.MiniGames.Include(g => g.User).AsQueryable();
 
-            // 搜尋功能 - 依使用者ID或結果
-            if (!string.IsNullOrEmpty(searchTerm) && int.TryParse(searchTerm, out int userId))
+            // 模糊搜尋：SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(searchTerm);
+
+            List<int> matchedGameIds = new List<int>();
+            Dictionary<int, int> gamePriority = new Dictionary<int, int>();
+
+            if (hasSearchTerm)
             {
-                var userIdStr = userId.ToString();
-                query = query.Where(g => g.UserId.ToString().Contains(userIdStr));
+                var term = searchTerm.Trim();
+
+                // 查詢所有遊戲記錄並使用 FuzzySearchService 計算優先順序
+                var allGames = await _context.MiniGames
+                    .Include(g => g.User)
+                    .AsNoTracking()
+                    .Select(g => new {
+                        g.PlayId,
+                        g.UserId,
+                        UserName = g.User != null ? g.User.UserName : "",
+                        UserAccount = g.User != null ? g.User.UserAccount : ""
+                    })
+                    .ToListAsync();
+
+                foreach (var game in allGames)
+                {
+                    int priority = 0;
+
+                    // PlayId精確匹配優先
+                    if (game.PlayId.ToString().Equals(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 1; // 完全匹配 PlayId
+                    }
+                    else if (game.PlayId.ToString().Contains(term))
+                    {
+                        priority = 2; // 部分匹配 PlayId
+                    }
+
+                    // 如果ID沒有匹配，檢查UserId
+                    if (priority == 0 && int.TryParse(term, out int userId))
+                    {
+                        if (game.UserId == userId)
+                        {
+                            priority = 1; // 完全匹配 UserId
+                        }
+                        else if (game.UserId.ToString().Contains(term))
+                        {
+                            priority = 2; // 部分匹配 UserId
+                        }
+                    }
+
+                    // 如果還沒匹配，使用模糊搜尋用戶信息
+                    if (priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            term,
+                            game.UserAccount,
+                            game.UserName
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedGameIds.Add(game.PlayId);
+                        gamePriority[game.PlayId] = priority;
+                    }
+                }
+
+                query = query.Where(g => matchedGameIds.Contains(g.PlayId));
             }
 
             // 遊戲結果篩選
@@ -45,21 +111,50 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 query = query.Where(g => g.Result == result);
             }
 
-            // 排序
-            query = sortBy switch
-            {
-                "level" => query.OrderByDescending(g => g.Level),
-                "points" => query.OrderByDescending(g => g.PointsGained),
-                "exp" => query.OrderByDescending(g => g.ExpGained),
-                _ => query.OrderByDescending(g => g.StartTime)
-            };
-
-            // 分頁
+            // 計算統計數據（從篩選後的查詢）
             var totalCount = await query.CountAsync();
-            var miniGames = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+
+            // 優先順序排序：先取資料再排序
+            var allItems = await query.ToListAsync();
+            var miniGames = allItems;
+
+            if (hasSearchTerm)
+            {
+                // 在記憶體中進行優先順序排序
+                var ordered = allItems.OrderBy(g =>
+                {
+                    // 如果遊戲記錄匹配，返回對應優先順序
+                    if (gamePriority.ContainsKey(g.PlayId))
+                    {
+                        return gamePriority[g.PlayId];
+                    }
+                    return 99;
+                });
+
+                // 次要排序
+                var sorted = sortBy switch
+                {
+                    "level" => ordered.ThenByDescending(g => g.Level),
+                    "points" => ordered.ThenByDescending(g => g.PointsGained),
+                    "exp" => ordered.ThenByDescending(g => g.ExpGained),
+                    _ => ordered.ThenByDescending(g => g.StartTime)
+                };
+
+                miniGames = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
+            else
+            {
+                // 沒有搜尋條件時使用預設排序
+                var sorted = sortBy switch
+                {
+                    "level" => allItems.OrderByDescending(g => g.Level),
+                    "points" => allItems.OrderByDescending(g => g.PointsGained),
+                    "exp" => allItems.OrderByDescending(g => g.ExpGained),
+                    _ => allItems.OrderByDescending(g => g.StartTime)
+                };
+
+                miniGames = sorted.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
 
             var viewModel = new AdminMiniGameIndexViewModel
             {
@@ -78,11 +173,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
             ViewBag.SortBy = sortBy;
             ViewBag.TotalGames = totalCount;
 
-            // 修正：統計應該從篩選後的 query 計算（而不是從全表 _context.MiniGames）
-            ViewBag.CompletedGames = await query.CountAsync(g => g.Result == "勝利" || g.Result == "Win");
-            ViewBag.AbortedGames = await query.CountAsync(g => g.Aborted);
-            ViewBag.TotalPointsAwarded = await query.SumAsync(g => (int?)g.PointsGained) ?? 0;
-            ViewBag.TotalExpAwarded = await query.SumAsync(g => (int?)g.ExpGained) ?? 0;
+            // 計算統計數據（從篩選後的 allItems）
+            ViewBag.CompletedGames = allItems.Count(g => g.Result == "勝利" || g.Result == "Win");
+            ViewBag.AbortedGames = allItems.Count(g => g.Aborted);
+            ViewBag.TotalPointsAwarded = allItems.Sum(g => (int?)g.PointsGained) ?? 0;
+            ViewBag.TotalExpAwarded = allItems.Sum(g => (int?)g.ExpGained) ?? 0;
 
             return View(viewModel);
         }

@@ -17,19 +17,22 @@ namespace GameSpace.Areas.MiniGame.Controllers
         private readonly IPetRulesService _petRulesService;
         private readonly IPetQueryService _petQueryService;
         private readonly IPetMutationService _petMutationService;
+        private readonly IFuzzySearchService _fuzzySearchService;
 
         public AdminPetController(
             GameSpacedatabaseContext context,
             IPetService petService,
             IPetRulesService petRulesService,
             IPetQueryService petQueryService,
-            IPetMutationService petMutationService)
+            IPetMutationService petMutationService,
+            IFuzzySearchService fuzzySearchService)
             : base(context)
         {
             _petService = petService;
             _petRulesService = petRulesService;
             _petQueryService = petQueryService;
             _petMutationService = petMutationService;
+            _fuzzySearchService = fuzzySearchService;
         }
 
         // GET: AdminPet
@@ -38,31 +41,93 @@ namespace GameSpace.Areas.MiniGame.Controllers
         {
             var pets = await _petService.GetAllPetsAsync();
 
-            // 搜尋功能
-            if (!string.IsNullOrEmpty(searchTerm))
+            // 模糊搜尋：SearchTerm（聯集OR邏輯，使用 FuzzySearchService）
+            var hasSearchTerm = !string.IsNullOrWhiteSpace(searchTerm);
+            Dictionary<int, int> petPriority = new Dictionary<int, int>();
+
+            if (hasSearchTerm)
             {
-                if (int.TryParse(searchTerm, out int userId))
+                var term = searchTerm.Trim();
+                var matchedPets = new List<GameSpace.Models.Pet>();
+
+                foreach (var pet in pets)
                 {
-                    var userIdStr = userId.ToString();
-                    pets = pets.Where(p => p.UserId.ToString().Contains(userIdStr));
+                    int priority = 0;
+
+                    // 寵物ID精確匹配優先
+                    if (pet.PetId.ToString().Equals(term, StringComparison.OrdinalIgnoreCase))
+                    {
+                        priority = 1; // 完全匹配 PetId
+                    }
+                    else if (pet.PetId.ToString().Contains(term))
+                    {
+                        priority = 2; // 部分匹配 PetId
+                    }
+
+                    // 如果ID沒有匹配，檢查UserId
+                    if (priority == 0 && int.TryParse(term, out int userId))
+                    {
+                        if (pet.UserId == userId)
+                        {
+                            priority = 1; // 完全匹配 UserId
+                        }
+                        else if (pet.UserId.ToString().Contains(term))
+                        {
+                            priority = 2; // 部分匹配 UserId
+                        }
+                    }
+
+                    // 如果還沒匹配，使用模糊搜尋寵物名稱
+                    if (priority == 0)
+                    {
+                        priority = _fuzzySearchService.CalculateMatchPriority(
+                            term,
+                            pet.PetName ?? ""
+                        );
+                    }
+
+                    // 如果匹配成功（priority > 0），加入結果
+                    if (priority > 0)
+                    {
+                        matchedPets.Add(pet);
+                        petPriority[pet.PetId] = priority;
+                    }
                 }
-                else
-                {
-                    pets = pets.Where(p => p.PetName.Contains(searchTerm));
-                }
+
+                pets = matchedPets;
             }
 
-            // 排序
-            pets = sortBy switch
+            // 分頁前計算總數
+            var totalCount = pets.Count();
+
+            // 優先順序排序
+            if (hasSearchTerm)
             {
-                "level" => pets.OrderByDescending(p => p.Level),
-                "exp" => pets.OrderByDescending(p => p.Experience),
-                "health" => pets.OrderByDescending(p => p.Health),
-                _ => pets.OrderBy(p => p.PetName)
-            };
+                // 按照優先順序排序
+                var ordered = pets.OrderBy(p => petPriority.ContainsKey(p.PetId) ? petPriority[p.PetId] : 99);
+
+                // 次要排序
+                pets = sortBy switch
+                {
+                    "level" => ordered.ThenByDescending(p => p.Level),
+                    "exp" => ordered.ThenByDescending(p => p.Experience),
+                    "health" => ordered.ThenByDescending(p => p.Health),
+                    _ => ordered.ThenBy(p => p.PetName)
+                };
+            }
+            else
+            {
+                // 沒有搜尋條件時使用預設排序
+                pets = sortBy switch
+                {
+                    "level" => pets.OrderByDescending(p => p.Level),
+                    "exp" => pets.OrderByDescending(p => p.Experience),
+                    "health" => pets.OrderByDescending(p => p.Health),
+                    _ => pets.OrderBy(p => p.PetName)
+                };
+            }
 
             // 分頁
-            var totalCount = pets.Count();
             var pagedPets = pets
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -798,44 +863,85 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 ViewBag.BackgroundColors = backgroundColors;
 
                 // 修正：計算統計資訊應該從所有篩選結果計算，不是只從當前分頁
-                // 需要重新查詢所有篩選後的資料來計算統計值
+                // 使用模糊搜尋來計算統計值
                 if (result.TotalCount > 0)
                 {
                     // 重新構建相同的篩選條件但不分頁，用於計算統計
-                    var statsQuery = _context.Pets
+                    var allPets = await _context.Pets
                         .Include(p => p.User)
                         .AsNoTracking()
-                        .AsQueryable();
+                        .ToListAsync();
 
-                    // 應用相同的篩選條件
+                    // 應用模糊搜尋篩選條件
                     var hasUserId = query.UserId.HasValue;
                     var hasSearchTerm = !string.IsNullOrWhiteSpace(query.SearchTerm);
                     var hasExtraPetName = !string.IsNullOrWhiteSpace(query.PetName);
 
+                    List<int> matchedPetIds = new List<int>();
+
                     if (hasUserId || hasSearchTerm || hasExtraPetName)
                     {
-                        statsQuery = statsQuery.Where(p =>
-                            (hasUserId && p.UserId == query.UserId.Value) ||
-                            (hasSearchTerm && (p.User.UserName.Contains(query.SearchTerm.Trim()) || p.PetName.Contains(query.SearchTerm.Trim()))) ||
-                            (hasExtraPetName && p.PetName.Contains(query.PetName.Trim()))
-                        );
+                        foreach (var pet in allPets)
+                        {
+                            bool matched = false;
+
+                            // UserId 匹配
+                            if (hasUserId && pet.UserId == query.UserId.Value)
+                            {
+                                matched = true;
+                            }
+
+                            // SearchTerm 模糊搜尋（使用 FuzzySearchService）
+                            if (!matched && hasSearchTerm)
+                            {
+                                var term = query.SearchTerm.Trim();
+                                var userName = pet.User?.UserName ?? "";
+                                var petName = pet.PetName ?? "";
+
+                                int priority = _fuzzySearchService.CalculateMatchPriority(term, userName, petName);
+                                if (priority > 0)
+                                {
+                                    matched = true;
+                                }
+                            }
+
+                            // PetName 模糊搜尋
+                            if (!matched && hasExtraPetName)
+                            {
+                                var term = query.PetName.Trim();
+                                int priority = _fuzzySearchService.CalculateMatchPriority(term, pet.PetName ?? "");
+                                if (priority > 0)
+                                {
+                                    matched = true;
+                                }
+                            }
+
+                            if (matched)
+                            {
+                                matchedPetIds.Add(pet.PetId);
+                            }
+                        }
+
+                        allPets = allPets.Where(p => matchedPetIds.Contains(p.PetId)).ToList();
                     }
 
+                    // SkinColor 篩選
                     if (!string.IsNullOrWhiteSpace(query.SkinColor))
                     {
-                        statsQuery = statsQuery.Where(p => p.SkinColor != null && p.SkinColor.Contains(query.SkinColor.Trim()));
+                        allPets = allPets.Where(p => p.SkinColor != null && p.SkinColor.Contains(query.SkinColor.Trim())).ToList();
                     }
 
+                    // BackgroundColor 篩選
                     if (!string.IsNullOrWhiteSpace(query.BackgroundColor))
                     {
-                        statsQuery = statsQuery.Where(p => p.BackgroundColor != null && p.BackgroundColor.Contains(query.BackgroundColor.Trim()));
+                        allPets = allPets.Where(p => p.BackgroundColor != null && p.BackgroundColor.Contains(query.BackgroundColor.Trim())).ToList();
                     }
 
                     // 計算統計值（從所有篩選結果）
                     ViewBag.TotalPets = result.TotalCount;
-                    ViewBag.HealthyPets = await statsQuery.CountAsync(p => p.Health >= 80);
-                    ViewBag.AverageLevel = await statsQuery.AverageAsync(p => (double)p.Level);
-                    ViewBag.MaxPetLevel = await statsQuery.MaxAsync(p => p.Level);
+                    ViewBag.HealthyPets = allPets.Count(p => p.Health >= 80);
+                    ViewBag.AverageLevel = allPets.Any() ? allPets.Average(p => (double)p.Level) : 0;
+                    ViewBag.MaxPetLevel = allPets.Any() ? allPets.Max(p => p.Level) : 0;
                 }
                 else
                 {
