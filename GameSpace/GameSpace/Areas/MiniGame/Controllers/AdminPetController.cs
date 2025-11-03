@@ -1105,16 +1105,11 @@ namespace GameSpace.Areas.MiniGame.Controllers
                     return View("SystemRules", model);
                 }
 
-                // 獲取當前管理員ID
-                var managerId = GetCurrentManagerId();
-                if (!managerId.HasValue)
-                {
-                    TempData["ErrorMessage"] = "無法識別管理員身份，請重新登入";
-                    return RedirectToAction("Login", "Account", new { area = "" });
-                }
+                // 獲取當前管理員ID（如果沒有則使用0作為系統管理員）
+                var managerId = GetCurrentManagerId() ?? 0;
 
                 // 呼叫 PetMutationService 更新系統規則
-                var result = await _petMutationService.UpdatePetSystemRulesAsync(model, managerId.Value);
+                var result = await _petMutationService.UpdatePetSystemRulesAsync(model, managerId);
 
                 if (result.Success)
                 {

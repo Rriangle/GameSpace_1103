@@ -85,18 +85,8 @@
                     <label for="Query_UserId"><i class="fas fa-user me-1"></i>會員 ID</label>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="form-floating">
-                    <input class="form-control rounded" id="Query_MinAmount" name="MinAmount" type="number" min="0" value="@(Model.Query.MinAmount ?? null)" placeholder="最少點數" />
-                    <label for="Query_MinAmount"><i class="fas fa-arrow-up me-1"></i>最少點數</label>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-floating">
-                    <input class="form-control rounded" id="Query_MaxAmount" name="MaxAmount" type="number" min="0" value="@(Model.Query.MaxAmount ?? null)" placeholder="最多點數" />
-                    <label for="Query_MaxAmount"><i class="fas fa-arrow-down me-1"></i>最多點數</label>
-                </div>
-            </div>
+           
+       
             <div class="col-md-3">
                 <div class="form-floating">
                     <select class="form-select rounded" id="Query_SortBy" name="SortBy">
