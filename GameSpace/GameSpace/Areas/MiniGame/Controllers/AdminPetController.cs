@@ -902,6 +902,9 @@ namespace GameSpace.Areas.MiniGame.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // 取得用戶資訊
+            var user = await _context.Users.FindAsync(pet.UserId);
+
             var model = new PetUpdateModel
             {
                 PetId = pet.PetId,
@@ -919,7 +922,38 @@ namespace GameSpace.Areas.MiniGame.Controllers
 
             ViewBag.PetId = petId;
             ViewBag.UserId = pet.UserId;
+            ViewBag.UserName = user?.UserName ?? "未知";
             ViewBag.CurrentPetName = pet.PetName;
+
+            // 從資料庫讀取所有膚色選項（直接從 SQL Server 讀取，不可硬編碼）
+            var skinColors = await _context.PetSkinColorCostSettings
+                .Where(s => !s.IsDeleted)
+                .OrderBy(s => s.ColorName)
+                .Select(s => new { Code = s.ColorCode, Name = s.ColorName })
+                .ToListAsync();
+            ViewBag.SkinColors = skinColors;
+
+            // 從資料庫讀取所有背景選項（直接從 SQL Server 讀取，不可硬編碼）
+            var backgroundColors = await _context.PetBackgroundCostSettings
+                .Where(b => !b.IsDeleted)
+                .OrderBy(b => b.BackgroundName)
+                .Select(b => new { Code = b.BackgroundCode, Name = b.BackgroundName })
+                .ToListAsync();
+            ViewBag.BackgroundColors = backgroundColors;
+
+            // 獲取當前膚色的名稱用於顯示
+            var currentSkinColor = await _context.PetSkinColorCostSettings
+                .Where(s => !s.IsDeleted && s.ColorCode == pet.SkinColor)
+                .Select(s => s.ColorName)
+                .FirstOrDefaultAsync();
+            ViewBag.CurrentSkinColorName = currentSkinColor ?? "未知";
+
+            // 獲取當前背景的名稱用於顯示
+            var currentBackgroundColor = await _context.PetBackgroundCostSettings
+                .Where(b => !b.IsDeleted && b.BackgroundCode == pet.BackgroundColor)
+                .Select(b => b.BackgroundName)
+                .FirstOrDefaultAsync();
+            ViewBag.CurrentBackgroundColorName = currentBackgroundColor ?? "未知";
 
             return View(model);
         }
