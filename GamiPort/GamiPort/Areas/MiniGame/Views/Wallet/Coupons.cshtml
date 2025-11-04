@@ -547,7 +547,7 @@
                                     <div class="coupon-info-row">
                                         <span class="coupon-info-label">過期日期</span>
                                         <span class="coupon-info-value @(isExpiringSoon || isExpired ? "coupon-expiry" : "")">
-                                            @coupon.ExpiryDate?.ToUtc8String("yyyy-MM-dd")
+                                            @(((DateTime?)coupon.ExpiryDate)?.ToUtc8String("yyyy-MM-dd") ?? "-")
                                         </span>
                                     </div>
 

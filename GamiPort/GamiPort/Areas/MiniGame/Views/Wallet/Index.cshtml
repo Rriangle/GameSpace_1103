@@ -9,7 +9,7 @@
     var points = userWallet?.Points ?? 0;
     var couponCount = coupons?.Count ?? 0;
     var eVoucherCount = eVouchers?.Count ?? 0;
-    var lastUpdated = userWallet?.UpdatedAt ?? DateTime.Now;
+    var lastUpdated = (DateTime)(userWallet?.UpdatedAt ?? DateTime.UtcNow);
 }
 
 @if (User.Identity?.IsAuthenticated == true)
@@ -157,7 +157,7 @@
                                                 var isIncome = record.Amount > 0;
                                                 <tr>
                                                     <td class="ps-4">
-                                                        @record.CreatedAt.ToUtc8String("MM-dd HH:mm")
+                                                        @((DateTime)record.CreatedAt).ToUtc8String("MM-dd HH:mm")
                                                     </td>
                                                     <td>
                                                         @if (record.TransactionType == "SignIn")

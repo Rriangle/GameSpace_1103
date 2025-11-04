@@ -506,7 +506,7 @@
                             <tbody>
                                 @foreach (var record in gameRecords)
                                 {
-                                    var playTime = record?.PlayTime ?? DateTime.UtcNow;
+                                    var playTime = (DateTime)(record?.PlayTime ?? DateTime.UtcNow);
                                     var level = (int?)record?.Level ?? 0;
                                     var result = (string)record?.Result ?? "unknown";
                                     var pointsGained = (int?)record?.PointsGained ?? 0;

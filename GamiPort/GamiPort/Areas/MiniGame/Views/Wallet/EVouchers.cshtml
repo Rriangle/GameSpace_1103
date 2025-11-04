@@ -588,7 +588,7 @@
 
                                 <div class="evoucher-info-row">
                                     <span class="evoucher-info-label">兌換時間</span>
-                                    <span class="evoucher-info-value">@evoucher.IssuedDate.ToUtc8String("yyyy-MM-dd")</span>
+                                    <span class="evoucher-info-value">@((DateTime)evoucher.IssuedDate).ToUtc8String("yyyy-MM-dd")</span>
                                 </div>
 
                                 @if (!isRedeemed && evoucher.ExpiryDate.HasValue)
@@ -596,7 +596,7 @@
                                     <div class="evoucher-info-row">
                                         <span class="evoucher-info-label">過期日期</span>
                                         <span class="evoucher-info-value @(isExpiringSoon || isExpired ? "evoucher-expiry" : "")">
-                                            @evoucher.ExpiryDate?.ToUtc8String("yyyy-MM-dd")
+                                            @(((DateTime?)evoucher.ExpiryDate)?.ToUtc8String("yyyy-MM-dd") ?? "-")
                                         </span>
                                     </div>
 
