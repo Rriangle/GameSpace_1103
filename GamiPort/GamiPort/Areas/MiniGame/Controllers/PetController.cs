@@ -60,11 +60,10 @@ namespace GamiPort.Areas.MiniGame.Controllers
 				.AsNoTracking()
 				.FirstOrDefaultAsync(w => w.UserId == userId && !w.IsDeleted);
 
-			ViewBag.Pet = pet;
-			ViewBag.Wallet = wallet;
+				ViewBag.Wallet = wallet;
 			ViewBag.PetHealthStatus = GetHealthStatus(pet);
 
-			return View();
+			return View(pet);
 		}
 
 		/// <summary>
@@ -103,12 +102,11 @@ namespace GamiPort.Areas.MiniGame.Controllers
 				.AsNoTracking()
 				.FirstOrDefaultAsync(w => w.UserId == userId && !w.IsDeleted);
 
-			ViewBag.Pet = pet;
-			ViewBag.Skins = skins;
+				ViewBag.Skins = skins;
 			ViewBag.Backgrounds = backgrounds;
 			ViewBag.Wallet = wallet;
 
-			return View();
+			return View(pet);
 		}
 
 		/// <summary>
