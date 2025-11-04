@@ -267,13 +267,129 @@ The MiniGame Area frontend should follow a modern, light blue (teal/turquoise) c
 - Test responsiveness at breakpoints: 768px, 1024px, 1440px
 
 ### Coding Standards
-- **Encoding:** UTF-8 with BOM for all files (especially for Chinese content)
+- **Encoding:** UTF-8 **without BOM** for all `.cs` and `.cshtml` files (critical for cross-platform compatibility)
 - **Transaction Safety:** All wallet deductions, coupon issuance, game settlements must be within database transactions
 - **Logging:** Use Serilog with CorrelationId for audit trails
 - **Error Handling:** Return `ProblemDetails` or unified Result type
 - **Commit Size:** ≤ 3 files / ≤ 400 lines per commit
 
 ## Common Patterns
+
+### Time Handling (UTC+8 Taiwan Standard Time)
+
+**Architecture:**
+- **Storage Layer:** All `DateTime` fields in database store UTC time (via `sysutcdatetime()`)
+- **Application Layer:** Use `IAppClock` for UTC time, convert to UTC+8 (Taiwan Time) for display
+- **Display Layer:** Use `TimeHelper` extensions to format UTC+8 timestamps
+
+**IAppClock Service Pattern:**
+```csharp
+// Service/Controller injection
+private readonly IAppClock _appClock;
+
+public MyService(IAppClock appClock)
+{
+    _appClock = appClock;
+}
+
+// Storage - Always store UTC
+entity.CreatedAt = _appClock.UtcNow;
+entity.UpdatedAt = _appClock.UtcNow;
+
+// Daily boundaries calculation (UTC+8 for business logic)
+var appNow = _appClock.ToAppTime(_appClock.UtcNow);
+var todayStart = appNow.Date; // 00:00:00 in UTC+8
+var todayEnd = todayStart.AddDays(1).AddTicks(-1); // 23:59:59.9999999 in UTC+8
+
+// Convert back to UTC for database queries
+var utcStart = _appClock.ToUtc(todayStart);
+var utcEnd = _appClock.ToUtc(todayEnd);
+```
+
+**TimeHelper Utility (Areas/MiniGame/Helpers/TimeHelper.cs):**
+```csharp
+// Extension methods for UTC to UTC+8 conversion
+public static class TimeHelper
+{
+    // Convert UTC DateTime to UTC+8 formatted string
+    public static string ToUtc8String(this DateTime dt, string format = "yyyy-MM-dd HH:mm")
+
+    // Convert nullable UTC DateTime to UTC+8 formatted string
+    public static string ToUtc8String(this DateTime? dt, string format = "yyyy-MM-dd HH:mm")
+
+    // Convert UTC DateTime to UTC+8 DateTime
+    public static DateTime ToUtc8(this DateTime dt)
+
+    // Convert nullable UTC DateTime to nullable UTC+8 DateTime
+    public static DateTime? ToUtc8(this DateTime? dt)
+}
+```
+
+**View Display Pattern:**
+```cshtml
+@using GameSpace.Areas.MiniGame.Helpers
+
+<!-- Display formatted UTC+8 time -->
+<td>@item.CreatedAt.ToUtc8String("yyyy-MM-dd HH:mm")</td>
+<td>@item.UpdatedAt.ToUtc8String("yyyy-MM-dd HH:mm:ss")</td>
+
+<!-- Conditional display for nullable DateTime -->
+<td>@(item.DeletedAt.HasValue ? item.DeletedAt.ToUtc8String() : "N/A")</td>
+```
+
+**Implementation Status (commit cc81d70):**
+- **Services Updated:** 10 services with `IAppClock` injection (53 `DateTime.Now` → `_appClock.UtcNow` replacements)
+- **Views Updated:** 10 views with UTC+8 time display (27 time display conversions using `ToUtc8String()`)
+- **Guidelines:**
+  - NEVER use `DateTime.Now` or `DateTime.UtcNow` directly in services
+  - ALWAYS inject `IAppClock` for time operations
+  - Database stores UTC, display shows UTC+8
+  - Use TimeHelper extensions in all Razor views for consistent formatting
+
+### Fuzzy Search Integration
+
+**Architecture:**
+The fuzzy search system uses a 5-level priority matching algorithm to provide intuitive search results across the MiniGame Area.
+
+**IFuzzySearchService Pattern:**
+```csharp
+// Service injection
+private readonly IFuzzySearchService _fuzzySearchService;
+
+public MyController(IFuzzySearchService fuzzySearchService)
+{
+    _fuzzySearchService = fuzzySearchService;
+}
+
+// Controller usage - OR logic between multiple search terms
+var results = await _context.MyTable
+    .AsNoTracking()
+    .Where(x => !x.IsDeleted)
+    .Where(x =>
+        string.IsNullOrWhiteSpace(searchTerm) ||
+        _fuzzySearchService.IsMatch(x.Name, searchTerm) ||
+        _fuzzySearchService.IsMatch(x.Description, searchTerm) ||
+        _fuzzySearchService.IsMatch(x.Code, searchTerm)
+    )
+    .ToListAsync();
+```
+
+**5-Level Priority Matching:**
+1. **Exact Match** (完全符合) - `input == target`
+2. **Starts With** (開頭符合) - `target.StartsWith(input)`
+3. **Contains** (包含) - `target.Contains(input)`
+4. **Fuzzy Match** (模糊比對) - Character-by-character fuzzy matching
+5. **Token Match** (分詞比對) - Split by whitespace and match individual tokens
+
+**Integration Status (commit cc81d70):**
+- **Controllers:** 5 Controllers + 1 Service now use `IFuzzySearchService`
+- **Total Coverage:** 11 Controllers support fuzzy search with OR logic
+- **Supported Entities:** Users, Wallets, Coupons, EVouchers, Pets, SignIns, MiniGames
+- **Guidelines:**
+  - Use OR logic (`||`) to search across multiple fields
+  - Apply fuzzy search AFTER soft delete filter (`!IsDeleted`)
+  - Always use with `AsNoTracking()` for read-only search queries
+  - Handle empty/null search terms with `string.IsNullOrWhiteSpace()` check
 
 ### Reading MiniGame Data
 ```csharp
@@ -356,6 +472,8 @@ This endpoint verifies database connectivity and basic query functionality.
 5. **Current Status:** GameSpace (Admin) is complete. GamiPort (Frontend) MiniGame Area features are in development.
 6. **Frontend Design:** GamiPort MiniGame Area must follow the teal/turquoise modern design system shown in reference images. This is non-negotiable for visual consistency.
 7. **Recent Updates:**
+   - **UTC+8 Time Handling (commit cc81d70):** Implemented `IAppClock` + `TimeHelper` for consistent UTC+8 (Taiwan) time display. Database stores UTC, application displays UTC+8. Updated 10 services (53 replacements) and 10 views (27 conversions).
+   - **Fuzzy Search Integration (commit cc81d70):** Integrated `IFuzzySearchService` with 5-level priority matching into 5 Controllers + 1 Service. Total 11 Controllers now support fuzzy search with OR logic across multiple fields.
    - Added `SVRankingFavorite` table for favorite rankings tracking
    - Added `SoPaymentAudit` for payment audit logging
    - Added `VwPaymentOrderInconsistency` view for payment validation
@@ -371,8 +489,11 @@ When implementing MiniGame Area features, verify:
 - [ ] Transactions wrap all multi-step operations
 - [ ] AdminCookie authentication is enforced (GameSpace) or Cookie auth (GamiPort)
 - [ ] No files modified outside `Areas/MiniGame/` (except Program.cs)
-- [ ] UTF-8 with BOM encoding for all .cs and .cshtml files
+- [ ] UTF-8 **without BOM** encoding for all `.cs` and `.cshtml` files
 - [ ] Sidebar buttons match specification exactly
+- [ ] **Time Handling:** `IAppClock` injected in services (no `DateTime.Now` or `DateTime.UtcNow`)
+- [ ] **Time Handling:** Database stores UTC, views display UTC+8 using `TimeHelper.ToUtc8String()`
+- [ ] **Fuzzy Search:** Use `IFuzzySearchService.IsMatch()` with OR logic for multi-field search
 - [ ] **Frontend UI:** Teal color scheme applied (`#17a2b8` primary, `#f0f4f8` background)
 - [ ] **Frontend UI:** Card-based layouts with 16-24px border-radius
 - [ ] **Frontend UI:** Proper spacing (8px multiples) and shadows
