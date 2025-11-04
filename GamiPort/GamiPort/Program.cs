@@ -23,6 +23,7 @@ using GamiPort.Areas.social_hub.Services.Application;
 
 // === 新增/確認的 using（本檔有用到的服務/端點） ===
 using GamiPort.Infrastructure.Security;    // ★ 我方統一介面 IAppCurrentUser / AppCurrentUser
+using GamiPort.Infrastructure.Time;        // ★ IAppClock / AppClock（時間轉換）
 using GamiPort.Models;                     // GameSpacedatabaseContext（業務資料）
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;       // 只用 IPasswordHasher<User> / PasswordHasher<User>（升級舊明文）
@@ -155,9 +156,21 @@ namespace GamiPort
             // ------------------------------------------------------------
             builder.Services.AddScoped<IAppCurrentUser, AppCurrentUser>();
 
+            // ★ 時間轉換服務：UTC ↔ UTC+8（台灣時間）
+            // 使用 Taipei Standard Time（Asia/Taipei 時區）
+            builder.Services.AddSingleton<IAppClock>(sp =>
+            {
+                var taiwanTz = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time");
+                return new AppClock(taiwanTz);
+            });
 
+            // MiniGame Area 服務（簽到、寵物、遊戲、錢包等）
+            builder.Services.AddScoped<GamiPort.Areas.MiniGame.Services.ISignInService, GamiPort.Areas.MiniGame.Services.SignInService>();
+            builder.Services.AddScoped<GamiPort.Areas.MiniGame.Services.IPetService, GamiPort.Areas.MiniGame.Services.PetService>();
+            builder.Services.AddScoped<GamiPort.Areas.MiniGame.Services.IWalletService, GamiPort.Areas.MiniGame.Services.WalletService>();
+            builder.Services.AddScoped<GamiPort.Areas.MiniGame.Services.IFuzzySearchService, GamiPort.Areas.MiniGame.Services.FuzzySearchService>();
+            builder.Services.AddScoped<GamiPort.Areas.MiniGame.Services.IGamePlayService, GamiPort.Areas.MiniGame.Services.GamePlayService>();
 
-            // ------------------------------------------------------------
             // SignalR（聊天室必備）— 開啟詳細錯誤與穩定心跳
             // ------------------------------------------------------------
             builder.Services.AddSignalR(options =>
