@@ -4,6 +4,7 @@
     新頁面位置: /MiniGame/AdminCoupon/CouponTypes
     保留此檔案僅供參考，不建議繼續使用
 *@
+@using GameSpace.Areas.MiniGame.Helpers
 @{
     ViewData["Title"] = "優惠券管理 (已過時)";
     Layout = "~/Areas/MiniGame/Views/Shared/_AdminLayout.cshtml";
@@ -244,8 +245,8 @@
                                             <span class="badge badge-warning">未使用</span>
                                         }
                                     </td>
-                                    <td>@coupon.AcquiredTime.ToString("yyyy-MM-dd HH:mm")</td>
-                                    <td>@(coupon.UsedTime?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                                    <td>@coupon.AcquiredTime.ToUtc8String("yyyy-MM-dd HH:mm")</td>
+                                    <td>@coupon.UsedTime.ToUtc8String("yyyy-MM-dd HH:mm")</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="@Url.Action("Details", "AdminCoupon", new { id = coupon.CouponID })" class="btn btn-info btn-sm">

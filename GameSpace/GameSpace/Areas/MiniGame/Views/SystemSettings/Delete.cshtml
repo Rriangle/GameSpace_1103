@@ -1,3 +1,4 @@
+@using GameSpace.Areas.MiniGame.Helpers
 @model GameSpace.Models.SystemSetting
 
 @{
@@ -89,12 +90,12 @@
                 </dd>
 
                 <dt class="col-sm-3">建立時間</dt>
-                <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+                <dd class="col-sm-9">@Model.CreatedAt.ToUtc8String("yyyy-MM-dd HH:mm:ss") UTC+8</dd>
 
                 @if (Model.UpdatedAt != null)
                 {
                     <dt class="col-sm-3">最後更新時間</dt>
-                    <dd class="col-sm-9">@Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") UTC</dd>
+                    <dd class="col-sm-9">@Model.UpdatedAt.ToUtc8String("yyyy-MM-dd HH:mm:ss") UTC+8</dd>
                 }
             </dl>
         </div>

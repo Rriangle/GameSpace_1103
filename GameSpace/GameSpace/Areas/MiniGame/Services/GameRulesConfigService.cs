@@ -93,7 +93,7 @@ namespace GameSpace.Areas.MiniGame.Services
                     IsActive = true,
                     TotalGamesPlayed = totalGames,
                     TodayGamesPlayed = todayGames,
-                    LastUpdated = DateTime.UtcNow,
+                    LastUpdated = _appClock.UtcNow,
                     LevelConfigs = levelConfigs,
                     WinImpact = new AdventureResultImpact
                     {

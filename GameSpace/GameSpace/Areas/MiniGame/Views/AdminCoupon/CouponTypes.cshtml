@@ -1,3 +1,4 @@
+@using GameSpace.Areas.MiniGame.Helpers
 @model dynamic
 @{
     ViewData["Title"] = "優惠券類型管理";
@@ -250,8 +251,8 @@
                                     <td>NT$ @((minSpend ?? 0).ToString("N0"))</td>
                                     <td>@(pointsCost ?? 0)</td>
                                     <td>
-                                        @(validFrom?.ToString("yyyy-MM-dd") ?? "N/A") ~
-                                        @(validTo?.ToString("yyyy-MM-dd") ?? "N/A")
+                                        @(validFrom.ToUtc8String("yyyy-MM-dd")) ~
+                                        @(validTo.ToUtc8String("yyyy-MM-dd"))
                                     </td>
                                     <td>
                                         @if (isValid)

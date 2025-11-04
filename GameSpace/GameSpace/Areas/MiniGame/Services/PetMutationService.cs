@@ -14,13 +14,16 @@ namespace GameSpace.Areas.MiniGame.Services
     {
         private readonly GameSpacedatabaseContext _context;
         private readonly ILogger<PetMutationService> _logger;
+        private readonly GameSpace.Infrastructure.Time.IAppClock _appClock;
 
         public PetMutationService(
             GameSpacedatabaseContext context,
-            ILogger<PetMutationService> logger)
+            ILogger<PetMutationService> logger,
+            GameSpace.Infrastructure.Time.IAppClock appClock)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _appClock = appClock ?? throw new ArgumentNullException(nameof(appClock));
         }
 
         /// <summary>
@@ -183,7 +186,7 @@ namespace GameSpace.Areas.MiniGame.Services
                 }
 
                 var changes = new List<string>();
-                var now = DateTime.UtcNow;
+                var now = _appClock.UtcNow;
 
                 // 更新膚色
                 if (!string.IsNullOrWhiteSpace(model.SkinColor))
@@ -293,7 +296,7 @@ namespace GameSpace.Areas.MiniGame.Services
                 {
                     changes.Add($"等級從 {pet.Level} 更新為 {model.Level}");
                     pet.Level = model.Level;
-                    pet.LevelUpTime = DateTime.UtcNow;
+                    pet.LevelUpTime = _appClock.UtcNow;
                 }
 
                 // 更新經驗值
@@ -462,7 +465,7 @@ namespace GameSpace.Areas.MiniGame.Services
                 Description = string.IsNullOrWhiteSpace(additionalInfo)
                     ? description
                     : $"{description}（{additionalInfo}）",
-                ChangeTime = DateTime.UtcNow
+                ChangeTime = _appClock.UtcNow
             };
 
             _context.WalletHistories.Add(history);

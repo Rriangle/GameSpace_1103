@@ -1,4 +1,5 @@
-﻿@model GameSpace.Areas.MiniGame.Models.ViewModels.SignInRecordsViewModel
+﻿@using GameSpace.Areas.MiniGame.Helpers
+@model GameSpace.Areas.MiniGame.Models.ViewModels.SignInRecordsViewModel
 @{
     ViewData["Title"] = "查看會員簽到紀錄";
 }
@@ -32,11 +33,11 @@
                 </div>
                 <div class="col-md-3">
                     <label for="startDate" class="form-label">開始日期</label>
-                    <input type="date" class="form-control" id="startDate" name="startDate" value="@(Model.Query.StartDate?.ToString("yyyy-MM-dd"))">
+                    <input type="date" class="form-control" id="startDate" name="startDate" value="@(Model.Query.StartDate.ToUtc8String("yyyy-MM-dd"))">
                 </div>
                 <div class="col-md-3">
                     <label for="endDate" class="form-label">結束日期</label>
-                    <input type="date" class="form-control" id="endDate" name="endDate" value="@(Model.Query.EndDate?.ToString("yyyy-MM-dd"))">
+                    <input type="date" class="form-control" id="endDate" name="endDate" value="@(Model.Query.EndDate.ToUtc8String("yyyy-MM-dd"))">
                 </div>
                 <div class="col-md-3">
                     <label for="minConsecutiveDays" class="form-label">最小連續天數</label>
@@ -195,7 +196,7 @@
                                     <div><strong>@record.UserName</strong></div>
                                     <small class="text-muted">@record.UserAccount (ID: @record.UserId)</small>
                                 </td>
-                                <td><small class="text-muted">@record.SignTime.ToString("yyyy/MM/dd HH:mm")</small></td>
+                                <td><small class="text-muted">@record.SignTime.ToUtc8String("yyyy/MM/dd HH:mm")</small></td>
                                 <td class="text-center">
                                     <span class="badge bg-info fs-6">第 @record.ConsecutiveDays 天</span>
                                 </td>
@@ -261,8 +262,8 @@
                            asp-route-userAccount="@Model.Query.UserAccount"
                            asp-route-userName="@Model.Query.UserName"
                            asp-route-searchTerm="@Model.Query.SearchTerm"
-                           asp-route-startDate="@Model.Query.StartDate?.ToString("yyyy-MM-dd")"
-                           asp-route-endDate="@Model.Query.EndDate?.ToString("yyyy-MM-dd")"
+                           asp-route-startDate="@Model.Query.StartDate.ToUtc8String("yyyy-MM-dd")"
+                           asp-route-endDate="@Model.Query.EndDate.ToUtc8String("yyyy-MM-dd")"
                            asp-route-minConsecutiveDays="@Model.Query.MinConsecutiveDays"
                            asp-route-maxConsecutiveDays="@Model.Query.MaxConsecutiveDays"
                            asp-route-sortBy="@Model.Query.SortBy"
@@ -277,8 +278,8 @@
                            asp-route-userAccount="@Model.Query.UserAccount"
                            asp-route-userName="@Model.Query.UserName"
                            asp-route-searchTerm="@Model.Query.SearchTerm"
-                           asp-route-startDate="@Model.Query.StartDate?.ToString("yyyy-MM-dd")"
-                           asp-route-endDate="@Model.Query.EndDate?.ToString("yyyy-MM-dd")"
+                           asp-route-startDate="@Model.Query.StartDate.ToUtc8String("yyyy-MM-dd")"
+                           asp-route-endDate="@Model.Query.EndDate.ToUtc8String("yyyy-MM-dd")"
                            asp-route-minConsecutiveDays="@Model.Query.MinConsecutiveDays"
                            asp-route-maxConsecutiveDays="@Model.Query.MaxConsecutiveDays"
                            asp-route-sortBy="@Model.Query.SortBy"

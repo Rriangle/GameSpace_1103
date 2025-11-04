@@ -118,7 +118,7 @@ namespace GameSpace.Areas.MiniGame.Services
 
             viewModel.TotalGamesPlayed = totalGames;
             viewModel.TodayGamesPlayed = activeToday;
-            viewModel.LastUpdated = DateTime.UtcNow;
+            viewModel.LastUpdated = _appClock.UtcNow;
 
             return viewModel;
         }

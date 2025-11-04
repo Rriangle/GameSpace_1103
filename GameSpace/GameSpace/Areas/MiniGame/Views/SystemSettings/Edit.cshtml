@@ -1,3 +1,4 @@
+@using GameSpace.Areas.MiniGame.Helpers
 @model GameSpace.Models.SystemSetting
 
 @{
@@ -170,7 +171,7 @@
                         建立時間
                     </label>
                     <div class="col-md-9">
-                        <input type="text" class="form-control-plaintext" readonly value="@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") UTC" />
+                        <input type="text" class="form-control-plaintext" readonly value="@Model.CreatedAt.ToUtc8String("yyyy-MM-dd HH:mm:ss") UTC+8" />
                     </div>
                 </div>
 
@@ -182,7 +183,7 @@
                             最後更新時間
                         </label>
                         <div class="col-md-9">
-                            <input type="text" class="form-control-plaintext" readonly value="@Model.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss") UTC" />
+                            <input type="text" class="form-control-plaintext" readonly value="@Model.UpdatedAt.ToUtc8String("yyyy-MM-dd HH:mm:ss") UTC+8" />
                         </div>
                     </div>
                 }

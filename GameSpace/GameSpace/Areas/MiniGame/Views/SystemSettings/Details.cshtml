@@ -1,3 +1,4 @@
+@using GameSpace.Areas.MiniGame.Helpers
 @model GameSpace.Models.SystemSetting
 
 @{
@@ -140,7 +141,7 @@
                 <dt class="col-sm-3 text-sm-right">建立時間</dt>
                 <dd class="col-sm-9">
                     <i class="fas fa-calendar-plus text-success"></i>
-                    @Model.CreatedAt.ToString("yyyy年MM月dd日 HH:mm:ss") UTC
+                    @Model.CreatedAt.ToUtc8String("yyyy年MM月dd日 HH:mm:ss") UTC+8
                 </dd>
 
                 @if (Model.UpdatedAt != null)
@@ -148,7 +149,7 @@
                     <dt class="col-sm-3 text-sm-right">最後更新時間</dt>
                     <dd class="col-sm-9">
                         <i class="fas fa-calendar-check text-info"></i>
-                        @Model.UpdatedAt?.ToString("yyyy年MM月dd日 HH:mm:ss") UTC
+                        @Model.UpdatedAt.ToUtc8String("yyyy年MM月dd日 HH:mm:ss") UTC+8
                     </dd>
                 }
                 else

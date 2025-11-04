@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using GameSpace.Areas.social_hub.Auth;
 using GameSpace.Models;
+using GameSpace.Areas.MiniGame.Services;
 
 namespace GameSpace.Areas.MiniGame.Controllers.Settings
 {
@@ -15,12 +16,15 @@ namespace GameSpace.Areas.MiniGame.Controllers.Settings
     public class SystemSettingsController : MiniGameBaseController
     {
         private readonly ILogger<SystemSettingsController> _logger;
+        private readonly IFuzzySearchService _fuzzySearchService;
 
         public SystemSettingsController(
             GameSpacedatabaseContext context,
-            ILogger<SystemSettingsController> logger) : base(context)
+            ILogger<SystemSettingsController> logger,
+            IFuzzySearchService fuzzySearchService) : base(context)
         {
             _logger = logger;
+            _fuzzySearchService = fuzzySearchService;
         }
 
         /// <summary>
@@ -41,16 +45,34 @@ namespace GameSpace.Areas.MiniGame.Controllers.Settings
                     query = query.Where(s => s.Category == category);
                 }
 
-                // 篩選：依 SettingKey
+                List<SystemSetting> settings;
+
+                // 篩選：依 SettingKey with fuzzy search
                 if (!string.IsNullOrWhiteSpace(searchKey))
                 {
-                    query = query.Where(s => s.SettingKey.Contains(searchKey));
-                }
+                    // Apply fuzzy search with 5-level priority on SettingKey and Description
+                    var allSettings = await query.ToListAsync();
 
-                var settings = await query
-                    .OrderBy(s => s.Category)
-                    .ThenBy(s => s.SettingKey)
-                    .ToListAsync();
+                    settings = allSettings
+                        .Select(s => new
+                        {
+                            Setting = s,
+                            Priority = _fuzzySearchService.CalculateMatchPriority(searchKey, s.SettingKey ?? "", s.Description ?? "")
+                        })
+                        .Where(x => x.Priority > 0)
+                        .OrderBy(x => x.Priority)
+                        .ThenBy(x => x.Setting.Category)
+                        .ThenBy(x => x.Setting.SettingKey)
+                        .Select(x => x.Setting)
+                        .ToList();
+                }
+                else
+                {
+                    settings = await query
+                        .OrderBy(s => s.Category)
+                        .ThenBy(s => s.SettingKey)
+                        .ToListAsync();
+                }
 
                 // 取得所有 Category 供篩選使用
                 var categories = await _context.SystemSettings

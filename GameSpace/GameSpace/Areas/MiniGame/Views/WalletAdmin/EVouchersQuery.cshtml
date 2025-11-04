@@ -1,4 +1,5 @@
-﻿@model GameSpace.Areas.MiniGame.Models.ViewModels.WalletEVouchersQueryViewModel
+﻿@using GameSpace.Areas.MiniGame.Helpers
+@model GameSpace.Areas.MiniGame.Models.ViewModels.WalletEVouchersQueryViewModel
 @{
     ViewData["Title"] = "查詢會員電子禮券";
 }
@@ -170,20 +171,13 @@
                                 <td><span class="badge bg-info">@record.UserId</span></td>
                                 <td><strong>@record.UserName</strong></td>
                                 <td><span class="badge bg-light text-dark">@record.EVoucherTypeName</span></td>
-                                <td><small class="text-muted">@record.AcquiredTime.ToString("yyyy/MM/dd HH:mm")</small></td>
+                                <td><small class="text-muted">@record.AcquiredTime.ToUtc8String("yyyy/MM/dd HH:mm")</small></td>
                                 <td>
-                                    @if (record.UsedTime.HasValue)
-                                    {
-                                        <small class="text-muted">@record.UsedTime.Value.ToString("yyyy/MM/dd HH:mm")</small>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
+                                    <small class="text-muted">@record.UsedTime.ToUtc8String("yyyy/MM/dd HH:mm")</small>
                                 </td>
                                 <td>
                                     <small class="@(isExpiringSoon ? "text-danger fw-bold" : "text-muted")">
-                                        @record.ValidTo.ToString("yyyy/MM/dd")
+                                        @record.ValidTo.ToUtc8String("yyyy/MM/dd")
                                         @if (isExpiringSoon)
                                         {
                                             <i class="fas fa-exclamation-triangle ms-1"></i>
