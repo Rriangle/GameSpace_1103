@@ -53,6 +53,24 @@ namespace GamiPort.Areas.MiniGame.Services
 		Task<IEnumerable<WalletHistory>> GetWalletHistoryAsync(int userId, int pageSize = 10);
 
 		/// <summary>
+		/// 獲取錢包交易記錄（支持篩選和分頁）
+		/// </summary>
+		/// <param name="userId">用戶ID</param>
+		/// <param name="startDate">開始日期</param>
+		/// <param name="endDate">結束日期</param>
+		/// <param name="changeType">交易類型</param>
+		/// <param name="page">頁碼</param>
+		/// <param name="pageSize">分頁大小</param>
+		/// <returns>(交易記錄列表, 總筆數)</returns>
+		Task<(IEnumerable<WalletHistory> transactions, int totalCount)> GetWalletHistoryPagedAsync(
+			int userId,
+			DateTime? startDate = null,
+			DateTime? endDate = null,
+			string? changeType = null,
+			int page = 1,
+			int pageSize = 20);
+
+		/// <summary>
 		/// 獲取錢包交易統計
 		/// </summary>
 		Task<Dictionary<string, int>> GetPointsSummaryAsync(int userId);

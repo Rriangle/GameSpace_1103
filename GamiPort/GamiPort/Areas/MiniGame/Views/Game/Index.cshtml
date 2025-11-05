@@ -453,6 +453,15 @@
             }
         }
 
+        @@keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
         .game-result-card {
             animation: fadeIn 0.5s ease;
         }
@@ -552,12 +561,12 @@
                     <!-- 遊戲標題卡片 -->
                     <div class="game-title-card">
                         <h3>
-                            <i class="bi bi-star-fill game-icon"></i>
-                            迷宮冒險
+                            <i class="bi bi-lightning-charge-fill game-icon"></i>
+                            恐龍跑酷大冒險
                         </h3>
                         <p>
-                            在神秘迷宮中尋找通路，躲避障礙物，到達終點即可通關！
-                            難度越高，獎勵越豐厚。
+                            靈感來自 Chrome 離線小恐龍！按下空白鍵跳躍，躲避迎面而來的障礙物。
+                            跑得越遠得分越高，難度越高獎勵越豐厚！
                         </p>
                     </div>
 
@@ -572,20 +581,20 @@
 
                             <button type="submit" name="level" value="1" class="difficulty-btn btn-easy @(selectedLevel == 1 ? "active" : "")" @(todayRemainingPlays == 0 ? "disabled" : "")>
                                 <i class="bi bi-sun-fill"></i>
-                                <span>簡單</span>
-                                <span class="label">Level 1</span>
+                                <span>輕鬆跑</span>
+                                <span class="label">速度較慢</span>
                             </button>
 
                             <button type="submit" name="level" value="2" class="difficulty-btn btn-normal @(selectedLevel == 2 ? "active" : "")" @(todayRemainingPlays == 0 ? "disabled" : "")>
                                 <i class="bi bi-lightning-fill"></i>
-                                <span>普通</span>
-                                <span class="label">Level 2</span>
+                                <span>疾速跑</span>
+                                <span class="label">速度中等</span>
                             </button>
 
                             <button type="submit" name="level" value="3" class="difficulty-btn btn-hard @(selectedLevel == 3 ? "active" : "")" @(todayRemainingPlays == 0 ? "disabled" : "")>
                                 <i class="bi bi-fire"></i>
-                                <span>困難</span>
-                                <span class="label">Level 3</span>
+                                <span>極速衝刺</span>
+                                <span class="label">速度飛快</span>
                             </button>
                         </form>
                     </div>
@@ -594,15 +603,27 @@
                     <div class="game-container-section">
                         <div id="unity-container">
                             <div style="text-align: center;">
-                                <i class="bi bi-joystick" style="font-size: 3rem; color: var(--teal-primary); margin-bottom: 1rem; display: block;"></i>
-                                <p>Unity WebGL 遊戲容器</p>
+                                <i class="bi bi-egg-fill" style="font-size: 3.5rem; color: var(--teal-primary); margin-bottom: 1rem; display: block; animation: bounce 1.5s ease-in-out infinite;"></i>
+                                <p style="font-size: 1.1rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem;">恐龍跑酷遊戲區</p>
                                 @if (selectedLevel > 0)
                                 {
-                                    <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 1rem;">已選擇難度 Level @selectedLevel</p>
+                                    <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 1rem;">
+                                        已選擇難度：<strong style="color: var(--teal-primary);">
+                                            @(selectedLevel == 1 ? "輕鬆跑" : selectedLevel == 2 ? "疾速跑" : "極速衝刺")
+                                        </strong>
+                                    </p>
+                                    <p style="font-size: 0.85rem; color: #95a5a6; margin-top: 0.5rem;">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        點擊「開始遊戲」後,使用空白鍵控制恐龍跳躍
+                                    </p>
                                 }
                                 else
                                 {
                                     <p style="font-size: 0.9rem; color: #7f8c8d; margin-top: 1rem;">請先選擇難度開始遊戲</p>
+                                    <p style="font-size: 0.85rem; color: #95a5a6; margin-top: 0.5rem;">
+                                        <i class="bi bi-arrow-up me-1"></i>
+                                        上方選擇遊戲難度
+                                    </p>
                                 }
                             </div>
                         </div>
@@ -733,8 +754,8 @@
                             <i class="bi bi-lightbulb-fill"></i>
                             <small>
                                 <strong>遊戲提示：</strong><br>
-                                每天可進行 3 次遊戲，難度越高獎勵越豐厚。
-                                在排行榜上與其他玩家競爭吧！
+                                每天 3 次遊戲機會，難度越高獎勵越豐厚。
+                                掌握跳躍時機，創造高分記錄，在排行榜上與其他玩家一較高下！
                             </small>
                         </div>
                     }
@@ -746,15 +767,16 @@
             {
                 <div style="margin-top: 2rem; padding: 1.5rem; background: var(--teal-lighter); border-radius: 12px; border-left: 4px solid var(--teal-primary);">
                     <h5 style="color: #2c3e50; margin-bottom: 0.75rem;">
-                        <i class="bi bi-info-circle me-2" style="color: var(--teal-primary);"></i>
+                        <i class="bi bi-joystick me-2" style="color: var(--teal-primary);"></i>
                         遊戲說明
                     </h5>
                     <ul style="margin-bottom: 0; padding-left: 1.5rem; color: #2c3e50; font-size: 0.95rem;">
-                        <li>選擇適合的難度開始遊戲</li>
-                        <li>成功通關可獲得點數與寵物經驗值</li>
-                        <li>每天 3 次遊戲機會，隔日重置</li>
-                        <li>難度 Level 1（簡單）、Level 2（普通）、Level 3（困難）</li>
-                        <li>高難度遊戲獎勵更豐厚，失敗可放棄重試</li>
+                        <li><strong>操作方式：</strong>按下 <kbd style="background: #2c3e50; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">空白鍵</kbd> 或點擊螢幕讓恐龍跳躍</li>
+                        <li><strong>遊戲目標：</strong>躲避仙人掌和飛鳥，跑得越遠分數越高</li>
+                        <li><strong>難度選擇：</strong>輕鬆跑（速度慢）、疾速跑（速度中）、極速衝刺（速度快）</li>
+                        <li><strong>獎勵機制：</strong>達到目標分數通關可獲得點數與寵物經驗值，難度越高獎勵越豐厚</li>
+                        <li><strong>遊戲次數：</strong>每天 3 次遊戲機會，隔日 00:00 重置</li>
+                        <li><strong>特殊規則：</strong>碰到障礙物即失敗，可選擇中途放棄重新開始</li>
                     </ul>
                 </div>
             }

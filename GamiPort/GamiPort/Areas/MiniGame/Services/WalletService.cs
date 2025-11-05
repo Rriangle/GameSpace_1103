@@ -208,6 +208,62 @@ namespace GamiPort.Areas.MiniGame.Services
 		}
 
 		/// <summary>
+		/// 獲取錢包交易記錄（支持篩選和分頁）
+		/// </summary>
+		public async Task<(IEnumerable<WalletHistory> transactions, int totalCount)> GetWalletHistoryPagedAsync(
+			int userId,
+			DateTime? startDate = null,
+			DateTime? endDate = null,
+			string? changeType = null,
+			int page = 1,
+			int pageSize = 20)
+		{
+			try
+			{
+				var query = _context.WalletHistories
+					.AsNoTracking()
+					.Where(h => h.UserId == userId && !h.IsDeleted);
+
+				// 日期篩選
+				if (startDate.HasValue)
+				{
+					query = query.Where(h => h.ChangeTime >= startDate.Value);
+				}
+
+				if (endDate.HasValue)
+				{
+					// 包含結束日期的整天
+					var endDateTime = endDate.Value.Date.AddDays(1).AddTicks(-1);
+					query = query.Where(h => h.ChangeTime <= endDateTime);
+				}
+
+				// 交易類型篩選
+				if (!string.IsNullOrWhiteSpace(changeType))
+				{
+					query = query.Where(h => h.ChangeType == changeType);
+				}
+
+				// 獲取總筆數
+				var totalCount = await query.CountAsync();
+
+				// 分頁查詢
+				var transactions = await query
+					.OrderByDescending(h => h.ChangeTime)
+					.Skip((page - 1) * pageSize)
+					.Take(pageSize)
+					.ToListAsync();
+
+				return (transactions, totalCount);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "獲取錢包交易記錄失敗: UserId={UserId}, StartDate={StartDate}, EndDate={EndDate}, ChangeType={ChangeType}, Page={Page}",
+					userId, startDate, endDate, changeType, page);
+				return (Enumerable.Empty<WalletHistory>(), 0);
+			}
+		}
+
+		/// <summary>
 		/// 獲取錢包交易統計
 		/// </summary>
 		public async Task<Dictionary<string, int>> GetPointsSummaryAsync(int userId)

@@ -1,0 +1,277 @@
+@using GamiPort.Areas.MiniGame.Helpers
+@using GamiPort.Areas.MiniGame.Controllers
+@model WalletHistoryViewModel
+@{
+    ViewData["Title"] = "交易明細";
+}
+
+<style>
+    /* 頁面背景和通用樣式 */
+    .page-background {
+        background: linear-gradient(180deg, #f0f4f8 0%, #ffffff 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .history-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+
+    .filter-section {
+        background: #f0f4f8;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .transaction-row {
+        border-bottom: 1px solid #e8f0f4;
+        padding: 1rem 0;
+        transition: background 0.2s ease;
+    }
+
+    .transaction-row:hover {
+        background: #f0f9f8;
+        border-radius: 8px;
+        padding-left: 1rem;
+    }
+
+    .transaction-row:last-child {
+        border-bottom: none;
+    }
+
+    .points-positive {
+        color: #28a745;
+        font-weight: 700;
+    }
+
+    .points-negative {
+        color: #dc3545;
+        font-weight: 700;
+    }
+
+    .btn-teal {
+        background: linear-gradient(135deg, #17a2b8 0%, #0d9488 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .btn-teal:hover {
+        background: linear-gradient(135deg, #0d9488 0%, #0a7d72 100%);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .type-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+    }
+
+    .type-signin { background: #e0f2f1; color: #0d9488; }
+    .type-game { background: #fff3e0; color: #ff9f43; }
+    .type-purchase { background: #fce4ec; color: #e91e63; }
+    .type-reward { background: #e8f5e9; color: #4caf50; }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 0.5rem 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #17a2b8;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-link {
+        color: #17a2b8;
+        border-radius: 8px;
+        margin: 0 0.25rem;
+    }
+
+    .page-link:hover {
+        color: #0d9488;
+        background-color: #e0f2f1;
+    }
+
+    .page-item.active .page-link {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #f8f9fa;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #cbd5e0;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h5 {
+        color: #718096;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+        color: #a0aec0;
+    }
+</style>
+
+<div class="page-background">
+    <div class="container">
+        <!-- 頁面標題 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1" style="color: #2c3e50; font-weight: 700;">
+                    <i class="bi bi-clock-history me-2" style="color: #17a2b8;"></i>
+                    交易明細
+                </h2>
+                <p class="text-muted mb-0">查看您的點數變動記錄</p>
+            </div>
+            <a href="/MiniGame/Wallet/Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>返回錢包
+            </a>
+        </div>
+
+        <!-- 篩選區域 -->
+        <div class="filter-section">
+            <form method="get" asp-area="MiniGame" asp-controller="Wallet" asp-action="History">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">開始日期</label>
+                        <input type="date" class="form-control" name="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">結束日期</label>
+                        <input type="date" class="form-control" name="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">交易類型</label>
+                        <select class="form-select" name="changeType">
+                            <option value="">全部</option>
+                            <option value="簽到獎勵" selected="@(Model.ChangeType == "簽到獎勵")">簽到獎勵</option>
+                            <option value="遊戲獎勵" selected="@(Model.ChangeType == "遊戲獎勵")">遊戲獎勵</option>
+                            <option value="購買商品" selected="@(Model.ChangeType == "購買商品")">購買商品</option>
+                            <option value="系統獎勵" selected="@(Model.ChangeType == "系統獎勵")">系統獎勵</option>
+                            <option value="升級獎勵" selected="@(Model.ChangeType == "升級獎勵")">升級獎勵</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-teal">
+                        <i class="bi bi-search me-2"></i>查詢
+                    </button>
+                    <a href="/MiniGame/Wallet/History" class="btn btn-outline-secondary">清除篩選</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 交易列表 -->
+        <div class="history-card">
+            @if (Model.Transactions.Any())
+            {
+                @foreach (var transaction in Model.Transactions)
+                {
+                    <div class="transaction-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">交易時間</small>
+                                <strong>@transaction.ChangeTime.ToUtc8String("yyyy-MM-dd HH:mm:ss")</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <span class="type-badge @GetTypeBadgeClass(transaction.ChangeType)">
+                                    @transaction.ChangeType
+                                </span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <small class="text-muted d-block">點數變動</small>
+                                <span class="@(transaction.PointsChanged > 0 ? "points-positive" : "points-negative")">
+                                    @(transaction.PointsChanged > 0 ? "+" : "")@transaction.PointsChanged
+                                </span>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <small class="text-muted d-block">交易後餘額</small>
+                                <strong style="color: #0d9488;">@transaction.AfterBalance</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">備註</small>
+                                <span>@(string.IsNullOrEmpty(transaction.Description) ? "無" : transaction.Description)</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- 分頁 -->
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="text-muted">
+                        顯示第 @((Model.CurrentPage - 1) * Model.PageSize + 1) - @Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount) 筆，共 @Model.TotalCount 筆
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" href="?page=@(Model.CurrentPage - 1)&startDate=@Model.StartDate&endDate=@Model.EndDate&changeType=@Model.ChangeType">上一頁</a>
+                            </li>
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="?page=@i&startDate=@Model.StartDate&endDate=@Model.EndDate&changeType=@Model.ChangeType">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" href="?page=@(Model.CurrentPage + 1)&startDate=@Model.StartDate&endDate=@Model.EndDate&changeType=@Model.ChangeType">下一頁</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <i class="bi bi-inbox d-block"></i>
+                    <h5>目前沒有交易記錄</h5>
+                    <p>當您進行簽到、遊戲或兌換時，會顯示在這裡</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetTypeBadgeClass(string changeType)
+    {
+        return changeType switch
+        {
+            "簽到獎勵" => "type-signin",
+            "遊戲獎勵" => "type-game",
+            "購買商品" => "type-purchase",
+            "系統獎勵" or "升級獎勵" => "type-reward",
+            _ => "type-signin"
+        };
+    }
+}

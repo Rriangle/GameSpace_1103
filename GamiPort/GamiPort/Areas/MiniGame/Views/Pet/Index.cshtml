@@ -236,6 +236,93 @@
             color: #0d9488;
             text-decoration: underline;
         }
+
+        /* Start Adventure Button - Fixed Bottom Right */
+        .start-adventure-btn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff9f43 0%, #ffa500 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 24px rgba(255, 159, 67, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.125rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .start-adventure-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 32px rgba(255, 159, 67, 0.6);
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+            color: white;
+            text-decoration: none;
+        }
+
+        .start-adventure-btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .start-adventure-btn .adventure-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+
+        .start-adventure-btn .adventure-text {
+            font-size: 1rem;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 8px 24px rgba(255, 159, 67, 0.4);
+            }
+            50% {
+                box-shadow: 0 8px 32px rgba(255, 159, 67, 0.6);
+            }
+        }
+
+        @@keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .start-adventure-btn {
+                width: 100px;
+                height: 100px;
+                bottom: 24px;
+                right: 24px;
+                font-size: 0.875rem;
+            }
+
+            .start-adventure-btn .adventure-icon {
+                font-size: 1.75rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .start-adventure-btn .adventure-text {
+                font-size: 0.75rem;
+            }
+        }
     </style>
 
     <div class="page-background">
@@ -532,6 +619,15 @@
                         </button>
                     </div>
                 </div>
+            }
+
+            <!-- Start Adventure Button (Fixed Position) -->
+            @if (Model != null)
+            {
+                <a href="/MiniGame/Game/Index" class="start-adventure-btn" title="開始冒險遊戲">
+                    <i class="bi bi-controller adventure-icon"></i>
+                    <span class="adventure-text">出發冒險</span>
+                </a>
             }
         </div>
     </div>
