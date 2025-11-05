@@ -1,0 +1,22 @@
+Table                                                                                                                           |Rows                
+--------------------------------------------------------------------------------------------------------------------------------|--------------------
+Coupon                                                                                                                          |                4587
+CouponType                                                                                                                      |                   3
+EVoucher                                                                                                                        |                 355
+EVoucherRedeemLog                                                                                                               |                 800
+EVoucherToken                                                                                                                   |                 355
+EVoucherType                                                                                                                    |                  20
+ManagerData                                                                                                                     |                 102
+ManagerRole                                                                                                                     |                 102
+ManagerRolePermission                                                                                                           |                   8
+MiniGame                                                                                                                        |                2000
+Pet                                                                                                                             |                 200
+PetBackgroundCostSettings                                                                                                       |                  11
+PetLevelRewardSettings                                                                                                          |                  25
+PetSkinColorCostSettings                                                                                                        |                  11
+SignInRule                                                                                                                      |                  10
+SystemSettings                                                                                                                  |                  56
+User_Wallet                                                                                                                     |                 200
+Users                                                                                                                           |                 200
+UserSignInStats                                                                                                                 |                2400
+WalletHistory                                                                                                                   |                1928
